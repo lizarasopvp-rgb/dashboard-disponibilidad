@@ -44,7 +44,8 @@
       color: var(--tinta);
       font-family: var(--f-body);
       font-size: 14px;
-      line-height: 1.45
+      line-height: 1.45;
+      overflow-x: hidden;
     }
 
     header {
@@ -106,7 +107,11 @@
       gap: 2px;
       padding: 0 22px;
       overflow-x: auto;
-      background: var(--azul-marino)
+      background: var(--azul-marino);
+      scrollbar-width: none; /* Firefox */
+    }
+    nav::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
     }
 
     nav a {
