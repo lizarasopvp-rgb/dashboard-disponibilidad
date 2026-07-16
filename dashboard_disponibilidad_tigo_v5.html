@@ -1,0 +1,3864 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disponibilidad Operativa de Red — TIGO Colombia · Huawei MSP — v4.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="datos.js?v=2"></script>
+  <style>
+    :root {
+      --rojo: #FF9900;
+      --azul-marino: #1A2238;
+      --magenta: #00A3E0;
+      --ok: #1E9E5A;
+      --ok-suave: #5FCB8F;
+      --alerta: #F2C12E;
+      --critico-medio: #F08C2E;
+      --critico: #E03131;
+      --fondo: #F4F6F9;
+      --card: #FFFFFF;
+      --linea: #E4E8EE;
+      --tinta: #1A2330;
+      --gris: #707A8A;
+      --f-disp: "Barlow Semi Condensed", "Segoe UI", sans-serif;
+      --f-body: "IBM Plex Sans", "Segoe UI", sans-serif;
+      --f-mono: "IBM Plex Mono", "Consolas", monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    body {
+      background: var(--fondo);
+      color: var(--tinta);
+      font-family: var(--f-body);
+      font-size: 14px;
+      line-height: 1.45
+    }
+
+    header {
+      background: var(--azul-marino);
+      color: #fff;
+      border-bottom: 3px solid var(--rojo);
+      position: sticky;
+      top: 0;
+      z-index: 60
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 26px;
+      flex-wrap: wrap
+    }
+
+    .logo-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: var(--rojo);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--f-disp);
+      font-weight: 700;
+      font-size: 16px
+    }
+
+    .titulo h1 {
+      font-family: var(--f-disp);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .3px
+    }
+
+    .titulo p {
+      font-size: 12px;
+      color: #B8C8D8
+    }
+
+    .badge-mock {
+      margin-left: auto;
+      font-family: var(--f-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid rgba(255, 255, 255, .3);
+      border-radius: 20px;
+      padding: 4px 12px
+    }
+
+    nav {
+      display: flex;
+      gap: 2px;
+      padding: 0 22px;
+      overflow-x: auto;
+      background: var(--azul-marino)
+    }
+
+    nav a {
+      font-family: var(--f-disp);
+      font-weight: 600;
+      font-size: 14px;
+      color: #9FB4C8;
+      text-decoration: none;
+      padding: 9px 13px;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      cursor: pointer
+    }
+
+    nav a:hover,
+    nav a:focus-visible {
+      color: #fff
+    }
+
+    nav a.activo {
+      color: #fff;
+      border-bottom-color: var(--rojo)
+    }
+
+    .filtros {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 26px;
+      background: #FBFCFE;
+      border-bottom: 1px solid var(--linea);
+      flex-wrap: wrap
+    }
+
+    .filtros .lbl {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--gris);
+      text-transform: uppercase;
+      letter-spacing: .5px
+    }
+
+    .filtros select {
+      font-family: var(--f-body);
+      font-size: 13px;
+      background: var(--card);
+      border: 1px solid var(--linea);
+      border-radius: 8px;
+      padding: 6px 9px;
+      color: var(--tinta)
+    }
+
+    .btn-rojo {
+      font-family: var(--f-disp);
+      font-weight: 600;
+      font-size: 13px;
+      color: #fff;
+      background: var(--rojo);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 18px;
+      cursor: pointer
+    }
+
+    .btn-rojo:hover {
+      background: #D98200
+    }
+
+    .btn-fant {
+      font-size: 12.5px;
+      color: var(--azul-marino);
+      background: none;
+      border: 1px solid var(--linea);
+      border-radius: 8px;
+      padding: 7px 12px;
+      cursor: pointer
+    }
+
+    main {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 22px 26px 90px
+    }
+
+    section {
+      margin-bottom: 46px;
+      scroll-margin-top: 128px
+    }
+
+    .sec-head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 6px;
+      flex-wrap: wrap
+    }
+
+    .sec-head h2 {
+      font-family: var(--f-disp);
+      font-size: 21px;
+      font-weight: 700
+    }
+
+    .sec-head .pregunta {
+      font-size: 13px;
+      color: var(--gris);
+      font-style: italic
+    }
+
+    .story-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--f-disp);
+      font-weight: 700;
+      font-size: 11px;
+      color: #fff;
+      background: var(--azul-marino);
+      border-radius: 20px;
+      padding: 3px 12px;
+      margin-bottom: 10px;
+      letter-spacing: .5px
+    }
+
+    .story-step .n {
+      background: var(--rojo);
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px
+    }
+
+    .narrativa {
+      font-size: 13.5px;
+      color: var(--tinta);
+      background: #FBFCFE;
+      border-left: 3px solid var(--rojo);
+      border-radius: 0 8px 8px 0;
+      padding: 11px 16px;
+      margin-bottom: 16px;
+      line-height: 1.5
+    }
+
+    .narrativa b {
+      color: var(--azul-marino)
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 13px
+    }
+
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--linea);
+      border-radius: 12px;
+      padding: 14px 16px;
+      position: relative;
+      overflow: hidden
+    }
+
+    .kpi::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--azul-marino)
+    }
+
+    .kpi.k-ok::before {
+      background: var(--ok)
+    }
+
+    .kpi.k-al::before {
+      background: var(--alerta)
+    }
+
+    .kpi.k-cm::before {
+      background: var(--critico-medio)
+    }
+
+    .kpi.k-cr::before {
+      background: var(--critico)
+    }
+
+    .kpi .et {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--gris);
+      text-transform: uppercase;
+      letter-spacing: .5px
+    }
+
+    .kpi .valor {
+      font-family: var(--f-mono);
+      font-size: 24px;
+      font-weight: 600;
+      margin-top: 4px
+    }
+
+    .kpi .delta {
+      font-size: 11.5px;
+      margin-top: 3px;
+      color: var(--gris)
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px
+    }
+
+    .grid-geo {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 16px
+    }
+
+    @media(max-width:1024px) {
+
+      .grid-2,
+      .grid-geo {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--linea);
+      border-radius: 12px;
+      padding: 16px 18px
+    }
+
+    .card h3 {
+      font-family: var(--f-disp);
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 2px
+    }
+
+    .card .sub {
+      font-size: 12px;
+      color: var(--gris);
+      margin-bottom: 10px
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 5px;
+      margin-left: auto;
+      flex-wrap: wrap
+    }
+
+    .card canvas {
+      max-height: 300px
+    }
+
+    .chip {
+      font-family: var(--f-disp);
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--linea);
+      background: #fff;
+      color: var(--gris);
+      border-radius: 16px;
+      padding: 4px 11px;
+      cursor: pointer
+    }
+
+    .chip.on {
+      background: var(--azul-marino);
+      border-color: var(--azul-marino);
+      color: #fff
+    }
+
+    #mapa {
+      height: 440px;
+      border-radius: 10px;
+      border: 1px solid var(--linea);
+      z-index: 1
+    }
+
+    .leaflet-container {
+      font-family: var(--f-body)
+    }
+
+    .leyenda {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      font-size: 11.5px;
+      color: var(--gris)
+    }
+
+    .leyenda span {
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      display: inline-block
+    }
+
+    .bread {
+      font-family: var(--f-disp);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .bread button {
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: 600;
+      color: var(--azul-marino);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0
+    }
+
+    .bread .sep {
+      color: var(--gris)
+    }
+
+    .bread .actual {
+      color: var(--rojo);
+      text-decoration: none
+    }
+
+    table.datos {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px
+    }
+
+    table.datos th {
+      font-family: var(--f-disp);
+      font-weight: 600;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      color: var(--gris);
+      text-align: left;
+      padding: 8px 6px;
+      border-bottom: 2px solid var(--linea);
+      cursor: pointer;
+      white-space: nowrap
+    }
+
+    table.datos th:hover {
+      color: var(--azul-marino)
+    }
+
+    table.datos td {
+      padding: 7px 6px;
+      border-bottom: 1px solid var(--linea)
+    }
+
+    table.datos td.num {
+      font-family: var(--f-mono);
+      font-size: 12px;
+      text-align: right
+    }
+
+    table.datos tr:hover td {
+      background: #FAFBFD
+    }
+
+    table.datos tr.clickable {
+      cursor: pointer
+    }
+
+    table.datos tr.rojo td {
+      background: #FDECEC
+    }
+
+    .tdpill {
+      font-family: var(--f-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #fff;
+      border-radius: 10px;
+      padding: 2px 8px;
+      display: inline-block;
+      white-space: nowrap
+    }
+
+    .scrollx {
+      overflow-x: auto
+    }
+
+    .minibar {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--rojo);
+      display: inline-block;
+      vertical-align: middle
+    }
+
+    .minibar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .nota {
+      font-size: 12px;
+      color: var(--gris);
+      background: #FBFCFE;
+      border: 1px dashed var(--linea);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 10px
+    }
+
+    .pareto-insight {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 12px
+    }
+
+    .pi-box {
+      flex: 1;
+      min-width: 150px;
+      border: 1px solid var(--linea);
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: center
+    }
+
+    .pi-box .v {
+      font-family: var(--f-mono);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--rojo)
+    }
+
+    .pi-box .l {
+      font-size: 10.5px;
+      color: var(--gris);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-top: 2px
+    }
+
+    footer {
+      border-top: 1px solid var(--linea);
+      padding: 16px 26px;
+      font-size: 12px;
+      color: var(--gris);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: var(--card)
+    }
+
+    /* ===== CHATBOT ===== */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: var(--rojo);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(255, 153, 0, .4);
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      transition: transform .15s
+    }
+
+    .fab:hover {
+      transform: scale(1.08)
+    }
+
+    .chatpanel {
+      position: fixed;
+      top: 0;
+      right: -440px;
+      width: 420px;
+      max-width: 92vw;
+      height: 100vh;
+      background: var(--card);
+      box-shadow: -6px 0 28px rgba(10, 20, 40, .25);
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      transition: right .28s ease
+    }
+
+    .chatpanel.open {
+      right: 0
+    }
+
+    .chat-head {
+      background: var(--azul-marino);
+      color: #fff;
+      padding: 16px 18px;
+      border-bottom: 3px solid var(--rojo);
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .chat-head .ai-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--rojo);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px
+    }
+
+    .chat-head h3 {
+      font-family: var(--f-disp);
+      font-size: 16px;
+      font-weight: 700
+    }
+
+    .chat-head p {
+      font-size: 11px;
+      color: #B8C8D8
+    }
+
+    .chat-close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      opacity: .8
+    }
+
+    .chat-close:hover {
+      opacity: 1
+    }
+
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--fondo)
+    }
+
+    .msg {
+      max-width: 88%;
+      padding: 10px 13px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: var(--azul-marino);
+      color: #fff;
+      border-bottom-right-radius: 3px
+    }
+
+    .msg.bot {
+      align-self: flex-start;
+      background: var(--card);
+      border: 1px solid var(--linea);
+      border-bottom-left-radius: 3px
+    }
+
+    .msg.bot table {
+      border-collapse: collapse;
+      font-size: 11.5px;
+      margin: 6px 0;
+      width: 100%
+    }
+
+    .msg.bot th,
+    .msg.bot td {
+      border: 1px solid var(--linea);
+      padding: 4px 6px;
+      text-align: left
+    }
+
+    .msg.bot th {
+      background: #F4F6F9;
+      font-family: var(--f-disp)
+    }
+
+    .msg.bot strong {
+      color: var(--azul-marino)
+    }
+
+    .msg.typing {
+      align-self: flex-start;
+      color: var(--gris);
+      font-style: italic;
+      font-size: 12.5px
+    }
+
+    .chat-sugs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--linea);
+      background: var(--card)
+    }
+
+    .sug {
+      font-family: var(--f-disp);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--azul-marino);
+      background: #F4F6F9;
+      border: 1px solid var(--linea);
+      border-radius: 14px;
+      padding: 5px 10px;
+      cursor: pointer
+    }
+
+    .sug:hover {
+      background: var(--azul-marino);
+      color: #fff
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--linea);
+      background: var(--card)
+    }
+
+    .chat-input textarea {
+      flex: 1;
+      resize: none;
+      font-family: var(--f-body);
+      font-size: 13px;
+      border: 1px solid var(--linea);
+      border-radius: 10px;
+      padding: 9px 11px;
+      max-height: 90px;
+      color: var(--tinta)
+    }
+
+    .chat-input button {
+      background: var(--rojo);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      width: 42px;
+      cursor: pointer;
+      font-size: 18px
+    }
+
+    .chat-input button:disabled {
+      opacity: .4;
+      cursor: not-allowed
+    }
+
+    /* ===== TOOLTIP SITIO ===== */
+    .site-row {
+      position: relative
+    }
+
+    .site-tip {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: -8px;
+      transform: translate(-50%, -100%);
+      background: var(--azul-marino);
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 11.5px;
+      line-height: 1.5;
+      white-space: normal;
+      max-width: 340px;
+      z-index: 100;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+      pointer-events: none
+    }
+
+    .site-tip::after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid var(--azul-marino)
+    }
+
+    .site-tip b {
+      color: #F2C12E
+    }
+
+    .site-row:hover .site-tip {
+      display: block
+    }
+
+    /* Fix para que los primeros tooltip no se corten por arriba */
+    .site-row:nth-child(-n+4) .site-tip {
+      top: 100%;
+      transform: translate(-50%, 8px);
+    }
+
+    .site-row:nth-child(-n+4) .site-tip::after {
+      bottom: auto;
+      top: -6px;
+      border-top: none;
+      border-bottom: 6px solid var(--azul-marino);
+    }
+
+    /* ===== BOTÓN HISTORIAL ===== */
+    .btn-hist {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1px solid var(--linea);
+      background: #F4F6F9;
+      color: var(--azul-marino);
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+      padding: 0;
+      line-height: 1
+    }
+
+    .btn-hist:hover {
+      background: var(--azul-marino);
+      color: #fff;
+      border-color: var(--azul-marino)
+    }
+
+    .btn-hist[data-has-notes="true"] {
+      background: var(--azul-marino);
+      color: #fff;
+      border-color: var(--azul-marino)
+    }
+
+    /* ===== MODAL HISTORIAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center
+    }
+
+    .modal-overlay.open {
+      display: flex
+    }
+
+    .modal-box {
+      background: var(--card);
+      border-radius: 14px;
+      width: 520px;
+      max-width: 95vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .3);
+      overflow: hidden
+    }
+
+    .modal-header {
+      background: var(--azul-marino);
+      color: #fff;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 3px solid var(--rojo)
+    }
+
+    .modal-header h3 {
+      font-family: var(--f-disp);
+      font-size: 15px;
+      font-weight: 700;
+      flex: 1
+    }
+
+    .modal-header .modal-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      opacity: .8;
+      padding: 0 4px
+    }
+
+    .modal-header .modal-close:hover {
+      opacity: 1
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .modal-body .hist-list {
+      list-style: none;
+      margin-bottom: 14px
+    }
+
+    .modal-body .hist-list li {
+      padding: 8px 10px;
+      border-left: 3px solid var(--rojo);
+      background: #FBFCFE;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 8px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      position: relative
+    }
+
+    .modal-body .hist-list li .hist-date {
+      font-family: var(--f-mono);
+      font-size: 10px;
+      color: var(--gris);
+      display: block;
+      margin-bottom: 2px
+    }
+
+    .modal-body .hist-list li .hist-del {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      background: none;
+      border: none;
+      color: var(--gris);
+      cursor: pointer;
+      font-size: 14px
+    }
+
+    .modal-body .hist-list li .hist-del:hover {
+      color: var(--rojo)
+    }
+
+    .hist-empty {
+      font-size: 12px;
+      color: var(--gris);
+      font-style: italic;
+      padding: 8px 0
+    }
+
+    .hist-form {
+      display: flex;
+      gap: 8px
+    }
+
+    .hist-form select {
+      font-family: var(--f-body);
+      font-size: 12px;
+      border: 1px solid var(--linea);
+      border-radius: 8px;
+      padding: 7px 8px;
+      color: var(--tinta);
+      flex: 1
+    }
+
+    .hist-form textarea {
+      flex: 2;
+      font-family: var(--f-body);
+      font-size: 12px;
+      border: 1px solid var(--linea);
+      border-radius: 8px;
+      padding: 7px 10px;
+      resize: none;
+      color: var(--tinta);
+      min-height: 50px
+    }
+
+    .hist-form button {
+      background: var(--rojo);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: var(--f-disp);
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap
+    }
+
+    .hist-form button:hover {
+      background: #A80822
+    }
+
+    .hist-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 10px
+    }
+
+    .hist-tag {
+      font-size: 11px;
+      font-family: var(--f-disp);
+      font-weight: 600;
+      border: 1px solid var(--linea);
+      border-radius: 12px;
+      padding: 3px 9px;
+      cursor: pointer;
+      background: #fff;
+      color: var(--gris)
+    }
+
+    .hist-tag:hover,
+    .hist-tag.on {
+      background: var(--azul-marino);
+      color: #fff;
+      border-color: var(--azul-marino)
+    }
+
+    /* ===== MODAL NOTAS DE ANÁLISIS ===== */
+    .modal-analisis .modal-box {
+      width: 680px;
+      max-height: 90vh;
+    }
+    .analisis-meta {
+      display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .analisis-meta .meta-chip {
+      font-size: 11px; font-family: var(--f-disp); font-weight: 600;
+      background: #EBF3FA; color: #00608A; border-radius: 6px;
+      padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .analisis-nota-item {
+      border-left: 3px solid #00A3E0; background: #F8FBFF;
+      border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 10px;
+      position: relative;
+    }
+    .analisis-nota-item .an-date {
+      font-family: var(--f-mono); font-size: 10px; color: var(--gris);
+      display: block; margin-bottom: 4px;
+    }
+    .analisis-nota-item .an-text {
+      font-size: 12.5px; line-height: 1.5; color: var(--tinta);
+    }
+    .analisis-nota-item .an-img {
+      margin-top: 8px; max-width: 100%; border-radius: 6px;
+      border: 1px solid var(--linea); cursor: pointer;
+    }
+    .analisis-nota-item .an-img:hover { opacity: 0.9; }
+    .analisis-nota-item .an-del {
+      position: absolute; top: 8px; right: 10px; background: none;
+      border: none; color: var(--gris); cursor: pointer; font-size: 16px;
+    }
+    .analisis-nota-item .an-del:hover { color: #C2584D; }
+    .analisis-form { display: flex; flex-direction: column; gap: 8px; }
+    .analisis-form textarea {
+      font-family: var(--f-body); font-size: 12.5px; border: 1px solid var(--linea);
+      border-radius: 8px; padding: 10px 12px; resize: vertical; color: var(--tinta);
+      min-height: 60px;
+    }
+    .analisis-form .analisis-actions {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .analisis-form .btn-img-upload {
+      font-family: var(--f-disp); font-size: 12px; font-weight: 600;
+      background: #EBF3FA; color: #00608A; border: 1px dashed #00A3E0;
+      border-radius: 8px; padding: 7px 14px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 5px;
+      transition: all .15s;
+    }
+    .analisis-form .btn-img-upload:hover { background: #D6ECFA; }
+    .analisis-form .btn-img-upload.has-img {
+      background: #00A3E0; color: #fff; border-style: solid;
+    }
+    .analisis-form .btn-guardar {
+      background: #00608A; color: #fff; border: none; border-radius: 8px;
+      padding: 8px 18px; font-family: var(--f-disp); font-weight: 600;
+      font-size: 12px; cursor: pointer; margin-left: auto;
+    }
+    .analisis-form .btn-guardar:hover { background: #004D6E; }
+    .an-img-preview {
+      max-height: 60px; border-radius: 4px; border: 1px solid var(--linea);
+    }
+    /* Lightbox for image zoom */
+    .lightbox-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8);
+      z-index: 200; align-items: center; justify-content: center; cursor: zoom-out;
+    }
+    .lightbox-overlay.open { display: flex; }
+    .lightbox-overlay img {
+      max-width: 90vw; max-height: 90vh; border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.5);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="header-top">
+      <div class="logo-mark">T</div>
+      <div class="titulo">
+        <h1>Disponibilidad Operativa de Red · TIGO Colombia</h1>
+        <p>Huawei MSP — Análisis causa raíz 4G · Periodo 2026-01 → 2026-07</p>
+      </div>
+      <span class="badge-mock">v4.0</span>
+    </div>
+    <nav id="navmenu">
+      <a href="#resumen" data-go="resumen" class="activo">1 · Resumen</a>
+      <a href="#tendencias" data-go="tendencias">2 · Tendencias</a>
+      <a href="#pareto" data-go="pareto">3 · Distribución</a>
+      <a href="#heatmap-suspension" data-go="heatmap-suspension">4 · Mapa causa suspensión</a>
+      <a href="#suspension" data-go="suspension">5 · Causa suspensión</a>
+      <a href="#heatmap" data-go="heatmap">6 · Mapa causa raíz</a>
+      <a href="#causaraiz" data-go="causaraiz">7 · Causa raíz</a>
+      <a href="#geografico" data-go="geografico">8 · Geografía</a>
+      <a href="#worst" data-go="worst">9 · Worst offenders</a>
+      <a href="#intermitentes" data-go="intermitentes">10 · Intermitentes</a>
+      <a href="#masivas" data-go="masivas">11 · Masivas</a>
+      <a href="#plan500" data-go="plan500">12 · Plan 500</a>
+    </nav>
+  </header>
+
+  <div class="filtros" id="filtros">
+    <span class="lbl">Modo</span>
+    <select id="f-modo">
+      <option value="UNIRED">UNIRED</option>
+      <option value="HUAWEI">HUAWEI</option>
+    </select>
+    <span class="lbl">Departamento</span>
+    <select id="f-depto">
+      <option value="">Todos</option>
+    </select>
+    <span class="lbl">Municipio</span>
+    <select id="f-muni">
+      <option value="">Todos</option>
+    </select>
+    <span class="lbl">Causa técnica</span>
+    <select id="f-causa">
+      <option value="">Todas</option>
+    </select>
+    <span class="lbl">Mes</span>
+    <select id="f-mes">
+      <option value="">Todos</option>
+    </select>
+    <span class="lbl">Rango duración</span>
+    <select id="f-rango">
+      <option value="">Todos</option>
+    </select>
+    <button class="btn-rojo" id="btn-aplicar">Aplicar</button>
+    <button class="btn-fant" id="btn-reset">Restablecer</button>
+    <span class="lbl" style="margin-left:auto" id="filtro-count"></span>
+  </div>
+
+  <main>
+
+    <!-- 1 · RESUMEN -->
+    <section id="resumen">
+      <div class="story-step"><span class="n">1</span> VISIÓN EJECUTIVA</div>
+      <div class="sec-head">
+        <h2>Resumen ejecutivo</h2><span class="pregunta">¿Cómo está la red y qué la está frenando?</span>
+      </div>
+      <div class="narrativa" id="narr-resumen"></div>
+      <div class="kpis" id="kpi-strip"></div>
+    </section>
+
+    <!-- 2 · TENDENCIAS (drill temporal) -->
+    <section id="tendencias">
+      <div class="story-step"><span class="n">2</span> ¿CÓMO EVOLUCIONA?</div>
+      <div class="sec-head">
+        <h2>Tendencia temporal</h2><span class="pregunta">Año → Mes → Semana → Día → Hora · ¿mejora o empeora?</span>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3 id="tend-title">Minutos no disponibles en el tiempo</h3>
+            <p class="sub" id="tend-sub">Clic en una barra para bajar de nivel temporal</p>
+          </div>
+          <div class="toolbar">
+            <div class="bread" id="tend-bread" style="margin:0"></div>
+          </div>
+        </div>
+        <canvas id="ch-tend" style="max-height:320px"></canvas>
+        <p class="nota" id="nota-tend"></p>
+        <div class="scrollx" id="wrap-tend-tbl" style="margin-top:14px; display:none;">
+          <table class="datos" id="tbl-tend"></table>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head">
+          <div>
+            <h3>Evolución por causa raíz macro</h3>
+            <p class="sub" id="tend-cr-sub">Minutos apilados por causa · desglose temporal</p>
+          </div>
+        </div>
+        <canvas id="ch-tend-cr"></canvas>
+      </div>
+    </section>
+
+    <!-- 3 · DISTRIBUCIÓN -->
+    <section id="pareto">
+      <div class="story-step"><span class="n">3</span> DISTRIBUCIÓN DE DURACIÓN</div>
+      <div class="sec-head">
+        <h2>Distribución por rango de duración</h2><span class="pregunta">% de minutos y % de eventos por categoría de
+          duración</span>
+      </div>
+      <div class="narrativa" id="narr-pareto"></div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3>% Minutos indisponibles y % Eventos por rango de duración</h3>
+            <p class="sub">Eje principal: % minutos · Eje secundario (línea): % eventos</p>
+          </div>
+        </div>
+        <canvas id="ch-distrib" style="max-height:350px"></canvas>
+      </div>
+    </section>
+
+    <!-- 4 · MAPA DE CALOR POR CAUSA SUSPENSIÓN (> 12H) -->
+    <section id="heatmap-suspension">
+      <div class="story-step"><span class="n">4</span> CONCENTRACIÓN POR CAUSA SUSPENSIÓN (> 12H)</div>
+      <div class="sec-head">
+        <h2>Mapa de calor por causa suspensión (> 12h)</h2><span class="pregunta">% de minutos (fallas &gt; 12h) por causa suspensión × regional</span>
+      </div>
+      <div class="narrativa" id="narr-heatmap-suspension">Tabla de concentración de causas de suspensión (solo para fallas mayores a 12 horas) por regional. Las celdas con mayor
+        porcentaje se resaltan en naranja. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
+        macro.</div>
+      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; color:var(--azul-marino); font-weight:600;">
+          <input type="checkbox" id="chk-hide-sindato-hs" onchange="renderHeatmapSuspension()" checked>
+          Ocultar "Sin dato"
+        </label>
+      </div>
+      <div class="card">
+        <div class="scrollx">
+          <table class="datos" id="tbl-heatmap-suspension"></table>
+        </div>
+        <div class="scrollx" id="wrap-hs-tbl" style="margin-top:14px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
+          <div style="padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="hs-tbl-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle de fallas</h3>
+            <button class="btn-fant" onclick="document.getElementById('wrap-hs-tbl').style.display='none'">✕ Cerrar</button>
+          </div>
+          <table class="datos" id="tbl-hs"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · CAUSA SUSPENSIÓN -->
+    <section id="suspension">
+      <div class="story-step"><span class="n">5</span> CAUSA SUSPENSIÓN · EXTERNA</div>
+      <div class="sec-head">
+        <h2>Causa de suspensión</h2><span class="pregunta">Factores logísticos o externos · macro → específica</span>
+      </div>
+      <div class="narrativa">Las <b>causas de suspensión</b> son los bloqueos que impiden cerrar el plan: seguridad,
+        logística, clima, acceso. No son fallas de red sino del <b>proceso de restauración</b>. Un sitio puede tener
+        causa raíz resuelta pero seguir caído por suspensión.</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Causa suspensión macro</h3>
+              <p class="sub">Clic para drill-down a causa específica</p>
+            </div>
+          </div><canvas id="ch-cs-macro"></canvas>
+        </div>
+        <div class="card">
+          <div class="bread" id="cs-bread"></div>
+          <canvas id="ch-cs-esp"></canvas>
+          <div class="scrollx" style="margin-top:12px">
+            <table class="datos" id="tbl-cs"></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · MAPA DE CALOR POR CAUSA RAÍZ -->
+    <section id="heatmap">
+      <div class="story-step"><span class="n">6</span> CONCENTRACIÓN POR CAUSA</div>
+      <div class="sec-head">
+        <h2>Mapa de calor por causa raíz</h2><span class="pregunta">% de minutos por causa raíz × regional</span>
+      </div>
+      <div class="narrativa" id="narr-heatmap">Tabla de concentración de causas raíz por regional. Las celdas con mayor
+        porcentaje se resaltan en rojo. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
+        macro.</div>
+      <div class="card">
+        <div class="scrollx">
+          <table class="datos" id="tbl-heatmap"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 · CAUSA RAÍZ -->
+    <section id="causaraiz">
+      <div class="story-step"><span class="n">7</span> CAUSA RAÍZ · RED</div>
+      <div class="sec-head">
+        <h2>Causa raíz</h2><span class="pregunta">Asociada a componentes de red · macro → específica</span>
+      </div>
+      <div class="narrativa">Las <b>causas raíz</b> apuntan a la falla técnica del elemento de red (energía,
+        transmisión, hardware, radio). Selecciona una causa macro para abrir el detalle de subcausas. <span
+          id="cr-comp-info"></span></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Causa raíz macro</h3>
+              <p class="sub">Clic para drill-down a causa específica</p>
+            </div>
+            <div class="toolbar"><select id="cr-comp">
+                <option value="">Todos los componentes</option>
+              </select></div>
+          </div>
+          <canvas id="ch-cr-macro"></canvas>
+        </div>
+        <div class="card">
+          <div class="bread" id="cr-bread"></div>
+          <canvas id="ch-cr-esp"></canvas>
+          <div class="scrollx" style="margin-top:12px">
+            <table class="datos" id="tbl-cr"></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 · GEOGRAFÍA -->
+    <section id="geografico">
+      <div class="story-step"><span class="n">8</span> ¿DÓNDE?</div>
+      <div class="sec-head">
+        <h2>Análisis geográfico</h2><span class="pregunta">Departamento → Ciudad → Sitio</span>
+      </div>
+      
+      <div id="geo-insights" style="display:flex; gap:20px; margin: 15px 0 25px 0; align-items:center; font-weight:700; color:var(--azul-marino);">
+        <span style="border-left:5px solid var(--rojo); padding:10px 20px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+          <div style="font-size:28px; color:var(--rojo); line-height:1;" id="geo-insight-sitios">0</div>
+          <div style="color:var(--gris); text-transform:uppercase; font-size:12px; letter-spacing:0.5px; margin-top:4px;">Sitios afectados</div>
+        </span>
+        <span style="border-left:5px solid var(--rojo); padding:10px 20px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+          <div style="font-size:28px; color:var(--rojo); line-height:1;" id="geo-insight-minutos">0</div>
+          <div style="color:var(--gris); text-transform:uppercase; font-size:12px; letter-spacing:0.5px; margin-top:4px;">Minutos</div>
+        </span>
+        <span style="border-left:5px solid var(--rojo); padding:10px 20px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+          <div style="font-size:28px; color:var(--rojo); line-height:1;" id="geo-insight-promedio">0</div>
+          <div style="color:var(--gris); text-transform:uppercase; font-size:12px; letter-spacing:0.5px; margin-top:4px;">Minutos / Sitio</div>
+        </span>
+      </div>
+
+      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Regional</span>
+        <select id="geo-reg">
+          <option value="">Todas</option>
+        </select>
+        <span class="lbl">Departamento</span>
+        <select id="geo-depto">
+          <option value="">Todos</option>
+        </select>
+        <span class="lbl">Ciudad</span>
+        <select id="geo-muni">
+          <option value="">Todos</option>
+        </select>
+        <span class="lbl">Causa técnica</span>
+        <select id="geo-cr">
+          <option value="">Todas</option>
+        </select>
+        <span class="lbl">Subcausa técnica</span>
+        <select id="geo-cr-esp">
+          <option value="">Todas</option>
+        </select>
+        <span class="lbl">Rango duración</span>
+        <select id="geo-rango">
+          <option value="">Todos</option>
+        </select>
+        <span class="lbl">Causa suspens.</span>
+        <select id="geo-cs">
+          <option value="">Todas</option>
+        </select>
+        <span class="lbl">Subcausa suspens.</span>
+        <select id="geo-cs-esp">
+          <option value="">Todas</option>
+        </select>
+        <button type="button" class="btn-rojo" id="geo-btn-aplicar" style="padding: 4px 12px; margin-left:10px;"
+          onclick="aplicarGeografia()">Actualizar</button>
+      </div>
+      <div class="grid-geo">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Mapa de calor de sitios</h3>
+              <p class="sub">Tamaño y color = volumen de minutos</p>
+            </div>
+          </div>
+          <div id="mapa"></div>
+          <div class="leyenda" id="geo-leyenda">
+            <span><span class="dot" style="background:var(--critico)"></span> Impacto Alto</span>
+            <span><span class="dot" style="background:var(--critico-medio)"></span> Impacto Medio</span>
+            <span><span class="dot" style="background:var(--ok)"></span> Impacto Bajo</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="bread" id="geo-bread"></div>
+          <div class="scrollx" style="max-height: 600px; overflow-y: auto;">
+            <table class="datos" id="tbl-geo"></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 · WORST OFFENDERS -->
+    <section id="worst">
+      <div class="story-step"><span class="n">9</span> ¿DÓNDE INTERVENIR?</div>
+      <div class="sec-head">
+        <h2>Worst offenders · Top sitios</h2><span class="pregunta">¿Qué sitios maximizan la eficiencia de la
+          intervención?</span>
+      </div>
+      <div class="narrativa" id="narr-worst"></div>
+      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Regional</span>
+        <select id="wo-reg">
+          <option value="">Todas</option>
+        </select>
+        <span class="lbl">Causa raíz</span>
+        <select id="wo-cr">
+          <option value="">Todas</option>
+        </select>
+        <span class="lbl">Causa suspens.</span>
+        <select id="wo-cs">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3>Top 20 sitios · Pareto de minutos perdidos</h3>
+            <p class="sub">Intervenir estos sitios resuelve la mayor parte del impacto</p>
+          </div>
+        </div>
+        <canvas id="ch-worst" style="max-height:230px"></canvas>
+        <details style="margin-top:14px; background: #f9fafb; border: 1px solid var(--linea); border-radius: 6px; padding: 10px;">
+          <summary style="cursor:pointer; color:var(--azul-marino); font-weight:600; font-size: 13px; outline: none;">Desplegar tabla de fallas (Top 20 sitios)</summary>
+          <div class="scrollx" style="margin-top:10px">
+            <table class="datos" id="tbl-worst"></table>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- 10 · INTERMITENTES -->
+    <section id="intermitentes">
+      <div class="story-step"><span class="n">10</span> EL DEFECTO CRÓNICO</div>
+      <div class="sec-head">
+        <h2>Sitios intermitentes</h2><span class="pregunta">¿Qué sitios caen una y otra vez? · ranking por
+          frecuencia</span>
+      </div>
+      <div class="narrativa" id="narr-interm"></div>
+      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Periodo</span>
+        <select id="int-periodo">
+          <option value="">Todo el periodo</option>
+          <option value="mes">Último mes</option>
+          <option value="semana">Última semana</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3>Top sitios por nº de eventos</h3>
+            <p class="sub">Barras = eventos · Línea = minutos acumulados</p>
+          </div>
+        </div>
+        <canvas id="ch-interm" style="max-height:260px"></canvas>
+        <details style="margin-top:14px; background: #f9fafb; border: 1px solid var(--linea); border-radius: 6px; padding: 10px;">
+          <summary style="cursor:pointer; color:var(--azul-marino); font-weight:600; font-size: 13px; outline: none;">Desplegar tabla de fallas (Top sitios)</summary>
+          <div class="scrollx" style="margin-top:10px">
+            <table class="datos" id="tbl-interm"></table>
+          </div>
+        </details>
+      </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 · FALLAS MASIVAS -->
+    <section id="masivas">
+      <div class="story-step"><span class="n">11</span> FALLAS MASIVAS</div>
+      <div class="sec-head">
+        <h2>Fallas Masivas</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
+      </div>
+      <div class="narrativa" id="narr-masivas">Agrupación automática de clústeres de fallas ocurridas en el mismo día y hora (aprox), con la misma causa raíz y cercanía geográfica (prefijo de sitio). Ideal para solicitar exclusiones.</div>
+      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span>
+        <select id="mas-mes">
+          <option value="">Todos</option>
+        </select>
+        <span class="lbl">Regional</span>
+        <select id="mas-reg">
+          <option value="">Todas</option>
+        </select>
+        <span class="lbl">Causa raíz</span>
+        <select id="mas-cr">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="kpis" id="kpi-masivas" style="margin-bottom: 16px;"></div>
+      <div class="card">
+        <div class="card-head">
+          <div style="display:flex; justify-content: space-between; align-items:center; width: 100%;">
+            <div>
+              <h3>Listado de Fallas Masivas</h3>
+              <p class="sub">Haz clic en una falla masiva para ver los tickets agrupados</p>
+            </div>
+            <div style="display:flex; gap: 8px; align-items: center; background: #f9fafb; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--linea);">
+              <button class="btn-fant" style="padding: 2px 8px; min-width:auto;" onclick="masPage(-1)">◀</button>
+              <span id="mas-page-info" style="font-size: 11px; font-weight: 600; color: var(--azul-marino);">1 / 1</span>
+              <button class="btn-fant" style="padding: 2px 8px; min-width:auto;" onclick="masPage(1)">▶</button>
+            </div>
+          </div>
+        </div>
+        <div class="scrollx">
+          <table class="datos" id="tbl-masivas"></table>
+        </div>
+        
+        <div class="scrollx" id="wrap-masivas-det" style="margin-top:20px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
+          <div style="padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="masivas-det-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle de Tickets (Exclusión)</h3>
+            <button class="btn-fant" onclick="document.getElementById('wrap-masivas-det').style.display='none'">✕ Cerrar</button>
+          </div>
+          <table class="datos" id="tbl-masivas-det"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12 · PLAN 500 -->
+    <section id="plan500">
+      <div class="story-step"><span class="n">12</span> PLAN 500</div>
+      <div class="sec-head">
+        <h2>Plan 500</h2><span class="pregunta">Minutograma y evolución de sitios finalizados (Causa: Energía)</span>
+      </div>
+      <div class="narrativa" id="narr-plan500">Análisis mensual de minutos de indisponibilidad por <b>energía</b> en sitios con plan de acción <b>finalizado</b>.</div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3>Evolución Plan 500 (Energía)</h3>
+            <p class="sub">Barras: Minutos de energía · Línea: Sitios afectados (Planes finalizados)</p>
+          </div>
+        </div>
+        <div style="height: 350px;">
+          <canvas id="ch-plan500"></canvas>
+        </div>
+        <div class="scrollx" id="wrap-plan500-tbl" style="margin-top:14px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
+          <div style="padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="plan500-tbl-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle de fallas</h3>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn-fant" onclick="if(p5CurrentPage > 1) { p5CurrentPage--; updatePlan500Table(); }" style="padding: 4px 8px; font-size: 11px;">◀</button>
+              <span id="p5-page-info" style="font-size: 11px; font-family: var(--f-disp); font-weight: 600;">1 / 1</span>
+              <button class="btn-fant" onclick="if(p5CurrentPage < Math.ceil(p5CurrentEvents.length / 5)) { p5CurrentPage++; updatePlan500Table(); }" style="padding: 4px 8px; font-size: 11px;">▶</button>
+              <button class="btn-fant" onclick="document.getElementById('wrap-plan500-tbl').style.display='none'" style="margin-left: 10px;">✕ Cerrar</button>
+            </div>
+          </div>
+          <table class="datos" id="tbl-plan500"></table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="text-align: center; padding: 30px; font-size: 11.5px; color: var(--gris); border-top: 1px solid var(--linea); margin-top: 20px; font-weight: 500;">
+    <span>Huawei Managed Services · TIGO Colombia — Dashboard de disponibilidad v4.0</span>
+  </footer>
+
+    <!-- CHATBOT -->
+    <button class="fab" id="fab" title="Asistente IA">🤖</button>
+    <div class="chatpanel" id="chatpanel">
+      <div class="chat-head">
+        <div class="ai-mark">🤖</div>
+        <div>
+          <h3>Asistente de Red</h3>
+          <p>Consulta el dataset en lenguaje natural</p>
+        </div>
+        <button class="chat-close" id="chat-close">×</button>
+      </div>
+      <div class="chat-body" id="chat-body"></div>
+      <div class="chat-sugs" id="chat-sugs"></div>
+      <div class="chat-input">
+        <textarea id="chat-text" rows="1" placeholder="Pregunta sobre sitios, causas, departamentos…"></textarea>
+        <button id="chat-send">➤</button>
+      </div>
+    </div>
+
+
+    <!-- MODAL NOTAS DE ANÁLISIS -->
+    <div class="modal-overlay modal-analisis" id="modal-analisis">
+      <div class="modal-box">
+        <div class="modal-header">
+          <span style="font-size:18px">📊</span>
+          <h3 id="analisis-title">Nota de Análisis</h3>
+          <button class="modal-close" onclick="document.getElementById('modal-analisis').classList.remove('open')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="analisis-meta" id="analisis-meta"></div>
+          <div id="analisis-list"></div>
+          <div class="analisis-form">
+            <textarea id="analisis-text" placeholder="Escribe tu análisis o explicación de este comportamiento…" rows="3"></textarea>
+            <div class="analisis-actions">
+              <label class="btn-img-upload" id="analisis-img-label">
+                📷 Adjuntar imagen
+                <input type="file" id="analisis-img-input" accept="image/*" style="display:none">
+              </label>
+              <img id="analisis-img-preview" class="an-img-preview" style="display:none" alt="Preview">
+              <button class="btn-guardar" id="analisis-add">Guardar nota</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIGHTBOX PARA ZOOM DE IMÁGENES -->
+    <div class="lightbox-overlay" id="lightbox" onclick="this.classList.remove('open')">
+      <img id="lightbox-img" src="" alt="Zoom">
+    </div>
+
+    <!-- MODAL HISTORIAL -->
+    <div class="modal-overlay" id="modal-hist">
+      <div class="modal-box">
+        <div class="modal-header">
+          <span style="font-size:18px">📋</span>
+          <h3 id="hist-title">Historial del sitio</h3>
+          <button class="modal-close" id="hist-close"
+            onclick="document.getElementById('modal-hist').classList.remove('open')">×</button>
+        </div>
+        <div class="modal-body">
+          <ul class="hist-list" id="hist-list"></ul>
+          <div class="hist-form">
+            <textarea id="hist-text" placeholder="Agregar nota operativa…" rows="2"></textarea>
+            <button id="hist-add">Agregar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ============================================================
+         DATASET REAL (desde datos.js)
+      ============================================================ */
+      const S = _S;
+      const DATA = _E.map(e => ({
+        sitio_id: S[e[0]],
+        nombre: S[e[1]],
+        departamento: S[e[2]],
+        ciudad: S[e[3]],
+        region: S[e[4]],
+        tecnologia: S[e[5]],
+        componente: S[e[5]] || 'RF',
+        minutos_caidos: e[6],
+        causa_raiz_macro: S[e[7]],
+        causa_raiz_especifica: S[e[8]],
+        causa_suspension_macro: S[e[17]] || 'Sin dato',
+        causa_suspension_especifica: S[e[18]] || 'Sin dato',
+        estado: S[e[9]] || "En_gestión",
+        ticket: S[e[10]],
+        solucion: S[e[11]],
+        detalle_falla: S[e[19]] || '',
+        etiqueta_padre: S[e[20]] || '',
+        ts: new Date(e[12]).getTime(),
+        ts_fin: new Date(new Date(e[12]).getTime() + e[6] * 60 * 1000).getTime(),
+        lat: e[13],
+        lng: e[14],
+        rango: S[e[15]],
+        mes_ano: e[16],
+        masiva_id: S[e[21]]
+      }));
+      const fmtDT = ts => ts ? new Date(ts).toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+      const fmtISO = ts => ts ? new Date(ts).toISOString() : '';
+
+      const DEPTOS = Object.keys(_ID).reduce((a, c) => { a[c] = {}; return a; }, {});
+      const TECHS = [...new Set(DATA.map(d => d.tecnologia))];
+      const COMPONENTES = [...new Set(DATA.map(d => d.componente))];
+
+      const CAUSA_RAIZ = {};
+      for (const [m, esp] of Object.entries(_CR)) {
+        CAUSA_RAIZ[m] = { comps: COMPONENTES, esp: esp };
+      }
+      const CAUSA_SUSP = typeof _CS !== 'undefined' ? _CS : CAUSA_RAIZ;
+
+      const PERIODO_INI = DATA.length ? DATA.reduce((min, p) => p.ts < min ? p.ts : min, DATA[0].ts) : 0;
+      const PERIODO_FIN = DATA.length ? DATA.reduce((max, p) => p.ts > max ? p.ts : max, DATA[0].ts) : 0;
+
+      /* índice por sitio: agrega eventos -> métricas de sitio */
+      function metricasSitio(eventos) {
+        const m = {};
+        eventos.forEach(ev => {
+          const k = ev.sitio_id;
+          if (!m[k]) m[k] = {
+            sitio_id: k, nombre: ev.nombre, departamento: ev.departamento, ciudad: ev.ciudad,
+            tecnologia: ev.tecnologia, componente: ev.componente, perfil: ev.perfil,
+            min: 0, nEv: 0, estados: [], crE: {}, csE: {}, maxEv: null
+          };
+          const s = m[k]; s.min += ev.minutos_caidos; s.nEv++; s.estados.push(ev.estado);
+          s.crE[ev.causa_raiz_especifica] = (s.crE[ev.causa_raiz_especifica] || 0) + 1;
+          s.csE[ev.causa_suspension_especifica] = (s.csE[ev.causa_suspension_especifica] || 0) + 1;
+          if (!s.maxEv || ev.minutos_caidos > s.maxEv.minutos_caidos) s.maxEv = ev;
+        });
+        return Object.values(m).map(s => {
+          s.estado = s.estados.includes("Activo") ? "Activo" : s.estados.includes("En_gestión") ? "En_gestión" : "Restaurado";
+          s.crTop = Object.entries(s.crE).sort((a, b) => b[1] - a[1])[0][0];
+          s.csTop = Object.entries(s.csE).sort((a, b) => b[1] - a[1])[0][0];
+          s.mttr = +(s.min / s.nEv).toFixed(0); // minutos promedio por evento
+          return s;
+        });
+      }
+
+      /* ============================================================
+         ESTADO / FILTROS
+      ============================================================ */
+      let filtro = { depto: "", muni: "", causa: "", rango: "", mes: "", modo: "UNIRED" };
+      function aplicaFiltro(d) {
+        return DATA.filter(s => {
+          let cumpleModo = true;
+          if (d.modo === "UNIRED") {
+             cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
+          } else if (d.modo === "HUAWEI") {
+             cumpleModo = s.etiqueta_padre === 'NAR';
+          }
+          return cumpleModo &&
+            (!d.depto || s.departamento === d.depto) &&
+            (!d.muni || s.ciudad === d.muni) &&
+            (!d.causa || s.causa_raiz_macro === d.causa) &&
+            (!d.rango || s.rango === d.rango) &&
+            (!d.mes || s.mes_ano === +d.mes);
+        });
+      }
+      let VIEW = DATA.slice();
+      let VIEW_TEND = DATA.slice();
+      const fmt = n => n.toLocaleString("es-CO");
+      // Palette based on user's exact color gamut image, interleaved for maximum contrast
+      const PAL = [
+        "#006B95", // Dark Blue
+        "#F39200", // Bright Orange
+        "#00979C", // Dark Teal
+        "#9E0000", // Dark Red
+        "#629700", // Olive Green
+        "#009DD9", // Bright Cyan
+        "#5C6670", // Dark Slate Gray
+        "#9B7322", // Brown/Bronze
+        "#FFCC66", // Light Orange/Yellow
+        "#94C8FF", // Soft Light Blue
+        "#CEF792", // Pale Lime Green
+        "#DACBFA", // Pale Lavender
+        "#FCD199", // Peach
+        "#A2CFCA", // Pale Teal
+        "#C4C4C4", // Light Gray
+        "#AED4CD"  // Pale Mint
+      ];
+      let charts = {};
+      function destroy(k) { if (charts[k]) { charts[k].destroy(); delete charts[k] } }
+
+      /* ============================================================
+         1 · RESUMEN
+      ============================================================ */
+      function percentil(arr, p) { // arr ya ordenado asc
+        if (!arr.length) return 0;
+        const idx = (p / 100) * (arr.length - 1); const lo = Math.floor(idx), hi = Math.ceil(idx);
+        return Math.round(arr[lo] + (arr[hi] - arr[lo]) * (idx - lo));
+      }
+      function renderResumen() {
+        const tot = VIEW.reduce((a, s) => a + s.minutos_caidos, 0);
+        const nEv = VIEW.length;
+        const sitiosAfect = new Set(VIEW.map(s => s.sitio_id)).size;
+        const activos = VIEW.filter(s => s.estado === "Activo").length;
+        const dur = VIEW.map(s => s.minutos_caidos).sort((a, b) => a - b);
+        const p50 = percentil(dur, 50), p90 = percentil(dur, 90), p99 = percentil(dur, 99);
+        const periodoMin = 213 * 24 * 60;
+        const disp = (100 * (1 - tot / (sitiosAfect * periodoMin))).toFixed(3);
+        const k = document.getElementById("kpi-strip");
+        const cls = disp >= 99 ? "k-ok" : disp >= 98 ? "k-al" : disp >= 97 ? "k-cm" : "k-cr";
+        k.innerHTML = `
+   <div class="kpi ${cls}"><div class="et">Disponibilidad red</div><div class="valor">${disp}%</div><div class="delta">Objetivo 99.000%</div></div>
+   <div class="kpi k-cr"><div class="et">Minutos no disponibles</div><div class="valor">${fmt(tot)}</div><div class="delta">${nEv} eventos · ${sitiosAfect} sitios</div></div>
+   <div class="kpi k-cr"><div class="et">Fallas activas</div><div class="valor">${activos}</div><div class="delta">eventos sin restaurar</div></div>
+   <div class="kpi k-cm"><div class="et">Mediana de duración (P50)</div><div class="valor">${(p50 / 60).toFixed(1)}h</div><div class="delta">mitad de eventos por debajo</div></div>
+   <div class="kpi k-al"><div class="et">Cola P99</div><div class="valor">${(p99 / 60).toFixed(1)}h</div><div class="delta">el 1% peor · ${(p99 / p50).toFixed(0)}× la mediana</div></div>`;
+        document.getElementById("narr-resumen").innerHTML =
+          `En el periodo analizado, la red registra <b>${fmt(nEv)} incidentes</b> distribuidos en <b>${sitiosAfect} sitios</b>, impactando directamente la operación con <b>${fmt(tot)} minutos caídos</b> acumulados. El análisis revela una fuerte dispersión operativa: aunque la mayoría de las fallas se cierran en <b>${(p50 / 60).toFixed(1)}h</b>, una pequeña fracción de casos críticos arrastra el P99 hasta <b>${(p99 / 60).toFixed(1)}h</b>. El objetivo es estabilizar la disponibilidad acercándola al target del <b>99.000%</b> reduciendo el volumen y la reincidencia técnica.`;
+      }
+
+      /* ============================================================
+         2 · TENDENCIAS (drill temporal Año->Mes->Semana->Día->Hora)
+      ============================================================ */
+      let tendNivel = { tipo: "mes", y: 2026, m: null, w: null, d: null };
+      const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+      const MESES_ACTIVOS = _MA.map(m => parseInt(String(m).slice(4)) - 1); // 0-indexed month numbers
+      function isoWeek(d) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const ys = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return Math.ceil((((t - ys) / 86400000) + 1) / 7); }
+      function bucketsTemporales() {
+        let evs = VIEW_TEND.slice();
+        let labels = [], mins = [], evct = [], sitiosArr = [], keys = [], drillTipo = null;
+        if (tendNivel.tipo === "mes") {
+          const agg = {};
+          evs.filter(e => String(e.mes_ano).startsWith(String(tendNivel.y))).forEach(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; (agg[mo] = agg[mo] || { m: 0, n: 0, s: new Set() }).m += e.minutos_caidos; agg[mo].n++; agg[mo].s.add(e.sitio_id) });
+          const maxMo = Math.max(...MESES_ACTIVOS, 5);
+          for (let mo = 0; mo <= maxMo; mo++) { labels.push(MESES[mo]); mins.push(agg[mo]?.m || 0); evct.push(agg[mo]?.n || 0); sitiosArr.push(agg[mo] ? agg[mo].s.size : 0); keys.push(mo); }
+          drillTipo = "semana";
+        } else if (tendNivel.tipo === "semana") {
+          const agg = {};
+          evs.filter(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; return String(e.mes_ano).startsWith(String(tendNivel.y)) && mo === tendNivel.m; }).forEach(e => { const d = new Date(e.ts); const wk = Math.ceil(d.getDate() / 7); (agg[wk] = agg[wk] || { m: 0, n: 0, s: new Set() }).m += e.minutos_caidos; agg[wk].n++; agg[wk].s.add(e.sitio_id) });
+          for (let wk = 1; wk <= 5; wk++) { if (agg[wk] || wk <= 4) { labels.push("Sem " + wk); mins.push(agg[wk]?.m || 0); evct.push(agg[wk]?.n || 0); sitiosArr.push(agg[wk] ? agg[wk].s.size : 0); keys.push(wk); } }
+          drillTipo = "dia";
+        } else if (tendNivel.tipo === "dia") {
+          const agg = {};
+          evs.filter(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; const d = new Date(e.ts); return String(e.mes_ano).startsWith(String(tendNivel.y)) && mo === tendNivel.m && Math.ceil(d.getDate() / 7) === tendNivel.w; }).forEach(e => { const dia = new Date(e.ts).getDate(); (agg[dia] = agg[dia] || { m: 0, n: 0, s: new Set() }).m += e.minutos_caidos; agg[dia].n++; agg[dia].s.add(e.sitio_id) });
+          Object.keys(agg).map(Number).sort((a, b) => a - b).forEach(dia => { labels.push("D" + dia); mins.push(agg[dia].m); evct.push(agg[dia].n); sitiosArr.push(agg[dia].s.size); keys.push(dia); });
+          drillTipo = "hora";
+        } else { // hora
+          const agg = {};
+          evs.filter(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; const d = new Date(e.ts); return String(e.mes_ano).startsWith(String(tendNivel.y)) && mo === tendNivel.m && d.getDate() === tendNivel.d; }).forEach(e => { const h = new Date(e.ts).getHours(); (agg[h] = agg[h] || { m: 0, n: 0, s: new Set() }).m += e.minutos_caidos; agg[h].n++; agg[h].s.add(e.sitio_id) });
+          for (let h = 0; h < 24; h++) { labels.push(h + "h"); mins.push(agg[h]?.m || 0); evct.push(agg[h]?.n || 0); sitiosArr.push(agg[h] ? agg[h].s.size : 0); keys.push(h); }
+          drillTipo = null;
+        }
+        return { labels, mins, evct, sitiosArr, keys, drillTipo };
+      }
+      function renderTendencias() {
+        const tblWrap = document.getElementById("wrap-tend-tbl");
+        if (tblWrap) tblWrap.style.display = "none";
+        const b = bucketsTemporales();
+        const totalSitiosRed = _TSR;
+        // breadcrumb
+        const bc = document.getElementById("tend-bread");
+        let crumbs = [`<button data-t="mes">${tendNivel.y}</button>`];
+        if (tendNivel.tipo !== "mes") crumbs.push(`<span class="sep">›</span><button data-t="semana" data-m="${tendNivel.m}">${MESES[tendNivel.m]}</button>`);
+        if (tendNivel.tipo === "dia" || tendNivel.tipo === "hora") crumbs.push(`<span class="sep">›</span><button data-t="dia" data-w="${tendNivel.w}">Sem ${tendNivel.w}</button>`);
+        if (tendNivel.tipo === "hora") crumbs.push(`<span class="sep">›</span><span class="actual">D${tendNivel.d}</span>`);
+        bc.innerHTML = crumbs.join("");
+        bc.querySelectorAll("[data-t]").forEach(btn => btn.onclick = () => {
+          if (btn.dataset.t === "mes") tendNivel = { tipo: "mes", y: 2026 };
+          else if (btn.dataset.t === "semana") tendNivel = { tipo: "semana", y: 2026, m: +btn.dataset.m };
+          else if (btn.dataset.t === "dia") tendNivel = { tipo: "dia", y: 2026, m: tendNivel.m, w: +btn.dataset.w };
+          renderTendencias();
+        });
+        // Build datasets with minutes (bars) and sites (line)
+        let datasets = [
+          { type: "bar", label: "Minutos", data: b.mins, backgroundColor: "#CF0A2C", yAxisID: "y", order: 2 },
+          { type: "line", label: "Sitios afectados", data: b.sitiosArr, borderColor: "#00233F", borderWidth: 2, pointRadius: 2, yAxisID: "y2", order: 1 }
+        ];
+        let yTitle = "Minutos caídos", y2Title = "Sitios afectados";
+
+        destroy("tend");
+        charts.tend = new Chart(document.getElementById("ch-tend"), {
+          data: { labels: b.labels, datasets },
+          options: {
+            responsive: true, plugins: { legend: { position: "bottom" } },
+            onClick: (e, el) => {
+              if (el.length) {
+                const k = b.keys[el[0].index];
+                if (b.drillTipo) {
+                  if (b.drillTipo === "semana") tendNivel = { tipo: "semana", y: 2026, m: k };
+                  else if (b.drillTipo === "dia") tendNivel = { tipo: "dia", y: 2026, m: tendNivel.m, w: k };
+                  else if (b.drillTipo === "hora") tendNivel = { tipo: "hora", y: 2026, m: tendNivel.m, w: tendNivel.w, d: k };
+                  renderTendencias();
+                } else {
+                  renderTendenciaTabla(k);
+                }
+              }
+            },
+            scales: { y: { beginAtZero: true, position: "left", title: { display: true, text: yTitle } }, y2: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: y2Title } } }
+          }
+        });
+        const drillLabels = { semana: "semanas", dia: "días", hora: "horas" };
+        document.getElementById("tend-sub").textContent = b.drillTipo ? `Clic en una barra para bajar a ${drillLabels[b.drillTipo] || b.drillTipo}` : "Nivel por hora · máximo detalle";
+        let trend = "estable";
+        const serie = b.mins;
+        if (serie.length >= 3) {
+          const first = serie.slice(0, Math.ceil(serie.length / 2)).reduce((a, c) => a + c, 0); const last = serie.slice(Math.floor(serie.length / 2)).reduce((a, c) => a + c, 0);
+          trend = last > first * 1.15 ? "al alza ⬆" : last < first * 0.85 ? "a la baja ⬇" : "estable →";
+        }
+        document.getElementById("nota-tend").textContent = `Tendencia ${trend} en el rango visible. ${b.drillTipo ? "Haz clic en cualquier barra para investigar ese periodo." : ""}`;
+        // Evolución por causa raíz macro (apilada)
+        const macros = Object.keys(CAUSA_RAIZ);
+        const maxMoCR = Math.max(...MESES_ACTIVOS, 5);
+        const nMoCR = maxMoCR + 1;
+        const aggCR = {}; macros.forEach(mc => aggCR[mc] = Array(nMoCR).fill(0));
+        VIEW_TEND.forEach(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; if (String(e.mes_ano).startsWith('2026') && mo <= maxMoCR) aggCR[e.causa_raiz_macro][mo] += e.minutos_caidos });
+        destroy("tendcr");
+        charts.tendcr = new Chart(document.getElementById("ch-tend-cr"), {
+          type: "bar", data: { labels: MESES.slice(0, nMoCR), datasets: macros.map((mc, i) => ({ label: mc, data: aggCR[mc], backgroundColor: PAL[i % PAL.length] })) },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: "bottom" } },
+            scales: { x: { stacked: true }, y: { stacked: true } },
+            onClick: (evt, elements) => {
+              if (elements.length) {
+                const el = elements[0];
+                const causa = macros[el.datasetIndex];
+                const mesIdx = el.index;
+                const mesLabel = MESES[mesIdx];
+                openAnalisisNota('causa_raiz', causa, mesLabel);
+              }
+            }
+          }
+        });
+        document.getElementById("tend-cr-sub").textContent = "Minutos apilados por causa raíz macro · desglose mensual";
+      }
+
+      let tendEvs = [];
+      let tendPage = 0;
+
+      window.renderTendPage = function(offset) {
+        if (offset !== undefined) tendPage += offset;
+        const tbl = document.getElementById("tbl-tend");
+        let html = `<thead><tr><th>Ticket</th><th>Sitio</th><th>Inicio</th><th>Duración</th><th>Causa raíz</th><th>Causa suspensión</th><th>Solución</th><th>Detalle</th></tr></thead><tbody>`;
+        if (tendEvs.length === 0) {
+           html += `<tr><td colspan="8" style="text-align:center">No hay eventos en esta hora.</td></tr>`;
+        } else {
+           const start = tendPage * 10;
+           const pageEvs = tendEvs.slice(start, start + 10);
+           pageEvs.forEach(e => {
+             const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:200px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+             const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:200px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
+             html += `<tr><td>${e.ticket}</td><td><b>${e.sitio_id}</b><br><span style="font-size:10px">${e.nombre}</span></td><td style="font-size:11px">${fmtDT(e.ts)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td></tr>`;
+           });
+        }
+        html += `</tbody>`;
+
+        if (tendEvs.length > 10) {
+           const totalPages = Math.ceil(tendEvs.length / 10);
+           html += `<tfoot><tr><td colspan="8" style="text-align:center; padding: 12px; background: #f9fafb; border-top: 1px solid var(--linea);">`;
+           html += `<button class="btn-fant" onclick="renderTendPage(-1)" ${tendPage === 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : 'style="cursor:pointer;"'}>◀ Anterior</button>`;
+           html += `<span style="margin: 0 20px; font-weight:bold; font-size:13px; color:var(--azul-marino);">Página ${tendPage + 1} de ${totalPages} (${fmt(tendEvs.length)} fallas)</span>`;
+           html += `<button class="btn-fant" onclick="renderTendPage(1)" ${tendPage >= totalPages - 1 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : 'style="cursor:pointer;"'}>Siguiente ▶</button>`;
+           html += `</td></tr></tfoot>`;
+        }
+
+        tbl.innerHTML = html;
+      };
+
+      function renderTendenciaTabla(h) {
+        const wrap = document.getElementById("wrap-tend-tbl");
+        wrap.style.display = "block";
+        const targetMo = tendNivel.m;
+        tendEvs = VIEW_TEND.filter(e => {
+          const mo = parseInt(String(e.mes_ano).slice(4)) - 1;
+          const d = new Date(e.ts);
+          return String(e.mes_ano).startsWith(String(tendNivel.y)) && 
+                 mo === targetMo && 
+                 d.getDate() === tendNivel.d &&
+                 d.getHours() === h;
+        }).sort((a,b) => b.minutos_caidos - a.minutos_caidos);
+        
+        tendPage = 0;
+        window.renderTendPage(0);
+        wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      /* ============================================================
+         3 · DISTRIBUCIÓN (percentiles + histograma + Pareto)
+      ============================================================ */
+      function renderPareto() {
+        const RANGOS = [
+          { lbl: "> 12 horas", min: 720, max: Infinity },
+          { lbl: "8 a 12 Horas", min: 480, max: 720 },
+          { lbl: "4 a 8 horas", min: 240, max: 480 },
+          { lbl: "30 Min a 4 horas", min: 30, max: 240 },
+          { lbl: "Flapping", min: 10, max: 30 },
+          { lbl: "< 10 Minutos", min: 0, max: 10 }
+        ];
+        const tigoBlues = ["#1A2238", "#293659", "#3B4D80", "#576BA6", "#8293C2", "#B5C0E0"];
+        const dur = VIEW.map(s => s.minutos_caidos);
+        const tot = dur.reduce((a, c) => a + c, 0);
+        const nTotal = dur.length;
+        const rangMin = RANGOS.map(() => 0), rangEv = RANGOS.map(() => 0);
+        dur.forEach(v => { for (let i = 0; i < RANGOS.length; i++) { if (v >= RANGOS[i].min && v < RANGOS[i].max) { rangMin[i] += v; rangEv[i]++; break; } } });
+        const pctMin = rangMin.map(v => +(100 * v / tot).toFixed(1));
+        const pctEv = rangEv.map(v => +(100 * v / nTotal).toFixed(1));
+        document.getElementById("narr-pareto").innerHTML =
+          `Los eventos de <b>> 12 horas</b> representan el <b>${pctMin[0]}%</b> de los minutos totales pero solo el <b>${pctEv[0]}%</b> de los eventos. En contraste, las fallas cortas tipo <b>Flapping</b> suman el <b>${pctEv[4]}%</b> de los eventos pero apenas el <b>${pctMin[4]}%</b> de los minutos. Priorizar la reducción de fallas largas maximiza el impacto en disponibilidad.`;
+        destroy("distrib");
+        charts.distrib = new Chart(document.getElementById("ch-distrib"), {
+          type: "bar",
+          data: {
+            labels: ["Minutos", "Eventos"],
+            datasets: RANGOS.map((r, i) => ({
+              label: r.lbl,
+              data: [pctMin[i], pctEv[i]],
+              backgroundColor: tigoBlues[i]
+            }))
+          },
+          options: {
+            responsive: true, 
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: c => c.dataset.label + ": " + c.raw + "%" } }
+            },
+            scales: { 
+              x: { stacked: true },
+              y: { stacked: true, max: 100, beginAtZero: true, title: { display: true, text: "Porcentaje (%)" }, ticks: { callback: v => v + "%" } } 
+            }
+          },
+          plugins: [{
+            id: 'customLabels',
+            afterDatasetsDraw(chart) {
+              const { ctx } = chart;
+              ctx.save();
+              chart.data.datasets.forEach((dataset, i) => {
+                const meta = chart.getDatasetMeta(i);
+                meta.data.forEach((bar, index) => {
+                  const val = dataset.data[index];
+                  if (val > 4) { // Only draw text if segment is large enough
+                    ctx.fillStyle = i > 3 ? '#1A2238' : '#FFFFFF';
+                    ctx.font = '600 11.5px "IBM Plex Sans", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const text = dataset.label + " (" + val + "%)";
+                    ctx.fillText(text, bar.x, bar.y + (bar.height / 2));
+                  }
+                });
+              });
+              ctx.restore();
+            }
+          }]
+        });
+      }
+
+      /* ============================================================
+         10 · SITIOS INTERMITENTES (frecuencia)
+      ============================================================ */
+      function renderIntermitentes() {
+        const selPer = document.getElementById("int-periodo") ? document.getElementById("int-periodo").value : "";
+        let evs = VIEW;
+        if (selPer === "mes") {
+          const minD = new Date(2026, 4, 11).getTime();
+          evs = evs.filter(e => new Date(e.ts).getTime() >= minD);
+        } else if (selPer === "semana") {
+          const minD = new Date(2026, 5, 4).getTime();
+          evs = evs.filter(e => new Date(e.ts).getTime() >= minD);
+        }
+        const sm = metricasSitio(evs);
+        const ord = [...sm].sort((a, b) => b.nEv - a.nEv);
+        const top = ord.slice(0, 20);
+
+        let acc = 0;
+        const minsAcum = top.map(s => { acc += s.min; return acc; });
+
+        destroy("interm");
+        charts.interm = new Chart(document.getElementById("ch-interm"), {
+          data: {
+            labels: top.map(s => s.sitio_id), datasets: [
+              { type: "bar", label: "# Eventos", data: top.map(s => s.nEv), backgroundColor: "#CF0A2C", yAxisID: "y", order: 2 },
+              { type: "line", label: "Minutos acumulados", data: minsAcum, borderColor: "#00233F", borderWidth: 2, pointRadius: 3, yAxisID: "y2", order: 1 }
+            ]
+          },
+          options: {
+            responsive: true, plugins: { legend: { position: "top" } },
+            scales: {
+              x: { ticks: { maxRotation: 45, minRotation: 45 } },
+              y: { beginAtZero: true, position: "left", title: { display: true, text: "# Eventos" } },
+              y2: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Minutos Acumulados" } }
+            }
+          }
+        });
+
+        const tbl = document.getElementById("tbl-interm");
+        tbl.innerHTML = `<thead><tr><th>#</th><th>Sitio</th><th>Depto</th><th># Eventos</th><th>Min/evento</th><th>Min total</th><th>Causa freq.</th><th>Estado</th></tr></thead><tbody id="tb-interm"></tbody>`;
+        const tbody = document.getElementById("tb-interm");
+        top.slice(0, 15).forEach((s, i) => {
+          const tr = document.createElement("tr");
+          tr.className = s.perfil === 'cronico' ? 'rojo' : '';
+          tr.style.cursor = "pointer";
+          tr.innerHTML = `<td class="num">${i + 1}</td><td><b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ⊞</td><td>${s.departamento}</td><td class="num"><b>${s.nEv}</b></td><td class="num">${fmt(s.mttr)}</td><td class="num">${fmt(s.min)}</td><td>${s.crTop}</td><td><span class="tdpill" style="background:${colorEstado(s.estado)}">${s.estado}</span></td>`;
+
+          const detTr = document.createElement("tr");
+          detTr.style.display = "none";
+          detTr.style.background = "#f9fafb";
+
+          const evts = evs.filter(e => e.sitio_id === s.sitio_id).sort((a, b) => b.minutos_caidos - a.minutos_caidos);
+          let detHtml = `<td colspan="8" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
+          evts.forEach(e => {
+            const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
+            const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+            const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
+            detHtml += `<tr><td>${e.ticket}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-sitio="${e.ticket}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
+          });
+          detHtml += `</tbody></table></td>`;
+          detTr.innerHTML = detHtml;
+
+          tr.onclick = (e) => {
+            if (e.target.closest(".btn-hist")) return;
+            const isDet = detTr.style.display === "table-row";
+            detTr.style.display = isDet ? "none" : "table-row";
+            tr.cells[1].innerHTML = `<b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ${isDet ? "⊟" : "⊞"}`;
+          };
+
+          tbody.appendChild(tr);
+          tbody.appendChild(detTr);
+        });
+        const cronicos = sm.filter(s => s.nEv >= 6).length;
+        const topInt = top[0];
+        document.getElementById("narr-interm").innerHTML =
+          `El Pareto de minutos premia la falla larga única y <b>entierra al sitio que cae 12 veces 30 minutos</b>. Pero la intermitencia es un <b>defecto crónico</b> (batería degradada, VSWR, radioenlace marginal) cuya causa nunca se cierra. Hay <b>${cronicos} sitios</b> con 6+ eventos en el periodo seleccionado; el peor es <b>${topInt ? topInt.nombre : "–"}</b> con <b>${topInt ? topInt.nEv : 0} caídas</b>. Operativamente exigen reemplazo de componente, no solo restauración.`;
+      }
+
+      /* ============================================================
+         3 · GEOGRAFÍA (drill departamento->ciudad->sitio)
+      ============================================================ */
+      let geoNivel = { tipo: "depto", depto: null, ciudad: null };
+      let mapa, capaMarcadores;
+      function initMapa() {
+        mapa = L.map("mapa", { scrollWheelZoom: false }).setView([4.6, -74.1], 5.4);
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "© OpenStreetMap © CARTO", maxZoom: 18 }).addTo(mapa);
+        capaMarcadores = L.layerGroup().addTo(mapa);
+      }
+      function colorEstado(e) { return e === "Activo" ? "#E03131" : e === "En_gestión" ? "#F2C12E" : "#1E9E5A" }
+      function pintaMapa(evs) {
+        capaMarcadores.clearLayers();
+        if (!evs.length) return;
+
+        const agg = {};
+        let maxMin = 0;
+
+        if (geoNivel.tipo === "depto") {
+           evs.forEach(e => {
+             const k = e.departamento;
+             if (!agg[k]) agg[k] = { nombre: k, min: 0, latSum: 0, lngSum: 0, n: 0, nivel: 'Departamento' };
+             agg[k].min += e.minutos_caidos;
+             agg[k].latSum += e.lat;
+             agg[k].lngSum += e.lng;
+             agg[k].n++;
+           });
+        } else if (geoNivel.tipo === "ciudad") {
+           evs.forEach(e => {
+             if (e.departamento !== geoNivel.depto) return;
+             const k = e.ciudad;
+             if (!agg[k]) agg[k] = { nombre: k, min: 0, latSum: 0, lngSum: 0, n: 0, nivel: 'Ciudad' };
+             agg[k].min += e.minutos_caidos;
+             agg[k].latSum += e.lat;
+             agg[k].lngSum += e.lng;
+             agg[k].n++;
+           });
+        } else {
+           const sm = metricasSitio(evs.filter(e => e.departamento === geoNivel.depto && e.ciudad === geoNivel.ciudad));
+           sm.forEach(s => {
+             const e = evs.find(x => x.sitio_id === s.sitio_id);
+             agg[s.sitio_id] = { nombre: s.nombre, codigo: s.sitio_id, min: s.min, lat: e.lat, lng: e.lng, nivel: 'Sitio', sub: s };
+           });
+        }
+
+        const items = Object.values(agg);
+        items.forEach(i => {
+           if (i.min > maxMin) maxMin = i.min;
+           if (i.nivel !== 'Sitio') {
+               i.lat = i.latSum / i.n;
+               i.lng = i.lngSum / i.n;
+           }
+        });
+
+        items.forEach(i => {
+           let color, radius;
+           const ratio = maxMin > 0 ? i.min / maxMin : 0;
+           
+           if (ratio >= 0.6) {
+               color = "var(--critico)"; // Rojo, grande
+               radius = 16;
+           } else if (ratio >= 0.2) {
+               color = "var(--critico-medio)"; // Naranja, mediano
+               radius = 11;
+           } else {
+               color = "var(--ok)"; // Verde, pequeño
+               radius = 7;
+           }
+
+           let popupHtml = i.nivel==='Sitio' ? `<strong>${i.codigo}</strong><br><span style="font-size:11px;color:var(--gris)">${i.nombre}</span><br>Nivel: ${i.nivel}<br><b>${fmt(i.min)} min</b>` : `<strong>${i.nombre}</strong><br>Nivel: ${i.nivel}<br><b>${fmt(i.min)} min</b>`;
+           if (i.nivel === 'Sitio') {
+               popupHtml += `<br>${i.sub.ciudad}, ${i.sub.departamento}<br>${i.sub.componente} · ${i.sub.tecnologia}<br>${i.sub.nEv} eventos · ${i.sub.estado}<br><small>CR: ${i.sub.crTop}</small>`;
+           }
+
+           L.circleMarker([i.lat, i.lng], { radius: radius, color: color, fillColor: color, fillOpacity: 0.65, weight: 1 })
+             .bindPopup(popupHtml)
+             .addTo(capaMarcadores);
+        });
+      }
+      function renderGeo() {
+        if (filtro.depto && geoNivel.tipo === "depto") {
+          geoNivel = { tipo: "ciudad", depto: filtro.depto };
+        }
+        if (filtro.muni && geoNivel.tipo !== "sitio") {
+          geoNivel = { tipo: "sitio", depto: filtro.depto, ciudad: filtro.muni };
+        }
+
+        const gReg = document.getElementById("geo-reg");
+        const gDepto = document.getElementById("geo-depto");
+        const gMuni = document.getElementById("geo-muni");
+        const gCr = document.getElementById("geo-cr");
+        const gCrEsp = document.getElementById("geo-cr-esp");
+
+        const currR = gReg ? gReg.value : "";
+        const currD = gDepto ? gDepto.value : "";
+        const currM = gMuni ? gMuni.value : "";
+        const currCr = gCr ? gCr.value : "";
+        const currEsp = gCrEsp ? gCrEsp.value : "";
+
+        // 0. Regional options
+        if (gReg) {
+          gReg.innerHTML = '<option value="">Todas</option>';
+          const validR = [...new Set(VIEW.map(e => e.region))].filter(Boolean).sort();
+          validR.forEach(r => gReg.add(new Option(r, r)));
+          gReg.value = currR || "";
+        }
+
+        // 1. Depto options
+        if (gDepto) {
+          gDepto.innerHTML = '<option value="">Todos</option>';
+          let d_base = VIEW;
+          if (gReg && gReg.value) d_base = d_base.filter(e => e.region === gReg.value);
+          const validD = [...new Set(d_base.map(e => e.departamento))].filter(Boolean).sort();
+          validD.forEach(d => gDepto.add(new Option(d, d)));
+          gDepto.value = filtro.depto || currD || geoNivel.depto || "";
+          gDepto.disabled = !!filtro.depto;
+        }
+
+        // 2. Muni options
+        if (gMuni) {
+          gMuni.innerHTML = '<option value="">Todos</option>';
+          let d_data = VIEW;
+          if (gReg && gReg.value) d_data = d_data.filter(e => e.region === gReg.value);
+          if (gDepto && gDepto.value) d_data = d_data.filter(e => e.departamento === gDepto.value);
+          const validC = [...new Set(d_data.map(e => e.ciudad))].filter(Boolean).sort();
+          validC.forEach(c => gMuni.add(new Option(c, c)));
+          gMuni.value = filtro.muni || currM || geoNivel.ciudad || "";
+          gMuni.disabled = !!filtro.muni;
+        }
+
+        // 3. Causa Global options
+        if (gCr) {
+          gCr.innerHTML = '<option value="">Todas</option>';
+          let c_data = VIEW;
+          if (gReg && gReg.value) c_data = c_data.filter(e => e.region === gReg.value);
+          if (gDepto && gDepto.value) c_data = c_data.filter(e => e.departamento === gDepto.value);
+          if (gMuni && gMuni.value) c_data = c_data.filter(e => e.ciudad === gMuni.value);
+          const validCr = [...new Set(c_data.map(e => e.causa_raiz_macro))].filter(Boolean).sort();
+          validCr.forEach(m => gCr.add(new Option(m, m)));
+          gCr.value = filtro.causa || (validCr.includes(currCr) ? currCr : "");
+          gCr.disabled = !!filtro.causa;
+        }
+
+        // 4. Causa Específica options
+        if (gCrEsp) {
+          gCrEsp.innerHTML = '<option value="">Todas</option>';
+          let e_data = VIEW;
+          if (gCr && gCr.value) e_data = e_data.filter(e => e.causa_raiz_macro === gCr.value);
+          if (gReg && gReg.value) e_data = e_data.filter(e => e.region === gReg.value);
+          if (gDepto && gDepto.value) e_data = e_data.filter(e => e.departamento === gDepto.value);
+          if (gMuni && gMuni.value) e_data = e_data.filter(e => e.ciudad === gMuni.value);
+          const validE = [...new Set(e_data.map(e => e.causa_raiz_especifica))].filter(Boolean).sort();
+          validE.forEach(e => gCrEsp.add(new Option(e, e)));
+          gCrEsp.value = validE.includes(currEsp) ? currEsp : "";
+        }
+
+        let geoEvs = VIEW;
+        const fReg = gReg ? gReg.value : "";
+        const fDepto = gDepto ? gDepto.value : "";
+        const fMuni = gMuni ? gMuni.value : "";
+        const fCR = gCr ? gCr.value : "";
+        const fCREsp = gCrEsp ? gCrEsp.value : "";
+
+        if (fCR) geoEvs = geoEvs.filter(e => e.causa_raiz_macro === fCR);
+        if (fCREsp) geoEvs = geoEvs.filter(e => e.causa_raiz_especifica === fCREsp);
+        if (fReg) geoEvs = geoEvs.filter(e => e.region === fReg);
+        if (fDepto) geoEvs = geoEvs.filter(e => e.departamento === fDepto);
+        if (fMuni) geoEvs = geoEvs.filter(e => e.ciudad === fMuni);
+
+        const totalGeoMinutos = geoEvs.reduce((sum, e) => sum + e.minutos_caidos, 0);
+        const geoSitiosAfectados = new Set(geoEvs.map(e => e.sitio_id)).size;
+        const promMinPorSitio = geoSitiosAfectados > 0 ? totalGeoMinutos / geoSitiosAfectados : 0;
+        
+        const elS = document.getElementById("geo-insight-sitios");
+        const elM = document.getElementById("geo-insight-minutos");
+        const elP = document.getElementById("geo-insight-promedio");
+        
+        if(elS) elS.textContent = fmt(geoSitiosAfectados);
+        if(elM) elM.textContent = fmt(Math.round(totalGeoMinutos));
+        if(elP) elP.textContent = fmt(Math.round(promMinPorSitio));
+
+        pintaMapa(geoEvs);
+        const bread = document.getElementById("geo-bread");
+        const tbl = document.getElementById("tbl-geo");
+        if (geoNivel.tipo === "depto") {
+          bread.innerHTML = `<span class="actual">Nacional</span>`;
+          const agg = {};
+          let totalMin = 0;
+          geoEvs.forEach(s => {
+            if (!agg[s.departamento]) agg[s.departamento] = { min: 0, sitiosImpact: new Set() };
+            agg[s.departamento].min += s.minutos_caidos;
+            agg[s.departamento].sitiosImpact.add(s.sitio_id);
+            totalMin += s.minutos_caidos;
+          });
+          if (totalMin === 0) totalMin = 1;
+          const rows = Object.entries(agg).sort((a, b) => b[1].min - a[1].min);
+          const max = rows[0] ? rows[0][1].min : 1;
+          tbl.innerHTML = `<thead><tr><th>Departamento</th><th>Sitios</th><th>Minutos</th><th>Impacto</th></tr></thead><tbody>${rows.map(([d, v]) => {
+            const impactados = v.sitiosImpact.size;
+            const pct = (100 * v.min / totalMin).toFixed(1);
+            return `<tr class="clickable" data-depto="${d}"><td>${d}</td><td class="num">${impactados}</td><td class="num">${fmt(v.min)}</td><td><div class="minibar-wrap"><span class="minibar" style="width:${100 * v.min / max}px"></span><span style="font-size:11.5px;font-weight:600;color:var(--gris)">${pct}%</span></div></td></tr>`;
+          }).join("")
+            }</tbody>`;
+          tbl.querySelectorAll("[data-depto]").forEach(tr => tr.onclick = () => { geoNivel = { tipo: "ciudad", depto: tr.dataset.depto }; renderGeo() });
+        } else if (geoNivel.tipo === "ciudad") {
+          bread.innerHTML = `<button data-l="nac">Nacional</button><span class="sep">›</span><span class="actual">${geoNivel.depto}</span>`;
+          const sub = geoEvs.filter(s => s.departamento === geoNivel.depto);
+          // Aggregate: unique impacted sites + total sites per ciudad
+          const agg = {};
+          let totalMinDepto = 0;
+          sub.forEach(s => {
+            if (!agg[s.ciudad]) agg[s.ciudad] = { min: 0, sitiosImpact: new Set() };
+            agg[s.ciudad].min += s.minutos_caidos;
+            agg[s.ciudad].sitiosImpact.add(s.sitio_id);
+            totalMinDepto += s.minutos_caidos;
+          });
+          if (totalMinDepto === 0) totalMinDepto = 1;
+          const totalSitiosCiudad = {};
+          if (typeof _IC !== 'undefined') {
+            for (let k in _IC) {
+              const nk = k.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+              totalSitiosCiudad[nk] = _IC[k];
+            }
+          }
+          const rows = Object.entries(agg).sort((a, b) => b[1].min - a[1].min);
+          const max = rows[0] ? rows[0][1].min : 1;
+          tbl.innerHTML = `<thead><tr><th>Ciudad</th><th>Sitios</th><th>Minutos</th><th>% Sitios Afect.</th><th>Impacto</th></tr></thead><tbody>${rows.map(([c, v]) => {
+            const impactados = v.sitiosImpact.size;
+            const searchKey = c.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+            const totalCiu = totalSitiosCiudad[searchKey] || impactados;
+            const pctSitios = (100 * impactados / totalCiu).toFixed(1);
+            const pctMin = (100 * v.min / totalMinDepto).toFixed(1);
+            return `<tr class="clickable" data-ciudad="${c}"><td>${c}</td><td class="num">${impactados}</td><td class="num">${fmt(v.min)}</td><td class="num">${pctSitios}% ( ${impactados} de ${totalCiu} )</td><td><div class="minibar-wrap"><span class="minibar" style="width:${100 * v.min / max}px"></span><span style="font-size:11.5px;font-weight:600;color:var(--gris)">${pctMin}%</span></div></td></tr>`;
+          }).join("")
+            }</tbody>`;
+          tbl.querySelectorAll("[data-ciudad]").forEach(tr => tr.onclick = () => { geoNivel = { tipo: "sitio", depto: geoNivel.depto, ciudad: tr.dataset.ciudad }; renderGeo() });
+          if (sub.length) { const c = sub[0]; mapa.setView([c.lat, c.lng], 8) }
+        } else {
+          bread.innerHTML = `<button data-l="nac">Nacional</button><span class="sep">›</span><button data-l="dep">${geoNivel.depto}</button><span class="sep">›</span><span class="actual">${geoNivel.ciudad}</span>`;
+          const evs = geoEvs.filter(s => s.departamento === geoNivel.depto && s.ciudad === geoNivel.ciudad);
+          const sub = metricasSitio(evs).sort((a, b) => b.min - a.min);
+          // Total minutes for this city to calculate % per site
+          const totalMinCiudad = sub.reduce((a, s) => a + s.min, 0);
+          tbl.innerHTML = `<thead><tr><th>Sitio</th><th>Causa raíz</th><th>Min</th><th>% Min</th><th># Ev</th><th>Causa Suspensión</th><th title="Historial">📋</th></tr></thead><tbody id="tb-geo-sitios"></tbody>`;
+          const tbody = document.getElementById("tb-geo-sitios");
+          sub.forEach(s => {
+            const pctMin = totalMinCiudad > 0 ? (100 * s.min / totalMinCiudad).toFixed(1) : "0.0";
+            const mxE = s.maxEv || {};
+            const tipTkt = mxE.ticket || 'N/A';
+            const tipMin = mxE.minutos_caidos ? fmt(mxE.minutos_caidos) : '0';
+            const tipSol = mxE.solucion || 'Sin soluci\u00f3n';
+            const hasNotes = (historialData[s.sitio_id] && historialData[s.sitio_id].length > 0) || dbNotasSitios.has(s.sitio_id);
+
+            const tr = document.createElement("tr");
+            tr.className = `site-row ${s.estado === 'Activo' ? 'rojo' : ''}`;
+            tr.style.cursor = "pointer";
+            tr.innerHTML = `<td><b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ⊞<div class="site-tip">🎫 <b>${tipTkt}</b> · ${tipMin} min<br>🔧 ${tipSol}</div></td>` +
+              `<td>${s.crTop}</td>` +
+              `<td class="num">${fmt(s.min)}</td><td class="num">${pctMin}%</td>` +
+              `<td class="num">${s.nEv}</td><td>${s.csTop}</td>` +
+              `<td><button class="btn-hist" data-tipo="sitio" data-codigo="${s.sitio_id}" data-nombre="${s.nombre}" data-depto="${s.departamento}" data-muni="${s.ciudad}" ${hasNotes ? 'data-has-notes="true"' : ''} title="Historial del sitio">📋</button></td>`;
+
+            const detTr = document.createElement("tr");
+            detTr.style.display = "none";
+            detTr.style.background = "#f9fafb";
+            const evts = evs.filter(e => e.sitio_id === s.sitio_id).sort((a, b) => b.minutos_caidos - a.minutos_caidos);
+            let detHtml = `<td colspan="7" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>Hora Inicio</th><th>Hora Fin</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
+            evts.forEach(e => {
+              const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
+              const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+              const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
+              detHtml += `<tr><td>${e.ticket}</td><td style="font-size:11px">${fmtDT(e.ts)}</td><td style="font-size:11px">${fmtDT(e.ts_fin)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-tipo="falla" data-ticket="${e.ticket}" data-inicio="${fmtISO(e.ts)}" data-fin="${fmtISO(e.ts_fin)}" data-duracion="${e.minutos_caidos}" data-causa="${e.causa_raiz_especifica}" data-solucion="${(e.solucion || '').substring(0, 100).replace(/"/g, '&quot;')}" data-codigo="${e.sitio_id}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
+            });
+            detHtml += `</tbody></table></td>`;
+            detTr.innerHTML = detHtml;
+
+            tr.onclick = (e) => {
+              if (e.target.closest(".btn-hist")) return; // don't toggle if button clicked
+              const isDet = detTr.style.display === "table-row";
+              detTr.style.display = isDet ? "none" : "table-row";
+              tr.cells[0].innerHTML = `<b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ${isDet ? "⊞" : "⊟"}<div class="site-tip">🎫 <b>${tipTkt}</b> · ${tipMin} min<br>🔧 ${tipSol}</div>`;
+            };
+
+            tbody.appendChild(tr);
+            tbody.appendChild(detTr);
+          });
+          // Bind historial buttons
+          // Bind historial buttons
+          tbl.querySelectorAll('.btn-hist').forEach(btn => btn.onclick = e => { e.stopPropagation(); openHistorial(btn.dataset) });
+          if (evs.length) mapa.setView([evs[0].lat, evs[0].lng], 10);
+        }
+        bread.querySelectorAll("[data-l]").forEach(b => b.onclick = () => {
+          geoNivel = b.dataset.l === "nac" ? { tipo: "depto" } : { tipo: "ciudad", depto: geoNivel.depto }; renderGeo();
+          if (b.dataset.l === "nac") mapa.setView([4.6, -74.1], 5.4);
+        });
+      }
+
+
+
+      /* ============================================================
+         5 · CAUSA RAÍZ (macro -> esp, filtro componente)
+      ============================================================ */
+      let crSel = null, crComp = "";
+      function renderCausaRaiz() {
+        // selector componente
+        const sel = document.getElementById("cr-comp");
+        if (sel.options.length <= 1) COMPONENTES.forEach(c => sel.add(new Option(c, c)));
+        const base = VIEW.filter(s => !crComp || s.componente === crComp);
+        const agg = {};
+        base.forEach(s => agg[s.causa_raiz_macro] = (agg[s.causa_raiz_macro] || 0) + s.minutos_caidos);
+        const rows = Object.entries(agg).sort((a, b) => b[1] - a[1]);
+        destroy("crmacro");
+        charts.crmacro = new Chart(document.getElementById("ch-cr-macro"), {
+          type: "doughnut",
+          data: { labels: rows.map(r => r[0]), datasets: [{ data: rows.map(r => r[1]), backgroundColor: PAL }] },
+          options: { responsive: true, onClick: (e, el) => { if (el.length) { crSel = rows[el[0].index][0]; drillCR() } }, plugins: { legend: { position: "right" } } }
+        });
+        document.getElementById("cr-comp-info").textContent = crComp ? `Filtrado a componente: ${crComp}.` : "";
+        if (!crSel) crSel = rows[0] ? rows[0][0] : null;
+        drillCR();
+      }
+      function drillCR() {
+        document.getElementById("cr-bread").innerHTML = `<span class="sep">Causa específica de</span> <span class="actual">${crSel || "–"}</span>`;
+        const base = VIEW.filter(s => (!crComp || s.componente === crComp) && s.causa_raiz_macro === crSel);
+        const agg = {};
+        base.forEach(s => { (agg[s.causa_raiz_especifica] = agg[s.causa_raiz_especifica] || { min: 0, n: 0 }).min += s.minutos_caidos; agg[s.causa_raiz_especifica].n++ });
+        const rows = Object.entries(agg).sort((a, b) => b[1].min - a[1].min);
+        destroy("cresp");
+        charts.cresp = new Chart(document.getElementById("ch-cr-esp"), {
+          type: "bar",
+          data: { labels: rows.map(r => r[0]), datasets: [{ label: "Minutos", data: rows.map(r => r[1].min), backgroundColor: "#FF9900" }] },
+          options: { indexAxis: "y", responsive: true, plugins: { legend: { display: false } } }
+        });
+        const tbl = document.getElementById("tbl-cr");
+        tbl.innerHTML = `<thead><tr><th>Causa específica</th><th>Sitios</th><th>Minutos</th></tr></thead><tbody>${rows.map(([c, v]) => `<tr><td>${c}</td><td class="num">${v.n}</td><td class="num">${fmt(v.min)}</td></tr>`).join("")
+          }</tbody>`;
+      }
+
+      /* ============================================================
+         6 · CAUSA SUSPENSIÓN
+      ============================================================ */
+      let csSel = null;
+      function renderSusp() {
+        const agg = {};
+        VIEW.filter(s => s.causa_suspension_macro && s.causa_suspension_macro !== "Sin dato").forEach(s => agg[s.causa_suspension_macro] = (agg[s.causa_suspension_macro] || 0) + s.minutos_caidos);
+        const rows = Object.entries(agg).sort((a, b) => b[1] - a[1]);
+        destroy("csmacro");
+        charts.csmacro = new Chart(document.getElementById("ch-cs-macro"), {
+          type: "doughnut",
+          data: { labels: rows.map(r => r[0]), datasets: [{ data: rows.map(r => r[1]), backgroundColor: PAL }] },
+          options: { responsive: true, onClick: (e, el) => { if (el.length) { csSel = rows[el[0].index][0]; drillCS() } }, plugins: { legend: { position: "right" } } }
+        });
+        if (!csSel) csSel = rows[0] ? rows[0][0] : null;
+        drillCS();
+      }
+      function drillCS() {
+        document.getElementById("cs-bread").innerHTML = `<span class="sep">Causa específica de</span> <span class="actual">${csSel || "–"}</span>`;
+        const base = VIEW.filter(s => s.causa_suspension_macro === csSel && s.causa_suspension_especifica && s.causa_suspension_especifica !== "Sin dato");
+        const agg = {};
+        base.forEach(s => { (agg[s.causa_suspension_especifica] = agg[s.causa_suspension_especifica] || { min: 0, n: 0 }).min += s.minutos_caidos; agg[s.causa_suspension_especifica].n++ });
+        const rows = Object.entries(agg).sort((a, b) => b[1].min - a[1].min);
+        destroy("csesp");
+        charts.csesp = new Chart(document.getElementById("ch-cs-esp"), {
+          type: "bar",
+          data: { labels: rows.map(r => r[0]), datasets: [{ label: "Minutos", data: rows.map(r => r[1].min), backgroundColor: "#00A3E0" }] },
+          options: { indexAxis: "y", responsive: true, plugins: { legend: { display: false } } }
+        });
+        const tbl = document.getElementById("tbl-cs");
+        tbl.innerHTML = `<thead><tr><th>Causa específica</th><th>Sitios</th><th>Minutos bloqueados</th></tr></thead><tbody>${rows.map(([c, v]) => `<tr><td>${c}</td><td class="num">${v.n}</td><td class="num">${fmt(v.min)}</td></tr>`).join("")
+          }</tbody>`;
+      }
+
+      /* ============================================================
+         9 · WORST OFFENDERS
+      ============================================================ */
+      function renderWorst() {
+        const fR = document.getElementById("wo-reg") ? document.getElementById("wo-reg").value : "";
+        const fCR = document.getElementById("wo-cr") ? document.getElementById("wo-cr").value : "";
+        const fCS = document.getElementById("wo-cs") ? document.getElementById("wo-cs").value : "";
+
+        let base = VIEW;
+        if (fR) base = base.filter(e => e.region === fR);
+        if (fCR) base = base.filter(e => e.causa_raiz_macro === fCR);
+        if (fCS) base = base.filter(e => e.causa_suspension_macro === fCS);
+
+        const sm = metricasSitio(base);
+        const ord = [...sm].sort((a, b) => b.min - a.min);
+        const tot = ord.reduce((a, s) => a + s.min, 0);
+        const top = ord.slice(0, 20);
+        let acc = 0; const cum = top.map(s => { acc += s.min; return +(100 * acc / (tot || 1)).toFixed(1) });
+        destroy("worst");
+        charts.worst = new Chart(document.getElementById("ch-worst"), {
+          data: {
+            labels: top.map(s => s.sitio_id), datasets: [
+              { type: "bar", label: "Minutos", data: top.map(s => s.min), backgroundColor: "#FF9900", yAxisID: "y" },
+              { type: "line", label: "Cantidad de eventos", data: top.map(s => s.nEv), borderColor: "#1A2238", borderWidth: 2.5, pointRadius: 4, yAxisID: "y2" }
+            ]
+          },
+          options: { responsive: true, scales: { x: { ticks: { maxRotation: 90, minRotation: 60, font: { size: 9 } } }, y: { position: "left", title: { display: true, text: "Minutos", color: "#6b7280" } }, y2: { position: "right", min: 0, grid: { drawOnChartArea: false }, title: { display: true, text: "Eventos", color: "#6b7280" } } } }
+        });
+        const pctTop = (100 * top.reduce((a, s) => a + s.min, 0) / (tot || 1)).toFixed(0);
+        document.getElementById("narr-worst").innerHTML =
+          `Estos <b>20 sitios</b> concentran el <b>${pctTop}%</b> de todos los minutos perdidos de la selección. Haz clic en cualquier sitio de la tabla para <b>desplegar el detalle</b> de cada una de sus fallas individuales.`;
+        const tbl = document.getElementById("tbl-worst");
+        tbl.innerHTML = `<thead><tr><th>#</th><th>Sitio</th><th>Depto</th><th>Ciudad</th><th>Minutos</th><th># Ev</th><th>% filtro</th><th>Causa raíz</th><th>Causa suspensión</th><th>Estado</th></tr></thead><tbody id="tb-worst"></tbody>`;
+        const tbody = document.getElementById("tb-worst");
+        top.forEach((s, i) => {
+          const tr = document.createElement("tr");
+          tr.className = s.estado === 'Activo' ? 'rojo' : '';
+          tr.style.cursor = "pointer";
+          tr.innerHTML = `<td class="num">${i + 1}</td><td><b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ⊞</td><td>${s.departamento}</td><td>${s.ciudad}</td><td class="num">${fmt(s.min)}</td><td class="num">${s.nEv}</td><td class="num">${(100 * s.min / (tot || 1)).toFixed(1)}%</td><td>${s.crTop}</td><td>${s.csTop}</td><td><span class="tdpill" style="background:${colorEstado(s.estado)}">${s.estado}</span></td>`;
+
+          const detTr = document.createElement("tr");
+          detTr.style.display = "none";
+          detTr.style.background = "#f9fafb";
+
+          const evts = base.filter(e => e.sitio_id === s.sitio_id).sort((a, b) => b.minutos_caidos - a.minutos_caidos);
+          let detHtml = `<td colspan="10" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
+          evts.forEach(e => {
+            const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
+            const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+            const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
+            detHtml += `<tr><td>${e.ticket}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-sitio="${e.ticket}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
+          });
+          detHtml += `</tbody></table></td>`;
+          detTr.innerHTML = detHtml;
+
+          tr.onclick = (e) => {
+            if (e.target.closest(".btn-hist")) return;
+            const isDet = detTr.style.display === "table-row";
+            detTr.style.display = isDet ? "none" : "table-row";
+            tr.cells[1].innerHTML = `<b>${s.nombre}</b> ${isDet ? "⊞" : "⊟"}`;
+          };
+
+          tbody.appendChild(tr);
+          tbody.appendChild(detTr);
+        });
+      }
+
+      /* ============================================================
+         MAPA DE CALOR POR CAUSA RAÍZ
+      ============================================================ */
+      window.goToMap = function(macro, region, event, esp) {
+        if(event) event.stopPropagation();
+        geoNivel = { tipo: "depto", depto: null, ciudad: null };
+        
+        updateGeoCascade();
+        const geoReg = document.getElementById("geo-reg");
+        if (geoReg) geoReg.value = region || "";
+        
+        updateGeoCascade();
+        const geoCr = document.getElementById("geo-cr");
+        if (geoCr) geoCr.value = macro || "";
+        
+        updateGeoCascade();
+        if (esp) {
+          const geoCrEsp = document.getElementById("geo-cr-esp");
+          if (geoCrEsp) geoCrEsp.value = esp;
+        }
+        
+        renderGeo();
+        const secGeo = document.getElementById("geografico");
+        if(secGeo) secGeo.scrollIntoView({ behavior: "smooth" });
+      };
+
+      function renderHeatmap() {
+        const regiones = [...new Set(VIEW.map(e => e.region))].filter(Boolean).sort();
+        const macros = Object.keys(CAUSA_RAIZ);
+        const totMin = VIEW.reduce((a, c) => a + c.minutos_caidos, 0) || 1;
+
+        const agg = {};
+        let maxMacroMin = 0;
+        macros.forEach(m => {
+          agg[m] = { total: 0, reg: {} };
+          regiones.forEach(d => agg[m].reg[d] = 0);
+        });
+
+        VIEW.forEach(e => {
+          const m = e.causa_raiz_macro;
+          const d = e.region;
+          if (agg[m] && agg[m].reg[d] !== undefined) {
+            agg[m].reg[d] += e.minutos_caidos;
+            agg[m].total += e.minutos_caidos;
+            if (agg[m].reg[d] > maxMacroMin) maxMacroMin = agg[m].reg[d];
+          }
+        });
+
+        const tbl = document.getElementById("tbl-heatmap");
+        let html = `<thead><tr><th style="max-width:350px">Causa Raíz</th>`;
+        regiones.forEach(d => html += `<th>${d.toUpperCase()}</th>`);
+        html += `<th>Total</th></tr></thead><tbody id="tb-heatmap"></tbody>`;
+        tbl.innerHTML = html;
+
+        const tbody = document.getElementById("tb-heatmap");
+        let expandedCount = 0;
+
+        macros.sort((a, b) => agg[b].total - agg[a].total).forEach(m => {
+          if (agg[m].total === 0) return;
+          const tr = document.createElement("tr");
+          tr.style.cursor = "pointer";
+          tr.style.fontWeight = "bold";
+          let trHtml = `<td style="max-width:350px; white-space:normal; word-break:break-word;">${m} ⊞</td>`;
+          regiones.forEach(d => {
+            const min = agg[m].reg[d];
+            const pct = (100 * min / totMin).toFixed(1);
+            // El color se calcula en base al valor máximo de la tabla para que los % mayores sean siempre más oscuros.
+            const bg = `rgba(255,153,0,${min === 0 ? 0 : (0.1 + (min / maxMacroMin) * 0.8)})`;
+            const mEsc = m.replace(/'/g, "\\'");
+            const dEsc = d.replace(/'/g, "\\'");
+            const onclk = min > 0 ? ` onclick="goToMap('${mEsc}', '${dEsc}', event)" title="Ver en mapa geográfico"` : '';
+            trHtml += `<td class="num macro-cell" data-bg="${bg}" style="background:${bg}"${onclk}>${pct}%</td>`;
+          });
+          trHtml += `<td class="num">${(100 * agg[m].total / totMin).toFixed(1)}%</td>`;
+          tr.innerHTML = trHtml;
+
+          const subRows = [];
+          let maxEspMin = 0;
+          // Pre-calculate max specific cause value for proper color scaling in sub-rows
+          CAUSA_RAIZ[m].esp.forEach(esp => {
+            regiones.forEach(d => {
+              const minE = VIEW.filter(e => e.causa_raiz_macro === m && e.causa_raiz_especifica === esp && e.region === d).reduce((a, c) => a + c.minutos_caidos, 0);
+              if (minE > maxEspMin) maxEspMin = minE;
+            });
+          });
+
+          const validEsps = CAUSA_RAIZ[m].esp.filter(esp => {
+            const espMin = VIEW.filter(e => e.causa_raiz_macro === m && e.causa_raiz_especifica === esp).reduce((a, c) => a + c.minutos_caidos, 0);
+            return espMin > 0;
+          });
+
+          validEsps.forEach((esp, idx) => {
+            const espMin = VIEW.filter(e => e.causa_raiz_macro === m && e.causa_raiz_especifica === esp).reduce((a, c) => a + c.minutos_caidos, 0);
+            const subTr = document.createElement("tr");
+            subTr.style.display = "none";
+
+            const bTop = idx === 0 ? "border-top: 1px solid var(--rojo);" : "";
+            const bBot = idx === validEsps.length - 1 ? "border-bottom: 1px solid var(--rojo);" : "";
+            const bLef = "border-left: 1px solid var(--rojo);";
+            const bRig = "border-right: 1px solid var(--rojo);";
+
+            let shadow = [];
+            if (idx === 0) shadow.push("inset 0 8px 12px -5px rgba(255,153,0,0.7)");
+            if (idx === validEsps.length - 1) shadow.push("inset 0 -8px 12px -5px rgba(255,153,0,0.7)");
+
+            let sLef = [...shadow, "inset 8px 0 12px -5px rgba(255,153,0,0.7)"].join(", ");
+            let sMid = shadow.join(", ");
+            let sRig = [...shadow, "inset -8px 0 12px -5px rgba(255,153,0,0.7)"].join(", ");
+
+            let detHtml = `<td style="padding-left:24px; max-width:350px; white-space:normal; word-break:break-word; font-size:11.5px; color:var(--tinta); ${bLef} ${bTop} ${bBot} ${sLef ? 'box-shadow:' + sLef + ';' : ''}">↳ ${esp}</td>`;
+            regiones.forEach(d => {
+              const minE = VIEW.filter(e => e.causa_raiz_macro === m && e.causa_raiz_especifica === esp && e.region === d).reduce((a, c) => a + c.minutos_caidos, 0);
+              const pctE = (100 * minE / totMin).toFixed(1);
+              const bgE = `rgba(255,153,0,${minE === 0 ? 0 : (0.1 + (minE / maxEspMin) * 0.8)})`;
+              const mEsc = m.replace(/'/g, "\\'");
+              const dEsc = d.replace(/'/g, "\\'");
+              const espEsc = esp.replace(/'/g, "\\'");
+              const onclk = minE > 0 ? ` onclick="goToMap('${mEsc}', '${dEsc}', event, '${espEsc}')" title="Ver en mapa geográfico"` : '';
+              detHtml += `<td class="num" style="background:${bgE}; color:${minE > 0 ? '#000' : 'var(--gris)'}; ${bTop} ${bBot} ${sMid ? 'box-shadow:' + sMid + ';' : ''}"${onclk}>${pctE}%</td>`;
+            });
+            detHtml += `<td class="num" style="color:var(--tinta); ${bRig} ${bTop} ${bBot} ${sRig ? 'box-shadow:' + sRig + ';' : ''}">${(100 * espMin / totMin).toFixed(1)}%</td>`;
+            subTr.innerHTML = detHtml;
+            subRows.push(subTr);
+          });
+
+          tr.onclick = () => {
+            const isDet = subRows.length > 0 && subRows[0].style.display === "table-row";
+            if (isDet) expandedCount--; else expandedCount++;
+            tr.cells[0].innerHTML = `${m} ${isDet ? "⊞" : "⊟"}`;
+            subRows.forEach(sr => sr.style.display = isDet ? "none" : "table-row");
+
+            // Apagar o encender colores globales
+            document.querySelectorAll('#tb-heatmap .macro-cell').forEach(cell => {
+              cell.style.background = expandedCount > 0 ? 'transparent' : cell.dataset.bg;
+            });
+          };
+
+          tbody.appendChild(tr);
+          subRows.forEach(sr => tbody.appendChild(sr));
+        });
+      }
+
+      /* ============================================================
+         PAGINACIÓN DETALLES MAPA CALOR SUSPENSIÓN
+      ============================================================ */
+      let hsEvs = [];
+      let hsPage = 0;
+
+      window.renderHsPage = function(offset) {
+        if (offset !== undefined) hsPage += offset;
+        const tbl = document.getElementById("tbl-hs");
+        let html = `<thead><tr><th>Ticket</th><th>Sitio</th><th>Inicio</th><th>Duración</th><th>Causa raíz</th><th>Causa suspensión</th><th>Solución</th><th>Detalle</th></tr></thead><tbody>`;
+        if (hsEvs.length === 0) {
+           html += `<tr><td colspan="8" style="text-align:center">No hay eventos para esta selección.</td></tr>`;
+        } else {
+           const start = hsPage * 10;
+           const pageEvs = hsEvs.slice(start, start + 10);
+           pageEvs.forEach(e => {
+             const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:200px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+             const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:200px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
+             html += `<tr><td>${e.ticket}</td><td><b>${e.sitio_id}</b><br><span style="font-size:10px">${e.nombre}</span></td><td style="font-size:11px">${fmtDT(e.ts)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td></tr>`;
+           });
+        }
+        html += `</tbody>`;
+
+        if (hsEvs.length > 10) {
+           const totalPages = Math.ceil(hsEvs.length / 10);
+           html += `<tfoot><tr><td colspan="8" style="text-align:center; padding: 12px; background: #f9fafb; border-top: 1px solid var(--linea);">`;
+           html += `<button class="btn-fant" onclick="renderHsPage(-1)" ${hsPage === 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : 'style="cursor:pointer;"'}>◀ Anterior</button>`;
+           html += `<span style="margin: 0 20px; font-weight:bold; font-size:13px; color:var(--azul-marino);">Página ${hsPage + 1} de ${totalPages} (${fmt(hsEvs.length)} fallas)</span>`;
+           html += `<button class="btn-fant" onclick="renderHsPage(1)" ${hsPage >= totalPages - 1 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : 'style="cursor:pointer;"'}>Siguiente ▶</button>`;
+           html += `</td></tr></tfoot>`;
+        }
+        tbl.innerHTML = html;
+      };
+
+      window.showHsDetail = function(macro, esp, reg, event) {
+        if(event) event.stopPropagation();
+        const wrap = document.getElementById("wrap-hs-tbl");
+        wrap.style.display = "block";
+        
+        let title = `Fallas > 12h: ${macro}`;
+        if(esp && esp !== 'null') title += ` ➔ ${esp}`;
+        if(reg && reg !== 'null') title += ` en ${reg}`;
+        else title += ` (Nacional)`;
+        
+        document.getElementById("hs-tbl-title").textContent = title;
+        
+        hsEvs = VIEW.filter(e => e.minutos_caidos > 720);
+        if(macro && macro !== 'null') hsEvs = hsEvs.filter(e => e.causa_suspension_macro === macro);
+        if(esp && esp !== 'null') hsEvs = hsEvs.filter(e => e.causa_suspension_especifica === esp);
+        if(reg && reg !== 'null') hsEvs = hsEvs.filter(e => e.region === reg);
+        
+        hsEvs.sort((a,b) => b.minutos_caidos - a.minutos_caidos);
+        
+        hsPage = 0;
+        window.renderHsPage(0);
+        wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      };
+
+      /* ============================================================
+         MAPA DE CALOR POR CAUSA SUSPENSIÓN (> 12H)
+      ============================================================ */
+      function renderHeatmapSuspension() {
+        let VIEW_MAYORES = VIEW.filter(e => e.minutos_caidos > 720); // > 12h
+        const chkHide = document.getElementById("chk-hide-sindato-hs");
+        if (chkHide && chkHide.checked) {
+          VIEW_MAYORES = VIEW_MAYORES.filter(e => 
+            e.causa_suspension_macro !== 'Sin dato' && 
+            e.causa_suspension_macro !== 'Sin especificar' &&
+            e.causa_suspension_especifica !== 'Sin dato' && 
+            e.causa_suspension_especifica !== 'Sin especificar'
+          );
+        }
+        const regiones = [...new Set(VIEW_MAYORES.map(e => e.region))].filter(Boolean).sort();
+        const macros = [...new Set(VIEW_MAYORES.map(e => e.causa_suspension_macro))].filter(Boolean).sort();
+        const totMin = VIEW_MAYORES.reduce((a, c) => a + c.minutos_caidos, 0) || 1;
+
+        const agg = {};
+        let maxMacroMin = 0;
+        macros.forEach(m => {
+          agg[m] = { total: 0, reg: {} };
+          regiones.forEach(d => agg[m].reg[d] = 0);
+        });
+
+        VIEW_MAYORES.forEach(e => {
+          const m = e.causa_suspension_macro;
+          const d = e.region;
+          if (agg[m] && agg[m].reg[d] !== undefined) {
+            agg[m].reg[d] += e.minutos_caidos;
+            agg[m].total += e.minutos_caidos;
+            if (agg[m].reg[d] > maxMacroMin) maxMacroMin = agg[m].reg[d];
+          }
+        });
+
+        const tbl = document.getElementById("tbl-heatmap-suspension");
+        if (!tbl) return;
+        let html = `<thead><tr><th style="max-width:350px">Causa Suspensión</th>`;
+        regiones.forEach(d => html += `<th>${d.toUpperCase()}</th>`);
+        html += `<th>Total</th></tr></thead><tbody id="tb-heatmap-suspension"></tbody>`;
+        tbl.innerHTML = html;
+
+        window.goToMapSuspension = function(macro, region, event, esp) {
+          if(event) event.stopPropagation();
+          geoNivel = { tipo: "depto", depto: null, ciudad: null };
+          
+          updateGeoCascade();
+          const geoReg = document.getElementById("geo-reg");
+          if (geoReg) geoReg.value = region || "";
+          
+          updateGeoCascade();
+          const geoCs = document.getElementById("geo-cs");
+          if (geoCs) geoCs.value = macro || "";
+          
+          updateGeoCascade();
+          if (esp) {
+            const geoCsEsp = document.getElementById("geo-cs-esp");
+            if (geoCsEsp) geoCsEsp.value = esp;
+          }
+          
+          const geoRango = document.getElementById("geo-rango");
+          if (geoRango) geoRango.value = "> 12 horas";
+          
+          renderGeo();
+          
+          const secGeo = document.getElementById("geografico");
+          if(secGeo) secGeo.scrollIntoView({ behavior: "smooth" });
+        };
+
+        const tbody = document.getElementById("tb-heatmap-suspension");
+        let expandedCount = 0;
+
+        macros.sort((a, b) => agg[b].total - agg[a].total).forEach(m => {
+          if (agg[m].total === 0) return;
+          const tr = document.createElement("tr");
+          tr.style.cursor = "pointer";
+          tr.style.fontWeight = "bold";
+          let trHtml = `<td style="max-width:350px; white-space:normal; word-break:break-word;">${m} ⊞</td>`;
+          regiones.forEach(d => {
+            const min = agg[m].reg[d];
+            const pct = (100 * min / totMin).toFixed(1);
+            const bg = `rgba(255,153,0,${min === 0 ? 0 : (0.1 + (min / maxMacroMin) * 0.8)})`;
+            const mEsc = m.replace(/'/g, "\\'");
+            const dEsc = d.replace(/'/g, "\\'");
+            const onclk = min > 0 ? ` onclick="goToMapSuspension('${mEsc}', '${dEsc}', event)" title="Ver en mapa geográfico"` : '';
+            trHtml += `<td class="num macro-cell" data-bg="${bg}" style="background:${bg}"${onclk}>${pct}%</td>`;
+          });
+          const onclkTotal = agg[m].total > 0 ? ` onclick="goToMapSuspension('${m.replace(/'/g, "\\'")}', '', event)" title="Ver en mapa geográfico"` : '';
+          trHtml += `<td class="num"${onclkTotal}>${(100 * agg[m].total / totMin).toFixed(1)}%</td>`;
+          tr.innerHTML = trHtml;
+
+          const subRows = [];
+          let maxEspMin = 0;
+          const specificCauses = [...new Set(VIEW_MAYORES.filter(e => e.causa_suspension_macro === m).map(e => e.causa_suspension_especifica))].filter(Boolean).sort();
+
+          specificCauses.forEach(esp => {
+            regiones.forEach(d => {
+              const minE = VIEW_MAYORES.filter(e => e.causa_suspension_macro === m && e.causa_suspension_especifica === esp && e.region === d).reduce((a, c) => a + c.minutos_caidos, 0);
+              if (minE > maxEspMin) maxEspMin = minE;
+            });
+          });
+
+          specificCauses.forEach((esp, idx) => {
+            const espMin = VIEW_MAYORES.filter(e => e.causa_suspension_macro === m && e.causa_suspension_especifica === esp).reduce((a, c) => a + c.minutos_caidos, 0);
+            if (espMin === 0) return;
+            const subTr = document.createElement("tr");
+            subTr.style.display = "none";
+
+            const bTop = idx === 0 ? "border-top: 1px solid var(--rojo);" : "";
+            const bBot = idx === specificCauses.length - 1 ? "border-bottom: 1px solid var(--rojo);" : "";
+            const bLef = "border-left: 1px solid var(--rojo);";
+            const bRig = "border-right: 1px solid var(--rojo);";
+
+            let shadow = [];
+            if (idx === 0) shadow.push("inset 0 8px 12px -5px rgba(255,153,0,0.7)");
+            if (idx === specificCauses.length - 1) shadow.push("inset 0 -8px 12px -5px rgba(255,153,0,0.7)");
+
+            let sLef = [...shadow, "inset 8px 0 12px -5px rgba(255,153,0,0.7)"].join(", ");
+            let sMid = shadow.join(", ");
+            let sRig = [...shadow, "inset -8px 0 12px -5px rgba(255,153,0,0.7)"].join(", ");
+
+            let detHtml = `<td style="padding-left:24px; max-width:350px; white-space:normal; word-break:break-word; font-size:11.5px; color:var(--tinta); ${bLef} ${bTop} ${bBot} ${sLef ? 'box-shadow:' + sLef + ';' : ''}">↳ ${esp}</td>`;
+            regiones.forEach(d => {
+              const minE = VIEW_MAYORES.filter(e => e.causa_suspension_macro === m && e.causa_suspension_especifica === esp && e.region === d).reduce((a, c) => a + c.minutos_caidos, 0);
+              const pctE = (100 * minE / totMin).toFixed(1);
+              const bgE = `rgba(255,153,0,${minE === 0 ? 0 : (0.1 + (minE / maxEspMin) * 0.8)})`;
+              const mEsc = m.replace(/'/g, "\\'");
+              const dEsc = d.replace(/'/g, "\\'");
+              const espEsc = esp.replace(/'/g, "\\'");
+              const onclkE = minE > 0 ? ` onclick="goToMapSuspension('${mEsc}', '${dEsc}', event, '${espEsc}')" title="Ver en mapa geográfico"` : '';
+              detHtml += `<td class="num" style="background:${bgE}; color:${minE > 0 ? '#000' : 'var(--gris)'}; ${bTop} ${bBot} ${sMid ? 'box-shadow:' + sMid + ';' : ''}"${onclkE}>${pctE}%</td>`;
+            });
+            const mEsc2 = m.replace(/'/g, "\\'");
+            const espEsc2 = esp.replace(/'/g, "\\'");
+            const onclkETotal = espMin > 0 ? ` onclick="goToMapSuspension('${mEsc2}', '', event, '${espEsc2}')" title="Ver en mapa geográfico"` : '';
+            detHtml += `<td class="num" style="color:var(--tinta); ${bRig} ${bTop} ${bBot} ${sRig ? 'box-shadow:' + sRig + ';' : ''}"${onclkETotal}>${(100 * espMin / totMin).toFixed(1)}%</td>`;
+            subTr.innerHTML = detHtml;
+            subRows.push(subTr);
+          });
+
+          tr.onclick = () => {
+            const isDet = subRows.length > 0 && subRows[0].style.display === "table-row";
+            if (isDet) expandedCount--; else expandedCount++;
+            tr.cells[0].innerHTML = `${m} ${isDet ? "⊞" : "⊟"}`;
+            subRows.forEach(sr => sr.style.display = isDet ? "none" : "table-row");
+
+            document.querySelectorAll('#tb-heatmap-suspension .macro-cell').forEach(cell => {
+              cell.style.background = expandedCount > 0 ? 'transparent' : cell.dataset.bg;
+            });
+          };
+
+          tbody.appendChild(tr);
+          subRows.forEach(sr => tbody.appendChild(sr));
+        });
+      }
+
+      /* ============================================================
+         FALLAS MASIVAS
+      ============================================================ */
+      function renderMasivas() {
+        const fMes = document.getElementById("mas-mes") ? document.getElementById("mas-mes").value : "";
+        const fR = document.getElementById("mas-reg") ? document.getElementById("mas-reg").value : "";
+        const fCR = document.getElementById("mas-cr") ? document.getElementById("mas-cr").value : "";
+
+        let base = VIEW_TEND; // ignorar mes global
+        if (fMes) base = base.filter(e => String(e.mes_ano) === fMes);
+        if (fR) base = base.filter(e => e.region === fR);
+        if (fCR) base = base.filter(e => e.causa_raiz_macro === fCR);
+
+        const masivasData = {};
+        base.forEach(r => {
+           const mid = r.masiva_id;
+           if (!mid || mid === 'No') return;
+           if (!masivasData[mid]) {
+              masivasData[mid] = { 
+                 id: mid, 
+                 causas_raiz: new Set(), 
+                 causas_macro: new Set(),
+                 region: r.region,
+                 depto: r.departamento,
+                 minutos: 0,
+                 sitios: new Set(),
+                 eventos: []
+              };
+           }
+           masivasData[mid].minutos += r.minutos_caidos;
+           masivasData[mid].sitios.add(r.sitio_id);
+           masivasData[mid].causas_raiz.add(r.causa_raiz_especifica);
+           masivasData[mid].causas_macro.add(r.causa_raiz_macro);
+           masivasData[mid].eventos.push(r);
+        });
+
+        const list = Object.values(masivasData).sort((a, b) => b.minutos - a.minutos);
+        masCurrentList = list;
+        masCurrentPage = 1;
+        
+        const kpis = document.getElementById("kpi-masivas");
+        if(kpis) {
+            const totalMasivas = list.length;
+            const totalSitiosMasivas = new Set(list.flatMap(m => Array.from(m.sitios))).size;
+            const totalMinutosMasivas = list.reduce((s, m) => s + m.minutos, 0);
+            const avgSitios = totalMasivas > 0 ? (list.reduce((acc, m) => acc + m.sitios.size, 0) / totalMasivas).toFixed(1) : 0;
+            const avgMinutos = totalMasivas > 0 ? (totalMinutosMasivas / totalMasivas).toFixed(0) : 0;
+            
+            kpis.innerHTML = `
+            <div class="kpi k-cr"><div class="et">Masivas Detectadas</div><div class="valor">${totalMasivas}</div></div>
+            <div class="kpi k-al"><div class="et">Sitios Afectados</div><div class="valor">${totalSitiosMasivas}</div></div>
+            <div class="kpi k-cm"><div class="et">Minutos Totales</div><div class="valor">${Math.round(totalMinutosMasivas).toLocaleString()}</div></div>
+            <div class="kpi"><div class="et">Sitios Prom. / Masiva</div><div class="valor">${avgSitios}</div></div>
+            <div class="kpi"><div class="et">Minutos Prom. / Masiva</div><div class="valor">${Number(avgMinutos).toLocaleString()}</div></div>
+            `;
+        }
+
+        updateMasivasTable();
+        window.currentMasivasData = masivasData;
+      }
+      
+      let masCurrentPage = 1;
+      let masCurrentList = [];
+      
+      window.masPage = function(dir) {
+        const totalPages = Math.ceil(masCurrentList.length / 5) || 1;
+        masCurrentPage += dir;
+        if (masCurrentPage < 1) masCurrentPage = 1;
+        if (masCurrentPage > totalPages) masCurrentPage = totalPages;
+        updateMasivasTable();
+      };
+      
+      function updateMasivasTable() {
+        const tbody = document.getElementById("tbl-masivas");
+        const totalPages = Math.ceil(masCurrentList.length / 5) || 1;
+        
+        const pageInfo = document.getElementById("mas-page-info");
+        if(pageInfo) pageInfo.textContent = `${masCurrentPage} / ${totalPages}`;
+        
+        const start = (masCurrentPage - 1) * 5;
+        const pageList = masCurrentList.slice(start, start + 5);
+
+        let html = `<tr>
+          <th>ID Masiva</th>
+          <th>Región / Depto</th>
+          <th>Causa Raíz</th>
+          <th class="num">Sitios</th>
+          <th class="num">Minutos</th>
+          <th style="text-align:center">Criticidad</th>
+        </tr>`;
+
+        if (masCurrentList.length === 0) {
+           html += `<tr><td colspan="6" style="text-align:center; color:var(--gris); padding:15px;">No hay fallas masivas con los filtros actuales.</td></tr>`;
+        } else {
+           pageList.forEach(m => {
+             let crit = "Media";
+             let color = "var(--alerta)";
+             if (m.minutos > 2000 || m.sitios.size > 20) { crit = "Crítica"; color = "var(--critico)"; }
+             else if (m.minutos > 500 || m.sitios.size > 10) { crit = "Alta"; color = "var(--critico-medio)"; }
+
+             let cMacro = Array.from(m.causas_macro).join(' / ');
+             let cRaiz = Array.from(m.causas_raiz).join(' / ');
+             if(cMacro.length > 30) cMacro = cMacro.substring(0, 30) + '...';
+             if(cRaiz.length > 40) cRaiz = cRaiz.substring(0, 40) + '...';
+
+             html += `<tr class="clickable" onclick='abrirMasivaDetalle(${JSON.stringify(m.id)})'>
+               <td><span class="tdpill" style="background:var(--azul-marino)">${m.id}</span></td>
+               <td><b>${m.region}</b><br><span style="font-size:10.5px;color:var(--gris)">${m.depto}</span></td>
+               <td><b>${cMacro}</b><br><span style="font-size:10.5px;color:var(--gris)">${cRaiz}</span></td>
+               <td class="num" style="font-weight:600">${m.sitios.size}</td>
+               <td class="num" style="font-weight:600">${Math.round(m.minutos)}</td>
+               <td style="text-align:center"><span style="color: ${color}; font-weight:600; font-family:var(--f-disp); font-size:11.5px; border: 1px solid ${color}; border-radius: 4px; padding: 2px 6px;">${crit}</span></td>
+             </tr>`;
+           });
+        }
+        if(tbody) tbody.innerHTML = html;
+      }
+      
+      window.abrirMasivaDetalle = function(mid) {
+         const m = window.currentMasivasData[mid];
+         if (!m) return;
+         document.getElementById("masivas-det-title").textContent = `Detalle Exclusión: ${mid} (${m.eventos.length} tickets)`;
+         document.getElementById("wrap-masivas-det").style.display = "block";
+         
+         const tbody = document.getElementById("tbl-masivas-det");
+         const events = m.eventos.sort((a, b) => b.minutos_caidos - a.minutos_caidos);
+         let html = `<tr>
+            <th>Sitio</th>
+            <th>Ticket</th>
+            <th>Causa Raíz</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Fin</th>
+            <th class="num">Minutos</th>
+         </tr>`;
+         events.forEach(r => {
+             html += `<tr>
+               <td><b>${r.sitio_id}</b><br><span style="font-size:10.5px;color:var(--gris)">${r.nombre}</span></td>
+               <td><span class="tdpill" style="background:var(--rojo)">${r.ticket}</span></td>
+               <td style="font-size:10.5px;color:var(--gris);max-width:180px;">${r.causa_raiz_especifica}</td>
+               <td style="font-family: var(--f-mono); font-size: 11px;">${fmtDT(r.ts)}</td>
+               <td style="font-family: var(--f-mono); font-size: 11px;">${fmtDT(r.ts_fin)}</td>
+               <td class="num" style="font-weight:600">${r.minutos_caidos.toFixed(1)}</td>
+             </tr>`;
+         });
+         tbody.innerHTML = html;
+         
+         document.getElementById("wrap-masivas-det").scrollIntoView({behavior: "smooth", block: "nearest"});
+      };
+
+      /* ============================================================
+         PLAN 500
+      ============================================================ */
+      function renderPlan500() {
+        const planDates = typeof _PLAN500 !== 'undefined' ? _PLAN500 : {};
+        const planCounts = typeof _PLAN500_COUNTS !== 'undefined' ? _PLAN500_COUNTS : {};
+        const byMonth = {};
+        
+        _E.forEach(r => {
+          const site_cd = _S[r[0]]; 
+          const executionMonth = planDates[site_cd];
+          if (!executionMonth) return;
+          
+          const causaGlobal = _S[r[7]].toLowerCase();
+          if (!causaGlobal.includes('energ')) return;
+          
+          const mesAnoInt = r[16];
+          const mesAno = String(r[16]);
+          
+          if (!byMonth[mesAno]) {
+             byMonth[mesAno] = { mins: 0, events: [] };
+          }
+          byMonth[mesAno].mins += r[6];
+          byMonth[mesAno].events.push(r);
+        });
+
+        if (typeof _MA !== 'undefined') {
+          _MA.forEach(m => {
+            const mStr = String(m);
+            if (!byMonth[mStr]) byMonth[mStr] = { mins: 0, events: [] };
+          });
+        }
+        
+        const labels = Object.keys(byMonth).sort();
+        const dataMins = labels.map(l => Math.round(byMonth[l].mins));
+        
+        const dataSites = labels.map(l => {
+           const m = parseInt(l, 10);
+           return planCounts[m] || 0;
+        });
+
+        const formattedLabels = labels.map(l => l.substring(0,4) + '-' + l.substring(4));
+
+        if (charts.plan500) charts.plan500.destroy();
+        
+        const plan500LabelsPlugin = {
+          id: 'plan500Labels',
+          afterDatasetsDraw: (chart) => {
+            const ctx = chart.ctx;
+            chart.data.datasets.forEach((dataset, i) => {
+              const meta = chart.getDatasetMeta(i);
+              if (meta.hidden) return;
+              meta.data.forEach((element, index) => {
+                const isLine = dataset.type === 'line';
+                ctx.fillStyle = isLine ? '#1A2238' : '#FF9900';
+                ctx.font = '600 12px "IBM Plex Mono", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const val = dataset.data[index];
+                if (val > 0) {
+                  const pos = element.tooltipPosition();
+                  ctx.fillText(val.toString(), pos.x, pos.y - (isLine ? 15 : 12));
+                }
+              });
+            });
+          }
+        };
+
+        charts.plan500 = new Chart(document.getElementById("ch-plan500"), {
+          type: "bar",
+          data: {
+            labels: formattedLabels,
+            datasets: [
+              { type: "line", label: "Planes Finalizados (en el mes)", data: dataSites, borderColor: "#1A2238", backgroundColor: "#1A2238", yAxisID: "y1", tension: 0.3, borderWidth: 3, pointRadius: 4 },
+              { type: "bar", label: "Minutos de Energía (Total Sitios Finalizados)", data: dataMins, backgroundColor: "#FF9900", yAxisID: "y", borderRadius: 4, order: 2 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 25 } },
+            scales: {
+              x: { grid: { display: false }, ticks: { font: { family: "IBM Plex Mono", size: 11 } } },
+              y: { type: "linear", position: "left", title: { display: true, text: "Minutos", font: { size: 11, weight: "bold" } }, grid: { color: "#E4E8EE", borderDash: [4, 4] }, suggestedMax: Math.max(...dataMins, 10) * 1.15 },
+              y1: { type: "linear", position: "right", title: { display: true, text: "Total Planes", font: { size: 11, weight: "bold" } }, grid: { display: false }, suggestedMax: Math.max(...dataSites, 5) * 1.3 }
+            },
+            plugins: {
+              legend: { position: "top", labels: { font: { family: "IBM Plex Sans", size: 12 }, usePointStyle: true, boxWidth: 8 } },
+              tooltip: { mode: "index", intersect: false }
+            },
+            onClick: (e, elements) => {
+              if (!elements.length) return;
+              const idx = elements[0].index;
+              const mesStr = labels[idx];
+              renderPlan500Table(mesStr, byMonth[mesStr].events || []);
+            }
+          },
+          plugins: [plan500LabelsPlugin]
+        });
+      }
+
+      let p5CurrentPage = 1;
+      let p5CurrentEvents = [];
+      
+      function renderPlan500Table(mes, events) {
+        p5CurrentEvents = events.sort((a, b) => b[6] - a[6]);
+        p5CurrentPage = 1;
+        
+        const mStr = mes.substring(0,4) + '-' + mes.substring(4);
+        document.getElementById("plan500-tbl-title").textContent = `Fallas de Energía en ${mStr} (${events.length})`;
+        document.getElementById("wrap-plan500-tbl").style.display = "block";
+        
+        updatePlan500Table();
+      }
+
+      function updatePlan500Table() {
+        const tbody = document.getElementById("tbl-plan500");
+        const totalPages = Math.ceil(p5CurrentEvents.length / 5) || 1;
+        
+        document.getElementById("p5-page-info").textContent = `${p5CurrentPage} / ${totalPages}`;
+        
+        const start = (p5CurrentPage - 1) * 5;
+        const pageEvents = p5CurrentEvents.slice(start, start + 5);
+        
+        let html = `<tr>
+          <th>Sitio</th>
+          <th>Ticket</th>
+          <th>Causa Específica</th>
+          <th>Fecha</th>
+          <th class="num">Minutos</th>
+        </tr>`;
+        
+        if (pageEvents.length === 0) {
+           html += `<tr><td colspan="5" style="text-align:center; color:var(--gris); padding: 15px;">No hay fallas para mostrar en este mes</td></tr>`;
+        } else {
+           pageEvents.forEach(r => {
+             html += `<tr>
+               <td><b>${_S[r[0]]}</b><br><span style="font-size:10.5px;color:var(--gris)">${_S[r[1]]}</span></td>
+               <td><span class="tdpill" style="background:var(--azul-marino)">${_S[r[10]]}</span></td>
+               <td>${_S[r[8]]}</td>
+               <td style="font-family: var(--f-mono); font-size: 11px;">${r[12]}</td>
+               <td class="num" style="font-weight:600; color:var(--rojo)">${r[6].toFixed(1)}</td>
+             </tr>`;
+           });
+        }
+        tbody.innerHTML = html;
+      }
+
+      /* ============================================================
+         RENDER GLOBAL
+      ============================================================ */
+      function renderAll() {
+        VIEW = aplicaFiltro(filtro);
+        VIEW_TEND = aplicaFiltro({ ...filtro, mes: "" });
+        const nSit = new Set(VIEW.map(s => s.sitio_id)).size;
+        document.getElementById("filtro-count").textContent = `${VIEW.length} eventos · ${nSit} sitios`;
+        renderResumen(); renderTendencias(); renderPareto(); renderHeatmap(); renderHeatmapSuspension(); renderCausaRaiz(); renderSusp(); renderGeo(); renderWorst(); renderIntermitentes(); updateGeoCascade(); renderMasivas(); renderPlan500();
+      }
+
+      /* ============================================================
+         APLICAR GEOGRAFÍA (BOTÓN ACTUALIZAR)
+      ============================================================ */
+      window.aplicarGeografia = function () {
+        const gD = document.getElementById("geo-depto");
+        const gM = document.getElementById("geo-muni");
+        const dVal = gD ? gD.value : "";
+        const mVal = gM ? gM.value : "";
+
+        if (mVal) {
+          geoNivel = { tipo: "sitio", depto: dVal, ciudad: mVal };
+        } else if (dVal) {
+          geoNivel = { tipo: "ciudad", depto: dVal };
+        } else {
+          geoNivel = { tipo: "depto", depto: null, ciudad: null };
+        }
+        renderGeo();
+      };
+
+      /* ============================================================
+         UPDATE GEO CASCADE LOGIC
+      ============================================================ */
+      function updateGeoCascade() {
+        const gReg = document.getElementById("geo-reg");
+        const gDepto = document.getElementById("geo-depto");
+        const gMuni = document.getElementById("geo-muni");
+        const gCr = document.getElementById("geo-cr");
+        const gCrEsp = document.getElementById("geo-cr-esp");
+        const gCs = document.getElementById("geo-cs");
+        const gCsEsp = document.getElementById("geo-cs-esp");
+        const gRango = document.getElementById("geo-rango");
+
+        const rVal = gReg ? gReg.value : "";
+        const dVal = gDepto ? gDepto.value : "";
+        const mVal = gMuni ? gMuni.value : "";
+        const crVal = gCr ? gCr.value : "";
+        const espVal = gCrEsp ? gCrEsp.value : "";
+
+        // Update Reg
+        if (gReg) {
+          const validReg = [...new Set(VIEW.map(e => e.region))].filter(Boolean).sort();
+          gReg.innerHTML = '<option value="">Todas</option>';
+          validReg.forEach(r => gReg.add(new Option(r, r)));
+          gReg.value = validReg.includes(rVal) ? rVal : "";
+        }
+        const rValNew = gReg ? gReg.value : "";
+
+        // Update Depto
+        if (gDepto) {
+          let d_data = VIEW;
+          if (rValNew) d_data = d_data.filter(e => e.region === rValNew);
+          const validD = [...new Set(d_data.map(e => e.departamento))].filter(Boolean).sort();
+          gDepto.innerHTML = '<option value="">Todos</option>';
+          validD.forEach(d => gDepto.add(new Option(d, d)));
+          gDepto.value = validD.includes(dVal) ? dVal : "";
+        }
+        
+        const dValNew = gDepto ? gDepto.value : "";
+
+        // Update Muni
+        if (gMuni) {
+          let m_data = VIEW;
+          if (rValNew) m_data = m_data.filter(e => e.region === rValNew);
+          if (dValNew) m_data = m_data.filter(e => e.departamento === dValNew);
+          const validC = [...new Set(m_data.map(e => e.ciudad))].filter(Boolean).sort();
+          gMuni.innerHTML = '<option value="">Todos</option>';
+          validC.forEach(c => gMuni.add(new Option(c, c)));
+          gMuni.value = validC.includes(mVal) ? mVal : "";
+        }
+
+        // Update Causa Global
+        if (gCr) {
+          let c_data = VIEW;
+          if (rValNew) c_data = c_data.filter(e => e.region === rValNew);
+          if (dValNew) c_data = c_data.filter(e => e.departamento === dValNew);
+          if (gMuni && gMuni.value) c_data = c_data.filter(e => e.ciudad === gMuni.value);
+          const validCr = [...new Set(c_data.map(e => e.causa_raiz_macro))].filter(Boolean).sort();
+          gCr.innerHTML = '<option value="">Todas</option>';
+          validCr.forEach(m => gCr.add(new Option(m, m)));
+          gCr.value = validCr.includes(crVal) ? crVal : "";
+        }
+
+        // Update Causa Especifica
+        if (gCrEsp) {
+          let e_data = VIEW;
+          if (gCr && gCr.value) e_data = e_data.filter(e => e.causa_raiz_macro === gCr.value);
+          if (rValNew) e_data = e_data.filter(e => e.region === rValNew);
+          if (dValNew) e_data = e_data.filter(e => e.departamento === dValNew);
+          if (gMuni && gMuni.value) e_data = e_data.filter(e => e.ciudad === gMuni.value);
+          const validE = [...new Set(e_data.map(e => e.causa_raiz_especifica))].filter(Boolean).sort();
+          gCrEsp.innerHTML = '<option value="">Todas</option>';
+          validE.forEach(e => gCrEsp.add(new Option(e, e)));
+          gCrEsp.value = validE.includes(espVal) ? espVal : "";
+        }
+
+        const csVal = gCs ? gCs.value : "";
+        if (gCs) {
+          let cs_data = VIEW;
+          if (rValNew) cs_data = cs_data.filter(e => e.region === rValNew);
+          if (dValNew) cs_data = cs_data.filter(e => e.departamento === dValNew);
+          if (gMuni && gMuni.value) cs_data = cs_data.filter(e => e.ciudad === gMuni.value);
+          const validCs = [...new Set(cs_data.map(e => e.causa_suspension_macro))].filter(Boolean).sort();
+          gCs.innerHTML = '<option value="">Todas</option>';
+          validCs.forEach(m => gCs.add(new Option(m, m)));
+          gCs.value = validCs.includes(csVal) ? csVal : "";
+        }
+
+        const csEspVal = gCsEsp ? gCsEsp.value : "";
+        if (gCsEsp) {
+          let cse_data = VIEW;
+          if (gCs && gCs.value) cse_data = cse_data.filter(e => e.causa_suspension_macro === gCs.value);
+          if (rValNew) cse_data = cse_data.filter(e => e.region === rValNew);
+          if (dValNew) cse_data = cse_data.filter(e => e.departamento === dValNew);
+          if (gMuni && gMuni.value) cse_data = cse_data.filter(e => e.ciudad === gMuni.value);
+          const validCsE = [...new Set(cse_data.map(e => e.causa_suspension_especifica))].filter(Boolean).sort();
+          gCsEsp.innerHTML = '<option value="">Todas</option>';
+          validCsE.forEach(e => gCsEsp.add(new Option(e, e)));
+          gCsEsp.value = validCsE.includes(csEspVal) ? csEspVal : "";
+        }
+      }
+
+      /* ============================================================
+         INIT UI
+      ============================================================ */
+      function initFiltros() {
+        const fmodo = document.getElementById("f-modo");
+        const fd = document.getElementById("f-depto");
+        Object.keys(DEPTOS).forEach(d => fd.add(new Option(d, d)));
+
+        const fm = document.getElementById("f-muni");
+        const ciudades = [...new Set(DATA.map(d => d.ciudad))].sort();
+        ciudades.forEach(c => fm.add(new Option(c, c)));
+
+        const fc = document.getElementById("f-causa");
+        Object.keys(CAUSA_RAIZ).forEach(c => fc.add(new Option(c, c)));
+
+        const fr = document.getElementById("f-rango");
+        const rangos = [...new Set(DATA.map(d => d.rango))];
+        rangos.forEach(r => fr.add(new Option(r, r)));
+
+        const fmes = document.getElementById("f-mes");
+        const mesesLbl = {"01":"Enero","02":"Febrero","03":"Marzo","04":"Abril","05":"Mayo","06":"Junio","07":"Julio","08":"Agosto","09":"Septiembre","10":"Octubre","11":"Noviembre","12":"Diciembre"};
+        _MA.forEach(m => { const ms = String(m); const mm = ms.slice(4); const lbl = `${mesesLbl[mm] || mm} ${ms.slice(0,4)}`; fmes.add(new Option(lbl, m)); });
+        if (_MA.length > 0) {
+          fmes.value = _MA[_MA.length - 1];
+          filtro.mes = String(_MA[_MA.length - 1]);
+        }
+
+        document.getElementById("btn-aplicar").onclick = () => {
+          filtro = { depto: fd.value, muni: fm.value, causa: fc.value, rango: fr.value, mes: fmes.value, modo: fmodo ? fmodo.value : "UNIRED" };
+          geoNivel = { tipo: "depto" }; crSel = null; csSel = null; renderAll();
+        };
+        document.getElementById("btn-reset").onclick = () => {
+          if (fmodo) fmodo.value = "UNIRED";
+          fd.value = ""; fm.value = ""; fc.value = ""; fr.value = "";
+          if (_MA.length > 0) fmes.value = _MA[_MA.length - 1]; else fmes.value = "";
+          filtro = { depto: "", muni: "", causa: "", rango: "", mes: fmes.value, modo: "UNIRED" }; geoNivel = { tipo: "depto" }; crSel = null; csSel = null; renderAll();
+        };
+        document.getElementById("cr-comp").onchange = e => { crComp = e.target.value; crSel = null; renderCausaRaiz() };
+        const tendMetric = document.getElementById("tend-metric"); if (tendMetric) tendMetric.onchange = () => renderTendencias();
+
+        // Filtros secundarios Geografía
+        const geoCr = document.getElementById("geo-cr");
+        if (geoCr) geoCr.onchange = () => updateGeoCascade();
+        const geoCrEsp = document.getElementById("geo-cr-esp");
+        if (geoCrEsp) geoCrEsp.onchange = () => updateGeoCascade();
+
+        const geoCs = document.getElementById("geo-cs");
+        if (geoCs) geoCs.onchange = () => updateGeoCascade();
+        const geoCsEsp = document.getElementById("geo-cs-esp");
+        if (geoCsEsp) geoCsEsp.onchange = () => updateGeoCascade();
+
+        const geoRango = document.getElementById("geo-rango");
+        if (geoRango) {
+          const rangos = [...new Set(DATA.map(d => d.rango))];
+          rangos.forEach(r => geoRango.add(new Option(r, r)));
+          geoRango.onchange = () => updateGeoCascade();
+        }
+
+        const geoReg = document.getElementById("geo-reg");
+        if (geoReg) geoReg.onchange = () => updateGeoCascade();
+        const geoDepto = document.getElementById("geo-depto");
+        if (geoDepto) geoDepto.onchange = () => updateGeoCascade();
+        const geoMuni = document.getElementById("geo-muni");
+        if (geoMuni) geoMuni.onchange = () => updateGeoCascade();
+
+        // Filtros secundarios Worst Offenders
+        const woR = document.getElementById("wo-reg");
+        if (woR) {
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(Boolean).sort();
+          regiones.forEach(d => woR.add(new Option(d, d)));
+          woR.onchange = () => renderWorst();
+        }
+        const woCr = document.getElementById("wo-cr");
+        if (woCr) {
+          Object.keys(CAUSA_RAIZ).forEach(c => woCr.add(new Option(c, c)));
+          woCr.onchange = () => renderWorst();
+        }
+        const woCs = document.getElementById("wo-cs");
+        if (woCs) {
+          Object.keys(CAUSA_SUSP).forEach(c => woCs.add(new Option(c, c)));
+          woCs.onchange = () => renderWorst();
+        }
+
+        const intPeriodo = document.getElementById("int-periodo");
+        if (intPeriodo) intPeriodo.onchange = () => renderIntermitentes();
+
+        // Filtros secundarios Masivas
+        const masMes = document.getElementById("mas-mes");
+        if (masMes) {
+          _MA.forEach(m => { const ms = String(m); const mm = ms.slice(4); const lbl = `${mesesLbl[mm] || mm} ${ms.slice(0,4)}`; masMes.add(new Option(lbl, m)); });
+          masMes.onchange = () => renderMasivas();
+        }
+        const masReg = document.getElementById("mas-reg");
+        if (masReg) {
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(Boolean).sort();
+          regiones.forEach(d => masReg.add(new Option(d, d)));
+          masReg.onchange = () => renderMasivas();
+        }
+        const masCr = document.getElementById("mas-cr");
+        if (masCr) {
+          Object.keys(CAUSA_RAIZ).forEach(c => masCr.add(new Option(c, c)));
+          masCr.onchange = () => renderMasivas();
+        }
+      }
+      function initNav() {
+        document.querySelectorAll("#navmenu a").forEach(a => {
+          a.onclick = e => {
+            e.preventDefault(); document.getElementById(a.dataset.go).scrollIntoView({ behavior: "smooth" });
+            document.querySelectorAll("#navmenu a").forEach(x => x.classList.remove("activo")); a.classList.add("activo");
+          };
+        });
+        const obs = new IntersectionObserver(es => {
+          es.forEach(en => {
+            if (en.isIntersecting) {
+              document.querySelectorAll("#navmenu a").forEach(x => x.classList.toggle("activo", x.dataset.go === en.target.id));
+            }
+          })
+        }, { rootMargin: "-40% 0px -55% 0px" });
+        document.querySelectorAll("main section").forEach(s => obs.observe(s));
+      }
+
+      /* ============================================================
+         CHATBOT
+      ============================================================ */
+      const SUGERENCIAS = [
+        "Top 5 sitios por minutos en Antioquia",
+        "¿Qué sitios son más intermitentes (más eventos)?",
+        "¿En qué mes creció más la indisponibilidad?",
+        "Sitios crónicos con causa raíz de Energía"
+      ];
+      let chatHist = [];
+      function dataResumenParaIA() {
+        const porDepto = {}, porCR = {}, porCS = {}, porMes = {};
+        DATA.forEach(e => {
+          porDepto[e.departamento] = (porDepto[e.departamento] || 0) + e.minutos_caidos;
+          porCR[e.causa_raiz_especifica] = (porCR[e.causa_raiz_especifica] || 0) + e.minutos_caidos;
+          porCS[e.causa_suspension_especifica] = (porCS[e.causa_suspension_especifica] || 0) + e.minutos_caidos;
+          const mo = String(e.mes_ano).slice(0, 4) + "-" + String(e.mes_ano).slice(4).padStart(2, "0");
+          porMes[mo] = (porMes[mo] || 0) + e.minutos_caidos;
+        });
+        
+        const sm = metricasSitio(DATA).map(s => ({
+          id: s.sitio_id, dep: s.departamento, min: Math.round(s.min), nEv: s.nEv, crTop: s.crTop
+        }));
+        
+        const topMin = [...sm].sort((a,b) => b.min - a.min).slice(0, 15);
+        const topEv = [...sm].sort((a,b) => b.nEv - a.nEv).slice(0, 15);
+
+        const sortDict = (dict, limit) => Object.entries(dict).sort((a,b)=>b[1]-a[1]).slice(0, limit).map(x=>({[x[0]]: Math.round(x[1])}));
+
+        return {
+          totalEventos: DATA.length, 
+          totalMinutos: Math.round(DATA.reduce((s, e) => s + e.minutos_caidos, 0)),
+          resumen_meses: sortDict(porMes, 12),
+          top_causas_raiz: sortDict(porCR, 10),
+          top_causas_suspension: sortDict(porCS, 10),
+          top_deptos_minutos: sortDict(porDepto, 33),
+          top15_nacionales_minutos: topMin,
+          top15_nacionales_eventos: topEv
+        };
+      }
+      function addMsg(role, html) {
+        const b = document.getElementById("chat-body");
+        const d = document.createElement("div"); d.className = "msg " + role; d.innerHTML = html; b.appendChild(d); b.scrollTop = b.scrollHeight; return d;
+      }
+      function mdToHtml(t) {
+        // mini-markdown: negritas, tablas simples, saltos
+        t = t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        t = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        // tablas markdown
+        if (/\|.+\|/.test(t)) {
+          const lines = t.split("\n"); let out = [], intbl = false, buf = [];
+          const flush = () => {
+            if (buf.length) {
+              let rows = buf.filter(l => !/^\s*\|[-:\s|]+\|\s*$/.test(l));
+              let html = "<div class='table-wrapper' style='overflow-x: auto; margin: 6px 0;'><table style='margin:0;'>"; rows.forEach((r, i) => {
+                const cells = r.split("|").slice(1, -1).map(c => c.trim());
+                html += "<tr>" + cells.map(c => i === 0 ? `<th>${c}</th>` : `<td>${c}</td>`).join("") + "</tr>";
+              });
+              html += "</table></div>"; out.push(html); buf = [];
+            }
+          };
+          lines.forEach(l => { if (/^\s*\|.+\|\s*$/.test(l)) { buf.push(l); intbl = true; } else { if (intbl) { flush(); intbl = false; } out.push(l); } });
+          flush(); t = out.join("\n");
+        }
+        return t.replace(/\n/g, "<br>");
+      }
+      async function preguntar(q) {
+        addMsg("user", q.replace(/</g, "&lt;"));
+        chatHist.push({ role: "user", content: q });
+        const typing = addMsg("bot typing", "Analizando el dataset…");
+        const ctx = dataResumenParaIA();
+        const sys = `Eres el Asistente de Red de TIGO. Tienes un resumen muy estricto: resumen_meses, top_causas, top_deptos_minutos, top15_nacionales_minutos, top15_nacionales_eventos. Reglas: NUNCA inventes información. Si te preguntan algo que no está en el top 15, dí que no tienes datos para ese nivel de detalle. Usa markdown para tablas simples. DATASET:\n${JSON.stringify(ctx)}`;
+        try {
+          const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST", 
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": "Bearer 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"
+            },
+            body: JSON.stringify({ 
+              model: "llama-3.1-8b-instant", 
+              messages: [{ role: "system", content: sys }, ...chatHist] 
+            })
+          });
+          const data = await resp.json();
+          if (data.error) {
+              throw new Error(data.error.message || JSON.stringify(data.error));
+          }
+          const txt = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : "No pude generar respuesta.";
+          typing.remove();
+          addMsg("bot", mdToHtml(txt));
+          chatHist.push({ role: "assistant", content: txt });
+        } catch (err) {
+          typing.remove();
+          addMsg("bot", "⚠️ No pude conectar con el asistente. " + (err.message || ""));
+        }
+      }
+      function initChat() {
+        const panel = document.getElementById("chatpanel");
+        document.getElementById("fab").onclick = () => panel.classList.add("open");
+        document.getElementById("chat-close").onclick = () => panel.classList.remove("open");
+        const sugs = document.getElementById("chat-sugs");
+        SUGERENCIAS.forEach(s => { const b = document.createElement("button"); b.className = "sug"; b.textContent = s; b.onclick = () => { if (!sending) preguntar(s) }; sugs.appendChild(b) });
+        const ta = document.getElementById("chat-text"), send = document.getElementById("chat-send");
+        let sending = false;
+        const go = async () => { const q = ta.value.trim(); if (!q || sending) return; sending = true; send.disabled = true; ta.value = ""; await preguntar(q); sending = false; send.disabled = false; };
+        send.onclick = go;
+        ta.onkeydown = e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); go(); } };
+        addMsg("bot", "Hola 👋 Soy tu asistente de red. Puedo investigar el dataset de " + DATA.length + " sitios: rankings, causas raíz, suspensiones, departamentos. Prueba una sugerencia o escríbeme.");
+      }
+
+      /* ============================================================
+         HISTORIAL DE SITIOS
+      ============================================================ */
+      const API = window.location.origin;
+      let historialData = {};
+      try { historialData = JSON.parse(localStorage.getItem('historialSitios')) || {} } catch (e) { historialData = {} }
+      let histCtx = null;
+      let dbNotasSitios = new Set();
+      let dbNotasFallas = new Set();
+
+      function fetchResumenNotas() {
+        return fetch(`${API}/resumen_notas`).then(r => r.json()).then(data => {
+          dbNotasSitios = new Set(data.sitios || []);
+          dbNotasFallas = new Set(data.fallas || []);
+        }).catch(err => console.error("Error cargando resumen API", err));
+      }
+ // Contexto actual del modal: {tipo, codigo, nombre, depto, muni, ticket, inicio, fin, duracion, causa, solucion}
+
+      function saveHistorial() { localStorage.setItem('historialSitios', JSON.stringify(historialData)) }
+
+      function openHistorial(dataset) {
+        histCtx = { ...dataset }; // Copia todos los data-* attributes del botón
+        const nombre = dataset.nombre || dataset.codigo || dataset.ticket || 'Elemento';
+        const esFalla = dataset.tipo === 'falla';
+        document.getElementById('hist-title').textContent = (esFalla ? 'Nota Falla' : 'Nota Sitio') + ' \u2014 ' + nombre;
+        renderHistList();
+        document.getElementById('modal-hist').classList.add('open');
+      }
+
+      function renderHistList() {
+        const list = document.getElementById('hist-list');
+        if (!histCtx) { list.innerHTML = '<li class="hist-empty">Sin contexto.</li>'; return; }
+        const esFalla = histCtx.tipo === 'falla';
+        const key = esFalla ? histCtx.ticket : histCtx.codigo;
+        const url = esFalla ? `${API}/notas_falla/${encodeURIComponent(key)}` : `${API}/notas_sitio/${encodeURIComponent(key)}`;
+        // Cargar notas desde PostgreSQL
+        list.innerHTML = '<li class="hist-empty">Cargando notas...</li>';
+        fetch(url).then(r => r.json()).then(notas => {
+          let html = "";
+          const apiTexts = new Set(notas.map(n => n.nota.trim()));
+          if (notas.length) {
+            html += notas.map(n => `<li><span class="hist-date">${n.fecha_registro}</span>${n.nota}<button class="hist-del" data-id="${n.id}" data-tipo="${histCtx.tipo}" title="Eliminar">\u00d7</button></li>`).join('');
+          }
+          const localNotas = historialData[key] || [];
+          if (localNotas.length) {
+            html += localNotas.map((n, i) => apiTexts.has(n.texto.trim()) ? '' : `<li><span class="hist-date">${n.fecha} (Local)</span>${n.texto}<button class="hist-del hist-del-local" data-idx="${i}" title="Eliminar">\u00d7</button></li>`).join('');
+          }
+          
+          if (!html) { list.innerHTML = '<li class="hist-empty">No hay notas registradas.</li>'; return; }
+          list.innerHTML = html;
+          
+          list.querySelectorAll('.hist-del:not(.hist-del-local)').forEach(btn => btn.onclick = () => {
+            const delUrl = btn.dataset.tipo === 'falla' ? `${API}/nota_falla/${btn.dataset.id}` : `${API}/nota_sitio/${btn.dataset.id}`;
+            fetch(delUrl, { method: 'DELETE' }).then(() => renderHistList());
+          });
+          list.querySelectorAll('.hist-del-local').forEach(btn => btn.onclick = () => {
+            historialData[key].splice(btn.dataset.idx, 1);
+            saveHistorial();
+            renderHistList();
+          });
+        }).catch(() => {
+          // Fallback solo a localStorage si falla la red
+          const localNotas = historialData[key] || [];
+          if (!localNotas.length) { list.innerHTML = '<li class="hist-empty">No hay notas (API no disponible).</li>'; return; }
+          list.innerHTML = localNotas.map((n, i) => `<li><span class="hist-date">${n.fecha} (Local)</span>${n.texto}<button class="hist-del hist-del-local" data-idx="${i}" title="Eliminar">\u00d7</button></li>`).join('');
+          list.querySelectorAll('.hist-del-local').forEach(btn => btn.onclick = () => {
+            historialData[key].splice(btn.dataset.idx, 1);
+            saveHistorial();
+            renderHistList();
+          });
+        });
+      }
+
+      function initHistorial() {
+        document.getElementById('modal-hist').onclick = e => { if (e.target === e.currentTarget) e.target.classList.remove('open') };
+        document.getElementById('hist-add').onclick = () => {
+          const ta = document.getElementById('hist-text');
+          const txt = ta.value.trim();
+          if (!txt || !histCtx) return;
+          const esFalla = histCtx.tipo === 'falla';
+          const key = esFalla ? histCtx.ticket : histCtx.codigo;
+          // Guardar en localStorage como respaldo
+          if (!historialData[key]) historialData[key] = [];
+          historialData[key].push({ fecha: new Date().toLocaleString('es-CO'), texto: txt });
+          saveHistorial();
+          ta.value = '';
+          // Enviar a PostgreSQL
+          let body, endpoint;
+          if (esFalla) {
+            endpoint = `${API}/nota_falla`;
+            body = { ticket: histCtx.ticket, hora_inicio: histCtx.inicio || null, hora_fin: histCtx.fin || null, duracion_minutos: parseFloat(histCtx.duracion) || 0, causa_especifica: histCtx.causa || '', solucion: histCtx.solucion || '', codigo_sitio: histCtx.codigo || '', nota: txt };
+          } else {
+            endpoint = `${API}/nota_sitio`;
+            body = { departamento: histCtx.depto || '', municipio: histCtx.muni || '', codigo_sitio: histCtx.codigo || '', nota: txt };
+          }
+          fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+            .then(r => r.json())
+            .then(data => { if (data.ok) { renderHistList(); renderGeo(); } else console.error('Error DB:', data.error); })
+            .catch(err => console.error('Error API:', err));
+        };
+      }
+
+
+      /* ============================================================
+         NOTAS DE ANÁLISIS (gráfica apilada)
+      ============================================================ */
+      let analisisCtx = null;
+      let analisisImgBase64 = null;
+
+      function openAnalisisNota(seccion, causa, mes) {
+        analisisCtx = { seccion, causa, mes };
+        analisisImgBase64 = null;
+        document.getElementById('analisis-title').textContent = `Nota · ${causa}`;
+        document.getElementById('analisis-meta').innerHTML =
+          `<span class="meta-chip">📅 ${mes}</span>` +
+          `<span class="meta-chip">🏷️ ${causa}</span>` +
+          `<span class="meta-chip">📂 ${seccion === 'causa_raiz' ? 'Causa Raíz Macro' : seccion}</span>`;
+        document.getElementById('analisis-text').value = '';
+        document.getElementById('analisis-img-preview').style.display = 'none';
+        document.getElementById('analisis-img-label').classList.remove('has-img');
+        document.getElementById('analisis-img-label').innerHTML = '📷 Adjuntar imagen<input type="file" id="analisis-img-input" accept="image/*" style="display:none">';
+        bindAnalisisImgInput();
+        renderAnalisisNotas();
+        document.getElementById('modal-analisis').classList.add('open');
+      }
+
+      function bindAnalisisImgInput() {
+        document.getElementById('analisis-img-input').onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            analisisImgBase64 = ev.target.result;
+            const preview = document.getElementById('analisis-img-preview');
+            preview.src = analisisImgBase64;
+            preview.style.display = 'inline-block';
+            const label = document.getElementById('analisis-img-label');
+            label.classList.add('has-img');
+            label.innerHTML = '✅ ' + file.name.substring(0, 20) + '<input type="file" id="analisis-img-input" accept="image/*" style="display:none">';
+            bindAnalisisImgInput();
+          };
+          reader.readAsDataURL(file);
+        };
+      }
+
+      function renderAnalisisNotas() {
+        const container = document.getElementById('analisis-list');
+        if (!analisisCtx) { container.innerHTML = ''; return; }
+        container.innerHTML = '<div class="hist-empty">Cargando notas...</div>';
+        const url = `${API}/notas_analisis/${encodeURIComponent(analisisCtx.seccion)}/${encodeURIComponent(analisisCtx.causa)}/${encodeURIComponent(analisisCtx.mes)}`;
+        fetch(url).then(r => r.json()).then(notas => {
+          if (!notas.length) {
+            container.innerHTML = '<div class="hist-empty">No hay notas para este segmento. ¡Sé el primero en documentar!</div>';
+            return;
+          }
+          container.innerHTML = notas.map(n => {
+            let html = `<div class="analisis-nota-item">`;
+            html += `<span class="an-date">${n.fecha_registro}</span>`;
+            html += `<div class="an-text">${n.nota.replace(/\n/g, '<br>')}</div>`;
+            if (n.imagen) {
+              html += `<img class="an-img" src="${n.imagen}" alt="Adjunto" onclick="document.getElementById('lightbox-img').src=this.src; document.getElementById('lightbox').classList.add('open')">`;
+            }
+            html += `<button class="an-del" data-id="${n.id}" title="Eliminar nota">×</button>`;
+            html += `</div>`;
+            return html;
+          }).join('');
+          container.querySelectorAll('.an-del').forEach(btn => {
+            btn.onclick = () => {
+              if (!confirm('¿Eliminar esta nota?')) return;
+              fetch(`${API}/nota_analisis/${btn.dataset.id}`, { method: 'DELETE' })
+                .then(() => renderAnalisisNotas())
+                .catch(err => console.error('Error:', err));
+            };
+          });
+        }).catch(() => {
+          // Fallback localStorage
+          const key = `analisis_${analisisCtx.seccion}_${analisisCtx.causa}_${analisisCtx.mes}`;
+          const notas = JSON.parse(localStorage.getItem(key) || '[]');
+          if (!notas.length) {
+            container.innerHTML = '<div class="hist-empty">No hay notas (API no disponible).</div>';
+            return;
+          }
+          container.innerHTML = notas.map((n, i) => {
+            let html = `<div class="analisis-nota-item">`;
+            html += `<span class="an-date">${n.fecha}</span>`;
+            html += `<div class="an-text">${n.texto.replace(/\n/g, '<br>')}</div>`;
+            if (n.imagen) {
+              html += `<img class="an-img" src="${n.imagen}" alt="Adjunto" onclick="document.getElementById('lightbox-img').src=this.src; document.getElementById('lightbox').classList.add('open')">`;
+            }
+            html += `</div>`;
+            return html;
+          }).join('');
+        });
+      }
+
+      function initAnalisis() {
+        document.getElementById('modal-analisis').onclick = e => {
+          if (e.target === e.currentTarget) e.target.classList.remove('open');
+        };
+        document.getElementById('analisis-add').onclick = () => {
+          const ta = document.getElementById('analisis-text');
+          const txt = ta.value.trim();
+          if (!txt || !analisisCtx) return;
+          // Save to localStorage as fallback
+          const key = `analisis_${analisisCtx.seccion}_${analisisCtx.causa}_${analisisCtx.mes}`;
+          const local = JSON.parse(localStorage.getItem(key) || '[]');
+          local.unshift({ fecha: new Date().toLocaleString('es-CO'), texto: txt, imagen: analisisImgBase64 });
+          localStorage.setItem(key, JSON.stringify(local));
+          ta.value = '';
+          // Send to API
+          const body = {
+            seccion: analisisCtx.seccion,
+            causa: analisisCtx.causa,
+            mes: analisisCtx.mes,
+            nota: txt,
+            imagen: analisisImgBase64
+          };
+          fetch(`${API}/nota_analisis`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          })
+            .then(r => r.json())
+            .then(data => {
+              if (data.ok) {
+                analisisImgBase64 = null;
+                document.getElementById('analisis-img-preview').style.display = 'none';
+                document.getElementById('analisis-img-label').classList.remove('has-img');
+                document.getElementById('analisis-img-label').innerHTML = '📷 Adjuntar imagen<input type="file" id="analisis-img-input" accept="image/*" style="display:none">';
+                bindAnalisisImgInput();
+                renderAnalisisNotas();
+              }
+            })
+            .catch(err => {
+              console.error('Error API:', err);
+              renderAnalisisNotas();
+            });
+        };
+        bindAnalisisImgInput();
+      }
+
+      /* ============================================================
+         ARRANQUE
+      ============================================================ */
+      document.addEventListener("DOMContentLoaded", () => {
+        if ('scrollRestoration' in history) {
+          history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+        fetchResumenNotas().then(() => {
+          initMapa(); initFiltros(); initNav(); initChat(); initHistorial(); initAnalisis(); renderAll();
+        });
+      });
+    </script>
+</body>
+
+</html>
