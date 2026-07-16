@@ -1185,6 +1185,10 @@
       <option value="UNIRED">UNIRED</option>
       <option value="HUAWEI">HUAWEI</option>
     </select>
+    <span class="lbl">Regional</span>
+    <select id="f-reg">
+      <option value="">Todas</option>
+    </select>
     <span class="lbl">Departamento</span>
     <select id="f-depto">
       <option value="">Todos</option>
@@ -1766,7 +1770,7 @@
       /* ============================================================
          ESTADO / FILTROS
       ============================================================ */
-      let filtro = { depto: "", muni: "", causa: "", rango: "", mes: "", modo: "UNIRED" };
+      let filtro = { reg: "", depto: "", muni: "", causa: "", rango: "", mes: "", modo: "UNIRED" };
       function aplicaFiltro(d) {
         return DATA.filter(s => {
           let cumpleModo = true;
@@ -1776,6 +1780,7 @@
              cumpleModo = s.etiqueta_padre === 'NAR';
           }
           return cumpleModo &&
+            (!d.reg || s.region === d.reg) &&
             (!d.depto || s.departamento === d.depto) &&
             (!d.muni || s.ciudad === d.muni) &&
             (!d.causa || s.causa_raiz_macro === d.causa) &&
@@ -2242,6 +2247,9 @@
         const gMuni = document.getElementById("geo-muni");
         const gCr = document.getElementById("geo-cr");
         const gCrEsp = document.getElementById("geo-cr-esp");
+        const gCs = document.getElementById("geo-cs");
+        const gCsEsp = document.getElementById("geo-cs-esp");
+        const gRango = document.getElementById("geo-rango");
 
         const currR = gReg ? gReg.value : "";
         const currD = gDepto ? gDepto.value : "";
@@ -2312,12 +2320,18 @@
         const fMuni = gMuni ? gMuni.value : "";
         const fCR = gCr ? gCr.value : "";
         const fCREsp = gCrEsp ? gCrEsp.value : "";
+        const fCS = gCs ? gCs.value : "";
+        const fCSEsp = gCsEsp ? gCsEsp.value : "";
+        const fRango = gRango ? gRango.value : "";
 
         if (fCR) geoEvs = geoEvs.filter(e => e.causa_raiz_macro === fCR);
         if (fCREsp) geoEvs = geoEvs.filter(e => e.causa_raiz_especifica === fCREsp);
+        if (fCS) geoEvs = geoEvs.filter(e => e.causa_suspension_macro === fCS);
+        if (fCSEsp) geoEvs = geoEvs.filter(e => e.causa_suspension_especifica === fCSEsp);
         if (fReg) geoEvs = geoEvs.filter(e => e.region === fReg);
         if (fDepto) geoEvs = geoEvs.filter(e => e.departamento === fDepto);
         if (fMuni) geoEvs = geoEvs.filter(e => e.ciudad === fMuni);
+        if (fRango) geoEvs = geoEvs.filter(e => e.rango === fRango);
 
         const totalGeoMinutos = geoEvs.reduce((sum, e) => sum + e.minutos_caidos, 0);
         const geoSitiosAfectados = new Set(geoEvs.map(e => e.sitio_id)).size;
@@ -3379,6 +3393,13 @@
       ============================================================ */
       function initFiltros() {
         const fmodo = document.getElementById("f-modo");
+        
+        const freg = document.getElementById("f-reg");
+        if (freg) {
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(Boolean).sort();
+          regiones.forEach(r => freg.add(new Option(r, r)));
+        }
+
         const fd = document.getElementById("f-depto");
         Object.keys(DEPTOS).forEach(d => fd.add(new Option(d, d)));
 
@@ -3402,14 +3423,15 @@
         }
 
         document.getElementById("btn-aplicar").onclick = () => {
-          filtro = { depto: fd.value, muni: fm.value, causa: fc.value, rango: fr.value, mes: fmes.value, modo: fmodo ? fmodo.value : "UNIRED" };
+          filtro = { reg: freg ? freg.value : "", depto: fd.value, muni: fm.value, causa: fc.value, rango: fr.value, mes: fmes.value, modo: fmodo ? fmodo.value : "UNIRED" };
           geoNivel = { tipo: "depto" }; crSel = null; csSel = null; renderAll();
         };
         document.getElementById("btn-reset").onclick = () => {
           if (fmodo) fmodo.value = "UNIRED";
+          if (freg) freg.value = "";
           fd.value = ""; fm.value = ""; fc.value = ""; fr.value = "";
           if (_MA.length > 0) fmes.value = _MA[_MA.length - 1]; else fmes.value = "";
-          filtro = { depto: "", muni: "", causa: "", rango: "", mes: fmes.value, modo: "UNIRED" }; geoNivel = { tipo: "depto" }; crSel = null; csSel = null; renderAll();
+          filtro = { reg: "", depto: "", muni: "", causa: "", rango: "", mes: fmes.value, modo: "UNIRED" }; geoNivel = { tipo: "depto" }; crSel = null; csSel = null; renderAll();
         };
         document.getElementById("cr-comp").onchange = e => { crComp = e.target.value; crSel = null; renderCausaRaiz() };
         const tendMetric = document.getElementById("tend-metric"); if (tendMetric) tendMetric.onchange = () => renderTendencias();
