@@ -2366,19 +2366,23 @@
         if (fMuni) geoEvs = geoEvs.filter(e => e.ciudad === fMuni);
         if (fRango) geoEvs = geoEvs.filter(e => e.rango === fRango);
 
-        const totalGeoMinutos = geoEvs.reduce((sum, e) => sum + e.minutos_caidos, 0);
-        const geoSitiosAfectados = new Set(geoEvs.map(e => e.sitio_id)).size;
-        const promMinPorSitio = geoEvs.length > 0 ? totalGeoMinutos / geoEvs.length : 0;
-        
-        const elS = document.getElementById("geo-insight-sitios");
-        const elM = document.getElementById("geo-insight-minutos");
-        const elP = document.getElementById("geo-insight-promedio");
-        const elE = document.getElementById("geo-insight-eventos");
-        
-        if(elS) elS.textContent = fmt(geoSitiosAfectados);
-        if(elM) elM.textContent = fmt(Math.round(totalGeoMinutos));
-        if(elP) elP.textContent = fmt(Math.round(promMinPorSitio));
-        if(elE) elE.textContent = fmt(geoEvs.length);
+        function updateGeoInsights(evsList) {
+          const totalMin = evsList.reduce((sum, e) => sum + e.minutos_caidos, 0);
+          const prom = evsList.length > 0 ? totalMin / evsList.length : 0;
+          const nSit = new Set(evsList.map(e => e.sitio_id)).size;
+          
+          const elS = document.getElementById("geo-insight-sitios");
+          const elM = document.getElementById("geo-insight-minutos");
+          const elP = document.getElementById("geo-insight-promedio");
+          const elE = document.getElementById("geo-insight-eventos");
+          
+          if(elS) elS.textContent = fmt(nSit);
+          if(elM) elM.textContent = fmt(Math.round(totalMin));
+          if(elP) elP.textContent = fmt(Math.round(prom));
+          if(elE) elE.textContent = fmt(evsList.length);
+        }
+
+        updateGeoInsights(geoEvs);
 
         pintaMapa(geoEvs);
         const bread = document.getElementById("geo-bread");
@@ -2477,9 +2481,25 @@
 
             tr.onclick = (e) => {
               if (e.target.closest(".btn-hist")) return; // don't toggle if button clicked
+              
+              // Collapse any other open rows
+              tbody.querySelectorAll("tr:nth-child(even)").forEach(r => {
+                if(r !== detTr && r.style.display === "table-row") {
+                  r.style.display = "none";
+                  const prevTr = r.previousElementSibling;
+                  if(prevTr) prevTr.cells[0].innerHTML = prevTr.cells[0].innerHTML.replace("⊟", "⊞");
+                }
+              });
+
               const isDet = detTr.style.display === "table-row";
               detTr.style.display = isDet ? "none" : "table-row";
               tr.cells[0].innerHTML = `<b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ${isDet ? "⊞" : "⊟"}<div class="site-tip">🎫 <b>${tipTkt}</b> · ${tipMin} min<br>🔧 ${tipSol}</div>`;
+              
+              if (!isDet) {
+                updateGeoInsights(evts);
+              } else {
+                updateGeoInsights(evs);
+              }
             };
 
             tbody.appendChild(tr);
@@ -2491,7 +2511,15 @@
           if (evs.length) mapa.setView([evs[0].lat, evs[0].lng], 10);
         }
         bread.querySelectorAll("[data-l]").forEach(b => b.onclick = () => {
-          geoNivel = b.dataset.l === "nac" ? { tipo: "depto" } : { tipo: "ciudad", depto: geoNivel.depto }; renderGeo();
+          if (b.dataset.l === "nac") {
+            geoNivel = { tipo: "depto" };
+            if (document.getElementById("geo-depto")) document.getElementById("geo-depto").value = "";
+            if (document.getElementById("geo-muni")) document.getElementById("geo-muni").value = "";
+          } else {
+            geoNivel = { tipo: "ciudad", depto: geoNivel.depto };
+            if (document.getElementById("geo-muni")) document.getElementById("geo-muni").value = "";
+          }
+          renderGeo();
           if (b.dataset.l === "nac") mapa.setView([4.6, -74.1], 5.4);
         });
       }
@@ -2649,6 +2677,14 @@
         const geoReg = document.getElementById("geo-reg");
         if (geoReg) geoReg.value = region || "";
         
+        updateGeoCascade();
+        const geoCs = document.getElementById("geo-cs");
+        if (geoCs) geoCs.value = "";
+        
+        updateGeoCascade();
+        const geoCsEsp = document.getElementById("geo-cs-esp");
+        if (geoCsEsp) geoCsEsp.value = "";
+
         updateGeoCascade();
         const geoCr = document.getElementById("geo-cr");
         if (geoCr) geoCr.value = macro || "";
@@ -2888,6 +2924,14 @@
           const geoReg = document.getElementById("geo-reg");
           if (geoReg) geoReg.value = region || "";
           
+          updateGeoCascade();
+          const geoCr = document.getElementById("geo-cr");
+          if (geoCr) geoCr.value = "";
+          
+          updateGeoCascade();
+          const geoCrEsp = document.getElementById("geo-cr-esp");
+          if (geoCrEsp) geoCrEsp.value = "";
+
           updateGeoCascade();
           const geoCs = document.getElementById("geo-cs");
           if (geoCs) geoCs.value = macro || "";
