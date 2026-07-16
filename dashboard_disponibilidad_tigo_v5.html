@@ -1166,7 +1166,7 @@
     <nav id="navmenu">
       <a href="#resumen" data-go="resumen" class="activo">1 · Resumen</a>
       <a href="#tendencias" data-go="tendencias">2 · Tendencias</a>
-      <a href="#pareto" data-go="pareto">3 · Distribución</a>
+      <a href="#pareto" data-go="pareto">3 · Distribución por rangos de tiempo</a>
       <a href="#heatmap-suspension" data-go="heatmap-suspension">4 · Mapa causa suspensión</a>
       <a href="#suspension" data-go="suspension">5 · Causa suspensión</a>
       <a href="#heatmap" data-go="heatmap">6 · Mapa causa raíz</a>
@@ -1174,7 +1174,7 @@
       <a href="#geografico" data-go="geografico">8 · Geografía</a>
       <a href="#worst" data-go="worst">9 · Worst offenders</a>
       <a href="#intermitentes" data-go="intermitentes">10 · Intermitentes</a>
-      <a href="#masivas" data-go="masivas">11 · Masivas</a>
+      <a href="#masivas" data-go="masivas">11 · Fallas simultáneas</a>
       <a href="#plan500" data-go="plan500">12 · Plan 500</a>
     </nav>
   </header>
@@ -1261,10 +1261,9 @@
 
     <!-- 3 · DISTRIBUCIÓN -->
     <section id="pareto">
-      <div class="story-step"><span class="n">3</span> DISTRIBUCIÓN DE DURACIÓN</div>
+      <div class="story-step"><span class="n">3</span> DISTRIBUCIÓN POR RANGOS DE TIEMPO</div>
       <div class="sec-head">
-        <h2>Distribución por rango de duración</h2><span class="pregunta">% de minutos y % de eventos por categoría de
-          duración</span>
+        <h2>Distribución por rangos de tiempo</h2><span class="pregunta">% de minutos y % de eventos por categoría de duración</span>
       </div>
       <div class="narrativa" id="narr-pareto"></div>
       <div class="card">
@@ -1403,6 +1402,10 @@
           <div style="font-size:28px; color:var(--rojo); line-height:1;" id="geo-insight-promedio">0</div>
           <div style="color:var(--gris); text-transform:uppercase; font-size:12px; letter-spacing:0.5px; margin-top:4px;">Minutos / Sitio</div>
         </span>
+        <span style="border-left:5px solid var(--rojo); padding:10px 20px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+          <div style="font-size:28px; color:var(--rojo); line-height:1;" id="geo-insight-eventos">0</div>
+          <div style="color:var(--gris); text-transform:uppercase; font-size:12px; letter-spacing:0.5px; margin-top:4px;">Fallas simultáneas / Eventos</div>
+        </span>
       </div>
 
       <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
@@ -1539,11 +1542,11 @@
       </div>
     </section>
 
-    <!-- 11 · FALLAS MASIVAS -->
+    <!-- 11 · FALLAS SIMULTÁNEAS -->
     <section id="masivas">
-      <div class="story-step"><span class="n">11</span> FALLAS MASIVAS</div>
+      <div class="story-step"><span class="n">11</span> FALLAS SIMULTÁNEAS</div>
       <div class="sec-head">
-        <h2>Fallas Masivas</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
+        <h2>Fallas simultáneas</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
       </div>
       <div class="narrativa" id="narr-masivas">Agrupación automática de clústeres de fallas ocurridas en el mismo día y hora (aprox), con la misma causa raíz y cercanía geográfica (prefijo de sitio). Ideal para solicitar exclusiones.</div>
       <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
@@ -1565,8 +1568,8 @@
         <div class="card-head">
           <div style="display:flex; justify-content: space-between; align-items:center; width: 100%;">
             <div>
-              <h3>Listado de Fallas Masivas</h3>
-              <p class="sub">Haz clic en una falla masiva para ver los tickets agrupados</p>
+              <h3>Listado de Fallas simultáneas</h3>
+              <p class="sub">Haz clic en una falla simultánea para ver los tickets agrupados</p>
             </div>
             <div style="display:flex; gap: 8px; align-items: center; background: #f9fafb; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--linea);">
               <button class="btn-fant" style="padding: 2px 8px; min-width:auto;" onclick="masPage(-1)">◀</button>
@@ -2260,7 +2263,7 @@
         // 0. Regional options
         if (gReg) {
           gReg.innerHTML = '<option value="">Todas</option>';
-          const validR = [...new Set(VIEW.map(e => e.region))].filter(Boolean).sort();
+          const validR = [...new Set(VIEW.map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
           validR.forEach(r => gReg.add(new Option(r, r)));
           gReg.value = currR || "";
         }
@@ -2340,10 +2343,12 @@
         const elS = document.getElementById("geo-insight-sitios");
         const elM = document.getElementById("geo-insight-minutos");
         const elP = document.getElementById("geo-insight-promedio");
+        const elE = document.getElementById("geo-insight-eventos");
         
         if(elS) elS.textContent = fmt(geoSitiosAfectados);
         if(elM) elM.textContent = fmt(Math.round(totalGeoMinutos));
         if(elP) elP.textContent = fmt(Math.round(promMinPorSitio));
+        if(elE) elE.textContent = fmt(geoEvs.length);
 
         pintaMapa(geoEvs);
         const bread = document.getElementById("geo-bread");
@@ -2558,8 +2563,8 @@
         charts.worst = new Chart(document.getElementById("ch-worst"), {
           data: {
             labels: top.map(s => s.sitio_id), datasets: [
-              { type: "bar", label: "Minutos", data: top.map(s => s.min), backgroundColor: "#FF9900", yAxisID: "y" },
-              { type: "line", label: "Cantidad de eventos", data: top.map(s => s.nEv), borderColor: "#1A2238", borderWidth: 2.5, pointRadius: 4, yAxisID: "y2" }
+              { type: "bar", label: "Minutos", data: top.map(s => s.min), backgroundColor: "#FF9900", yAxisID: "y", order: 2 },
+              { type: "line", label: "Cantidad de eventos", data: top.map(s => s.nEv), borderColor: "#1A2238", borderWidth: 2.5, pointRadius: 4, yAxisID: "y2", order: 1 }
             ]
           },
           options: { responsive: true, scales: { x: { ticks: { maxRotation: 90, minRotation: 60, font: { size: 9 } } }, y: { position: "left", title: { display: true, text: "Minutos", color: "#6b7280" } }, y2: { position: "right", min: 0, grid: { drawOnChartArea: false }, title: { display: true, text: "Eventos", color: "#6b7280" } } } }
@@ -2817,7 +2822,7 @@
             e.causa_suspension_especifica !== 'Sin especificar'
           );
         }
-        const regiones = [...new Set(VIEW_MAYORES.map(e => e.region))].filter(Boolean).sort();
+        const regiones = [...new Set(VIEW_MAYORES.map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
         const macros = [...new Set(VIEW_MAYORES.map(e => e.causa_suspension_macro))].filter(Boolean).sort();
         const totMin = VIEW_MAYORES.reduce((a, c) => a + c.minutos_caidos, 0) || 1;
 
@@ -3051,7 +3056,7 @@
         </tr>`;
 
         if (masCurrentList.length === 0) {
-           html += `<tr><td colspan="6" style="text-align:center; color:var(--gris); padding:15px;">No hay fallas masivas con los filtros actuales.</td></tr>`;
+           html += `<tr><td colspan="6" style="text-align:center; color:var(--gris); padding:15px;">No hay fallas simultáneas con los filtros actuales.</td></tr>`;
         } else {
            pageList.forEach(m => {
              let crit = "Media";
@@ -3307,7 +3312,7 @@
 
         // Update Reg
         if (gReg) {
-          const validReg = [...new Set(VIEW.map(e => e.region))].filter(Boolean).sort();
+          const validReg = [...new Set(VIEW.map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
           gReg.innerHTML = '<option value="">Todas</option>';
           validReg.forEach(r => gReg.add(new Option(r, r)));
           gReg.value = validReg.includes(rVal) ? rVal : "";
@@ -3396,7 +3401,7 @@
         
         const freg = document.getElementById("f-reg");
         if (freg) {
-          const regiones = [...new Set(DATA.map(d => d.region))].filter(Boolean).sort();
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
           regiones.forEach(r => freg.add(new Option(r, r)));
         }
 
@@ -3464,7 +3469,7 @@
         // Filtros secundarios Worst Offenders
         const woR = document.getElementById("wo-reg");
         if (woR) {
-          const regiones = [...new Set(DATA.map(d => d.region))].filter(Boolean).sort();
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
           regiones.forEach(d => woR.add(new Option(d, d)));
           woR.onchange = () => renderWorst();
         }
@@ -3490,7 +3495,7 @@
         }
         const masReg = document.getElementById("mas-reg");
         if (masReg) {
-          const regiones = [...new Set(DATA.map(d => d.region))].filter(Boolean).sort();
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
           regiones.forEach(d => masReg.add(new Option(d, d)));
           masReg.onchange = () => renderMasivas();
         }
