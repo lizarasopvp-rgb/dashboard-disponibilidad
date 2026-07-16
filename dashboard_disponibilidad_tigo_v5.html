@@ -1659,6 +1659,12 @@
         </div>
         <div class="modal-body">
           <div class="analisis-meta" id="analisis-meta"></div>
+          <div style="margin:10px 0; font-size:12px; color:var(--gris); display:flex; align-items:center; gap:10px; background:#f9fafb; padding:8px; border-radius:6px; border:1px solid var(--linea)">
+            <b>Regional aplicable:</b>
+            <select id="analisis-reg-select" style="padding:4px 8px; border-radius:4px; border:1px solid var(--linea); font-size:12px; outline:none; cursor:pointer;">
+              <option value="TODAS">Aplica a Todas (Global)</option>
+            </select>
+          </div>
           <div id="analisis-list"></div>
           <div class="analisis-form">
             <textarea id="analisis-text" placeholder="Escribe tu análisis o explicación de este comportamiento…" rows="3"></textarea>
@@ -3754,6 +3760,17 @@
         document.getElementById('analisis-img-preview').style.display = 'none';
         document.getElementById('analisis-img-label').classList.remove('has-img');
         document.getElementById('analisis-img-label').innerHTML = '📷 Adjuntar imagen<input type="file" id="analisis-img-input" accept="image/*" style="display:none">';
+        
+        const sel = document.getElementById('analisis-reg-select');
+        if (sel) {
+          sel.innerHTML = '<option value="TODAS">Aplica a Todas (Global)</option>';
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+          regiones.forEach(r => sel.add(new Option(r, r)));
+          const currentFReg = document.getElementById('f-reg') ? document.getElementById('f-reg').value : "";
+          sel.value = currentFReg || "TODAS";
+          sel.onchange = () => renderAnalisisNotas();
+        }
+
         bindAnalisisImgInput();
         renderAnalisisNotas();
         document.getElementById('modal-analisis').classList.add('open');
@@ -3782,7 +3799,12 @@
         const container = document.getElementById('analisis-list');
         if (!analisisCtx) { container.innerHTML = ''; return; }
         container.innerHTML = '<div class="hist-empty">Cargando notas...</div>';
-        const url = `${API}/notas_analisis/${encodeURIComponent(analisisCtx.seccion)}/${encodeURIComponent(analisisCtx.causa)}/${encodeURIComponent(analisisCtx.mes)}`;
+        
+        const sel = document.getElementById('analisis-reg-select');
+        const regSelected = sel ? sel.value : "TODAS";
+        const causaConRegion = regSelected === "TODAS" ? analisisCtx.causa : `${analisisCtx.causa}|${regSelected}`;
+        
+        const url = `${API}/notas_analisis/${encodeURIComponent(analisisCtx.seccion)}/${encodeURIComponent(causaConRegion)}/${encodeURIComponent(analisisCtx.mes)}`;
         fetch(url).then(r => r.json()).then(notas => {
           if (!notas.length) {
             container.innerHTML = '<div class="hist-empty">No hay notas para este segmento. ¡Sé el primero en documentar!</div>';
@@ -3809,7 +3831,10 @@
           });
         }).catch(() => {
           // Fallback localStorage
-          const key = `analisis_${analisisCtx.seccion}_${analisisCtx.causa}_${analisisCtx.mes}`;
+          const sel = document.getElementById('analisis-reg-select');
+          const regSelected = sel ? sel.value : "TODAS";
+          const causaConRegion = regSelected === "TODAS" ? analisisCtx.causa : `${analisisCtx.causa}|${regSelected}`;
+          const key = `analisis_${analisisCtx.seccion}_${causaConRegion}_${analisisCtx.mes}`;
           const notas = JSON.parse(localStorage.getItem(key) || '[]');
           if (!notas.length) {
             container.innerHTML = '<div class="hist-empty">No hay notas (API no disponible).</div>';
@@ -3836,8 +3861,12 @@
           const ta = document.getElementById('analisis-text');
           const txt = ta.value.trim();
           if (!txt || !analisisCtx) return;
+          const sel = document.getElementById('analisis-reg-select');
+          const regSelected = sel ? sel.value : "TODAS";
+          const causaConRegion = regSelected === "TODAS" ? analisisCtx.causa : `${analisisCtx.causa}|${regSelected}`;
+
           // Save to localStorage as fallback
-          const key = `analisis_${analisisCtx.seccion}_${analisisCtx.causa}_${analisisCtx.mes}`;
+          const key = `analisis_${analisisCtx.seccion}_${causaConRegion}_${analisisCtx.mes}`;
           const local = JSON.parse(localStorage.getItem(key) || '[]');
           local.unshift({ fecha: new Date().toLocaleString('es-CO'), texto: txt, imagen: analisisImgBase64 });
           localStorage.setItem(key, JSON.stringify(local));
@@ -3845,7 +3874,7 @@
           // Send to API
           const body = {
             seccion: analisisCtx.seccion,
-            causa: analisisCtx.causa,
+            causa: causaConRegion,
             mes: analisisCtx.mes,
             nota: txt,
             imagen: analisisImgBase64
