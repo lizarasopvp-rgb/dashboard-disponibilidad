@@ -229,7 +229,31 @@
       border-radius: 20px;
       padding: 3px 12px;
       margin-bottom: 10px;
-      letter-spacing: .5px
+      letter-spacing: .5px;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .story-step:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .story-step::after {
+      content: "▼";
+      font-size: 9px;
+      margin-left: 2px;
+      opacity: 0.7;
+      transition: transform 0.3s;
+    }
+
+    section.collapsed .story-step::after {
+      transform: rotate(-90deg);
+    }
+
+    section.collapsed > *:not(.story-step) {
+      display: none !important;
     }
 
     .story-step .n {
@@ -4015,6 +4039,14 @@
         window.scrollTo(0, 0);
         fetchResumenNotas().then(() => {
           initMapa(); initFiltros(); initNav(); initChat(); initHistorial(); initAnalisis(); renderAll();
+          
+          document.querySelectorAll('.story-step').forEach(btn => {
+            btn.title = "Haz clic para ocultar/mostrar esta sección";
+            btn.addEventListener('click', function() {
+              const sec = this.closest('section');
+              if (sec) sec.classList.toggle('collapsed');
+            });
+          });
         });
       });
     </script>
