@@ -1221,22 +1221,7 @@
       <div class="sec-head">
         <h2>Resumen ejecutivo</h2><span class="pregunta">¿Cómo está la red y qué la está frenando?</span>
       </div>
-      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
-        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
-        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
-        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
-        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
-        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
-        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
-        <span class="lbl">Rango</span>
-        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
-          <option value="0 a 2 horas">0 a 2 horas</option>
-          <option value="2 a 4 horas">2 a 4 horas</option>
-          <option value="4 a 8 horas">4 a 8 horas</option>
-          <option value="8 a 12 horas">8 a 12 horas</option>
-          <option value="> 12 horas">> 12 horas</option>
-        </select>
-      </div>
+      
       <div class="narrativa" id="narr-resumen"></div>
       <div class="kpis" id="kpi-strip"></div>
     </section>
@@ -1255,13 +1240,13 @@
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
         <span class="lbl">Rango</span>
-        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
-          <option value="0 a 2 horas">0 a 2 horas</option>
-          <option value="2 a 4 horas">2 a 4 horas</option>
-          <option value="4 a 8 horas">4 a 8 horas</option>
-          <option value="8 a 12 horas">8 a 12 horas</option>
-          <option value="> 12 horas">> 12 horas</option>
-        </select>
+        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
+        </div>
       </div>
       <div class="card">
         <div class="card-head">
@@ -1304,13 +1289,13 @@
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
         <span class="lbl">Rango</span>
-        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
-          <option value="0 a 2 horas">0 a 2 horas</option>
-          <option value="2 a 4 horas">2 a 4 horas</option>
-          <option value="4 a 8 horas">4 a 8 horas</option>
-          <option value="8 a 12 horas">8 a 12 horas</option>
-          <option value="> 12 horas">> 12 horas</option>
-        </select>
+        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
+        </div>
       </div>
       <div class="narrativa" id="narr-pareto"></div>
       <div class="card">
@@ -1338,13 +1323,13 @@
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
         <span class="lbl">Rango</span>
-        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
-          <option value="0 a 2 horas">0 a 2 horas</option>
-          <option value="2 a 4 horas">2 a 4 horas</option>
-          <option value="4 a 8 horas">4 a 8 horas</option>
-          <option value="8 a 12 horas">8 a 12 horas</option>
-          <option value="> 12 horas">> 12 horas</option>
-        </select>
+        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
+        </div>
       </div>
       <div class="narrativa" id="narr-heatmap-suspension">Tabla de concentración de causas de suspensión (solo para fallas mayores a 12 horas) por regional. Las celdas con mayor
         porcentaje se resaltan en naranja. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
@@ -1383,13 +1368,13 @@
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
         <span class="lbl">Rango</span>
-        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
-          <option value="0 a 2 horas">0 a 2 horas</option>
-          <option value="2 a 4 horas">2 a 4 horas</option>
-          <option value="4 a 8 horas">4 a 8 horas</option>
-          <option value="8 a 12 horas">8 a 12 horas</option>
-          <option value="> 12 horas">> 12 horas</option>
-        </select>
+        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
+        </div>
       </div>
       <div class="narrativa">Las <b>causas de suspensión</b> son los bloqueos que impiden cerrar el plan: seguridad,
         logística, clima, acceso. No son fallas de red sino del <b>proceso de restauración</b>. Un sitio puede tener
@@ -1427,13 +1412,13 @@
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
         <span class="lbl">Rango</span>
-        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
-          <option value="0 a 2 horas">0 a 2 horas</option>
-          <option value="2 a 4 horas">2 a 4 horas</option>
-          <option value="4 a 8 horas">4 a 8 horas</option>
-          <option value="8 a 12 horas">8 a 12 horas</option>
-          <option value="> 12 horas">> 12 horas</option>
-        </select>
+        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
+        </div>
       </div>
       <div class="narrativa" id="narr-heatmap">Tabla de concentración de causas raíz por regional. Las celdas con mayor
         porcentaje se resaltan en rojo. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
@@ -1459,13 +1444,13 @@
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
         <span class="lbl">Rango</span>
-        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
-          <option value="0 a 2 horas">0 a 2 horas</option>
-          <option value="2 a 4 horas">2 a 4 horas</option>
-          <option value="4 a 8 horas">4 a 8 horas</option>
-          <option value="8 a 12 horas">8 a 12 horas</option>
-          <option value="> 12 horas">> 12 horas</option>
-        </select>
+        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
+          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
+        </div>
       </div>
       <div class="narrativa">Las <b>causas raíz</b> apuntan a la falla técnica del elemento de red (energía,
         transmisión, hardware, radio). Selecciona una causa macro para abrir el detalle de subcausas. <span
@@ -3493,8 +3478,7 @@
         const fMun = sec.querySelector('.fl-mun') ? sec.querySelector('.fl-mun').value : "";
         const fCR = sec.querySelector('.fl-cr') ? sec.querySelector('.fl-cr').value : "";
         const fCS = sec.querySelector('.fl-cs') ? sec.querySelector('.fl-cs').value : "";
-        const rngSelect = sec.querySelector('.fl-rng');
-        const fRngs = rngSelect ? Array.from(rngSelect.selectedOptions).filter(o => o.selected).map(o => o.value) : [];
+        const fRngs = Array.from(sec.querySelectorAll('.fl-rng:checked')).map(cb => cb.value);
 
         let v = DATA.filter(s => {
           let cumpleModo = true;
@@ -3544,7 +3528,7 @@
           };
 
           fl.addEventListener('change', (e) => {
-            if (e.target.tagName === 'SELECT') {
+            if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') {
                const secId = fl.closest('section').id;
                if (secId === 'resumen') renderResumen();
                else if (secId === 'tendencias') renderTendencias();
@@ -3692,46 +3676,15 @@
       ============================================================ */
       function initFiltros() {
         const fmodo = document.getElementById("f-modo");
-        
-        const freg = document.getElementById("f-reg");
-        if (freg) {
-          const regiones = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
-          regiones.forEach(r => freg.add(new Option(r, r)));
+        if (fmodo) {
+           fmodo.onchange = () => {
+             filtro.modo = fmodo.value;
+             renderAll();
+           };
         }
-
-        const fd = document.getElementById("f-depto");
-        Object.keys(DEPTOS).forEach(d => fd.add(new Option(d, d)));
-
-        const fm = document.getElementById("f-muni");
-        const ciudades = [...new Set(DATA.map(d => d.ciudad))].sort();
-        ciudades.forEach(c => fm.add(new Option(c, c)));
-
-        const fc = document.getElementById("f-causa");
-        Object.keys(CAUSA_RAIZ).forEach(c => fc.add(new Option(c, c)));
-
-        const fr = document.getElementById("f-rango");
-        const rangos = [...new Set(DATA.map(d => d.rango))];
-        rangos.forEach(r => fr.add(new Option(r, r)));
-
-        const fmes = document.getElementById("f-mes");
-        const mesesLbl = {"01":"Enero","02":"Febrero","03":"Marzo","04":"Abril","05":"Mayo","06":"Junio","07":"Julio","08":"Agosto","09":"Septiembre","10":"Octubre","11":"Noviembre","12":"Diciembre"};
-        _MA.forEach(m => { const ms = String(m); const mm = ms.slice(4); const lbl = `${mesesLbl[mm] || mm} ${ms.slice(0,4)}`; fmes.add(new Option(lbl, m)); });
-        if (_MA.length > 0) {
-          fmes.value = _MA[_MA.length - 1];
-          filtro.mes = String(_MA[_MA.length - 1]);
-        }
-
-        document.getElementById("btn-aplicar").onclick = () => {
-          filtro = { reg: freg ? freg.value : "", depto: fd.value, muni: fm.value, causa: fc.value, rango: fr.value, mes: fmes.value, modo: fmodo ? fmodo.value : "UNIRED" };
-          geoNivel = { tipo: "depto" }; crSel = null; csSel = null; renderAll();
-        };
-        document.getElementById("btn-reset").onclick = () => {
-          if (fmodo) fmodo.value = "UNIRED";
-          if (freg) freg.value = "";
-          fd.value = ""; fm.value = ""; fc.value = ""; fr.value = "";
-          if (_MA.length > 0) fmes.value = _MA[_MA.length - 1]; else fmes.value = "";
-          filtro = { reg: "", depto: "", muni: "", causa: "", rango: "", mes: fmes.value, modo: "UNIRED" }; geoNivel = { tipo: "depto" }; crSel = null; csSel = null; renderAll();
-        };
+        document.getElementById("btn-aplicar").onclick = () => renderAll();
+        initLocalFilters();
+      }
         document.getElementById("cr-comp").onchange = e => { crComp = e.target.value; crSel = null; renderCausaRaiz() };
         const tendMetric = document.getElementById("tend-metric"); if (tendMetric) tendMetric.onchange = () => renderTendencias();
 
