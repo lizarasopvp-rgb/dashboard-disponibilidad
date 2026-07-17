@@ -1209,7 +1209,6 @@
       <option value="UNIRED">UNIRED</option>
       <option value="HUAWEI">HUAWEI</option>
     </select>
-    <button class="btn-rojo" id="btn-aplicar">Aplicar</button>
     <span class="lbl" style="margin-left:auto" id="filtro-count"></span>
   </div>
 
@@ -1232,20 +1231,29 @@
       <div class="sec-head">
         <h2>Tendencia temporal</h2><span class="pregunta">Año → Mes → Semana → Día → Hora · ¿mejora o empeora?</span>
       </div>
-      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
-        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+            <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
         <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
-        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
-        <span class="lbl">Rango</span>
-        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
+        <span class="lbl">Causa Suspens.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <div style="display:inline-flex; align-items:center; gap:14px; margin-left:10px; padding: 6px 14px; background: #f8fafc; border: 1px solid var(--linea); border-radius: 8px;">
+          <span class="lbl" style="margin:0; font-weight: 700; color: var(--azul-marino);">Rangos:</span>
+          <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
+            <input type="checkbox" class="fl-rng" value="> 12 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> &gt; 12h
+          </label>
+          <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
+            <input type="checkbox" class="fl-rng" value="8 a 12 Horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 8 a 12h
+          </label>
+          <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
+            <input type="checkbox" class="fl-rng" value="4 a 8 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 4 a 8h
+          </label>
+          <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
+            <input type="checkbox" class="fl-rng" value="30 Min a 4 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 30m a 4h
+          </label>
+          <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
+            <input type="checkbox" class="fl-rng" value="Flapping" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> Flapping
+          </label>
         </div>
       </div>
       <div class="card">
@@ -1286,17 +1294,9 @@
         <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
-        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
-        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
-        <span class="lbl">Rango</span>
-        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
+        
+        
         </div>
-      </div>
       <div class="narrativa" id="narr-pareto"></div>
       <div class="card">
         <div class="card-head">
@@ -1320,16 +1320,9 @@
         <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
-        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
-        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
-        <span class="lbl">Rango</span>
-        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
-        </div>
+        
+        
+        
       </div>
       <div class="narrativa" id="narr-heatmap-suspension">Tabla de concentración de causas de suspensión (solo para fallas mayores a 12 horas) por regional. Las celdas con mayor
         porcentaje se resaltan en naranja. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
@@ -1365,16 +1358,9 @@
         <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
-        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
-        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
-        <span class="lbl">Rango</span>
-        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
-        </div>
+        
+        
+        
       </div>
       <div class="narrativa">Las <b>causas de suspensión</b> son los bloqueos que impiden cerrar el plan: seguridad,
         logística, clima, acceso. No son fallas de red sino del <b>proceso de restauración</b>. Un sitio puede tener
@@ -1409,16 +1395,9 @@
         <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
-        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
-        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
-        <span class="lbl">Rango</span>
-        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
-        </div>
+        
+        
+        
       </div>
       <div class="narrativa" id="narr-heatmap">Tabla de concentración de causas raíz por regional. Las celdas con mayor
         porcentaje se resaltan en rojo. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
@@ -1437,20 +1416,13 @@
         <h2>Causa raíz</h2><span class="pregunta">Asociada a componentes de red · macro → específica</span>
       </div>
       <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
-        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        
         <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
-        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
-        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
-        <span class="lbl">Rango</span>
-        <div class="fl-rng-container" style="display:inline-flex; gap:6px; background:var(--card); border:1px solid var(--linea); border-radius:8px; padding:6px 9px; align-items:center;">
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="0 a 2 horas"> 0-2h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="2 a 4 horas"> 2-4h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="4 a 8 horas"> 4-8h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="8 a 12 horas"> 8-12h</label>
-          <label style="font-size:11px; cursor:pointer;"><input type="checkbox" class="fl-rng" value="> 12 horas"> >12h</label>
-        </div>
+        
+        
+        
       </div>
       <div class="narrativa">Las <b>causas raíz</b> apuntan a la falla técnica del elemento de red (energía,
         transmisión, hardware, radio). Selecciona una causa macro para abrir el detalle de subcausas. <span
@@ -1505,6 +1477,10 @@
       </div>
 
       <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span>
+        <select id="geo-mes">
+          <option value="">Todos</option>
+        </select>
         <span class="lbl">Regional</span>
         <select id="geo-reg">
           <option value="">Todas</option>
@@ -1572,19 +1548,12 @@
           intervención?</span>
       </div>
       <div class="narrativa" id="narr-worst"></div>
-      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
-        <span class="lbl">Regional</span>
-        <select id="wo-reg">
-          <option value="">Todas</option>
-        </select>
-        <span class="lbl">Causa raíz</span>
-        <select id="wo-cr">
-          <option value="">Todas</option>
-        </select>
-        <span class="lbl">Causa suspens.</span>
-        <select id="wo-cs">
-          <option value="">Todas</option>
-        </select>
+            <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
       </div>
       <div class="card">
         <div class="card-head">
@@ -1611,13 +1580,12 @@
           frecuencia</span>
       </div>
       <div class="narrativa" id="narr-interm"></div>
-      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
-        <span class="lbl">Periodo</span>
-        <select id="int-periodo">
-          <option value="">Todo el periodo</option>
-          <option value="mes">Último mes</option>
-          <option value="semana">Última semana</option>
-        </select>
+            <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
       </div>
       <div class="card">
         <div class="card-head">
@@ -1645,19 +1613,12 @@
         <h2>Fallas simultáneas</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
       </div>
       <div class="narrativa" id="narr-masivas">Agrupación automática de clústeres de fallas ocurridas en el mismo día y hora (aprox), con la misma causa raíz y cercanía geográfica (prefijo de sitio). Ideal para solicitar exclusiones.</div>
-      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
-        <span class="lbl">Mes</span>
-        <select id="mas-mes">
-          <option value="">Todos</option>
-        </select>
-        <span class="lbl">Regional</span>
-        <select id="mas-reg">
-          <option value="">Todas</option>
-        </select>
-        <span class="lbl">Causa raíz</span>
-        <select id="mas-cr">
-          <option value="">Todas</option>
-        </select>
+            <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
+        <span class="lbl">Causa Suspens.</span><select class="fl-cs"><option value="">Todas</option></select>
       </div>
       <div class="kpis" id="kpi-masivas" style="margin-bottom: 16px;"></div>
       <div class="card">
@@ -1685,6 +1646,15 @@
           </div>
           <table class="datos" id="tbl-masivas-det"></table>
         </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head">
+          <div>
+            <h3>Tendencia diaria de fallas simultáneas</h3>
+            <p class="sub">Cantidad de fallas simultáneas por día, apiladas por regional</p>
+          </div>
+        </div>
+        <canvas id="ch-masivas-trend" style="max-height:280px"></canvas>
       </div>
     </section>
 
@@ -1830,12 +1800,18 @@
          DATASET REAL (desde datos.js)
       ============================================================ */
       const S = _S;
+      const fixCase = (str) => {
+        if (!str) return "";
+        let s = str.toLowerCase();
+        const lowers = ['de', 'del', 'el', 'la', 'los', 'las', 'y', 'en'];
+        return s.split(' ').map((w, i) => (lowers.includes(w) && i > 0) ? w : (w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
+      };
       const DATA = _E.map(e => ({
         sitio_id: S[e[0]],
         nombre: S[e[1]],
-        departamento: S[e[2]],
-        ciudad: S[e[3]],
-        region: S[e[4]],
+        departamento: fixCase(S[e[2]]),
+        ciudad: fixCase(S[e[3]]),
+        region: fixCase(S[e[4]]),
         tecnologia: S[e[5]],
         componente: S[e[5]] || 'RF',
         minutos_caidos: e[6],
@@ -1899,7 +1875,7 @@
       /* ============================================================
          ESTADO / FILTROS
       ============================================================ */
-      let filtro = { reg: "", depto: "", muni: "", causa: "", rango: "", mes: "", modo: "UNIRED" };
+      let filtro = { reg: "", depto: "", muni: "", causa: "", rango: "", mes: _MA.length > 0 ? String(_MA[_MA.length - 1]) : "", modo: "UNIRED" };
       function aplicaFiltro(d) {
         return DATA.filter(s => {
           let cumpleModo = true;
@@ -1924,9 +1900,9 @@
       const PAL = [
         "#006B95", // Dark Blue
         "#F39200", // Bright Orange
-        "#00979C", // Dark Teal
-        "#9E0000", // Dark Red
-        "#629700", // Olive Green
+        "#7A8B94", // Medium Gray (Slate)
+        "#B0B8BF", // Light Gray
+        "#4A545D", // Dark Gray
         "#009DD9", // Bright Cyan
         "#5C6670", // Dark Slate Gray
         "#9B7322", // Brown/Bronze
@@ -1978,8 +1954,8 @@
       const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
       const MESES_ACTIVOS = _MA.map(m => parseInt(String(m).slice(4)) - 1); // 0-indexed month numbers
       function isoWeek(d) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const ys = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return Math.ceil((((t - ys) / 86400000) + 1) / 7); }
-      function bucketsTemporales() {
-        let evs = VIEW_TEND.slice();
+      function bucketsTemporales(evsData) {
+        let evs = evsData.slice();
         let labels = [], mins = [], evct = [], sitiosArr = [], keys = [], drillTipo = null;
         if (tendNivel.tipo === "mes") {
           const agg = {};
@@ -2008,7 +1984,7 @@
       function renderTendencias() { const VIEW = getLocalView('tendencias'); const VIEW_TEND = getLocalView('tendencias', true);
         const tblWrap = document.getElementById("wrap-tend-tbl");
         if (tblWrap) tblWrap.style.display = "none";
-        const b = bucketsTemporales();
+        const b = bucketsTemporales(VIEW_TEND);
         const totalSitiosRed = _TSR;
         // breadcrumb
         const bc = document.getElementById("tend-bread");
@@ -2065,7 +2041,7 @@
         const maxMoCR = Math.max(...MESES_ACTIVOS, 5);
         const nMoCR = maxMoCR + 1;
         const aggCR = {}; macros.forEach(mc => aggCR[mc] = Array(nMoCR).fill(0));
-        VIEW_TEND.forEach(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; if (String(e.mes_ano).startsWith('2026') && mo <= maxMoCR) aggCR[e.causa_raiz_macro][mo] += e.minutos_caidos });
+        VIEW_TEND.forEach(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; if (String(e.mes_ano).startsWith('2026') && mo <= maxMoCR && aggCR[e.causa_raiz_macro]) aggCR[e.causa_raiz_macro][mo] += e.minutos_caidos });
         destroy("tendcr");
         charts.tendcr = new Chart(document.getElementById("ch-tend-cr"), {
           type: "bar", data: { labels: MESES.slice(0, nMoCR), datasets: macros.map((mc, i) => ({ label: mc, data: aggCR[mc], backgroundColor: PAL[i % PAL.length] })) },
@@ -2155,10 +2131,14 @@
         const nTotal = dur.length;
         const rangMin = RANGOS.map(() => 0), rangEv = RANGOS.map(() => 0);
         dur.forEach(v => { for (let i = 0; i < RANGOS.length; i++) { if (v >= RANGOS[i].min && v < RANGOS[i].max) { rangMin[i] += v; rangEv[i]++; break; } } });
-        const pctMin = rangMin.map(v => +(100 * v / tot).toFixed(1));
-        const pctEv = rangEv.map(v => +(100 * v / nTotal).toFixed(1));
-        document.getElementById("narr-pareto").innerHTML =
-          `Los eventos de <b>> 12 horas</b> representan el <b>${pctMin[0]}%</b> de los minutos totales pero solo el <b>${pctEv[0]}%</b> de los eventos. En contraste, las fallas cortas tipo <b>Flapping</b> suman el <b>${pctEv[4]}%</b> de los eventos pero apenas el <b>${pctMin[4]}%</b> de los minutos. Priorizar la reducción de fallas largas maximiza el impacto en disponibilidad.`;
+        const pctMin = rangMin.map(v => tot > 0 ? +(100 * v / tot).toFixed(1) : 0);
+        const pctEv = rangEv.map(v => nTotal > 0 ? +(100 * v / nTotal).toFixed(1) : 0);
+        if (nTotal === 0) {
+            document.getElementById("narr-pareto").innerHTML = "<b>No hay datos</b> para la combinación de filtros seleccionada.";
+        } else {
+            document.getElementById("narr-pareto").innerHTML = `Los eventos de <b>> 12 horas</b> representan el <b>${pctMin[0]}%</b> de los minutos totales pero solo el <b>${pctEv[0]}%</b> de los eventos. En contraste, las fallas cortas tipo <b>Flapping</b> suman el <b>${pctEv[4]}%</b> de los eventos pero apenas el <b>${pctMin[4]}%</b> de los minutos. Priorizar la reducción de fallas largas maximiza el impacto en disponibilidad.`;
+        }
+        // skip old narrative
         destroy("distrib");
         charts.distrib = new Chart(document.getElementById("ch-distrib"), {
           type: "bar",
@@ -2209,16 +2189,8 @@
       /* ============================================================
          10 · SITIOS INTERMITENTES (frecuencia)
       ============================================================ */
-      function renderIntermitentes() {
-        const selPer = document.getElementById("int-periodo") ? document.getElementById("int-periodo").value : "";
+      function renderIntermitentes() { const VIEW = getLocalView('intermitentes');
         let evs = VIEW;
-        if (selPer === "mes") {
-          const minD = new Date(2026, 4, 11).getTime();
-          evs = evs.filter(e => new Date(e.ts).getTime() >= minD);
-        } else if (selPer === "semana") {
-          const minD = new Date(2026, 5, 4).getTime();
-          evs = evs.filter(e => new Date(e.ts).getTime() >= minD);
-        }
         const sm = metricasSitio(evs);
         const ord = [...sm].sort((a, b) => b.nEv - a.nEv);
         const top = ord.slice(0, 20);
@@ -2389,7 +2361,7 @@
         // 0. Regional options
         if (gReg) {
           gReg.innerHTML = '<option value="">Todas</option>';
-          const validR = [...new Set(VIEW.map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+          const validR = [...new Set(getGeoBase().map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
           validR.forEach(r => gReg.add(new Option(r, r)));
           gReg.value = currR || "";
         }
@@ -2397,7 +2369,7 @@
         // 1. Depto options
         if (gDepto) {
           gDepto.innerHTML = '<option value="">Todos</option>';
-          let d_base = VIEW;
+          let d_base = getGeoBase();
           if (gReg && gReg.value) d_base = d_base.filter(e => e.region === gReg.value);
           const validD = [...new Set(d_base.map(e => e.departamento))].filter(Boolean).sort();
           validD.forEach(d => gDepto.add(new Option(d, d)));
@@ -2408,7 +2380,7 @@
         // 2. Muni options
         if (gMuni) {
           gMuni.innerHTML = '<option value="">Todos</option>';
-          let d_data = VIEW;
+          let d_data = getGeoBase();
           if (gReg && gReg.value) d_data = d_data.filter(e => e.region === gReg.value);
           if (gDepto && gDepto.value) d_data = d_data.filter(e => e.departamento === gDepto.value);
           const validC = [...new Set(d_data.map(e => e.ciudad))].filter(Boolean).sort();
@@ -2420,7 +2392,7 @@
         // 3. Causa Global options
         if (gCr) {
           gCr.innerHTML = '<option value="">Todas</option>';
-          let c_data = VIEW;
+          let c_data = getGeoBase();
           if (gReg && gReg.value) c_data = c_data.filter(e => e.region === gReg.value);
           if (gDepto && gDepto.value) c_data = c_data.filter(e => e.departamento === gDepto.value);
           if (gMuni && gMuni.value) c_data = c_data.filter(e => e.ciudad === gMuni.value);
@@ -2433,7 +2405,7 @@
         // 4. Causa Específica options
         if (gCrEsp) {
           gCrEsp.innerHTML = '<option value="">Todas</option>';
-          let e_data = VIEW;
+          let e_data = getGeoBase();
           if (gCr && gCr.value) e_data = e_data.filter(e => e.causa_raiz_macro === gCr.value);
           if (gReg && gReg.value) e_data = e_data.filter(e => e.region === gReg.value);
           if (gDepto && gDepto.value) e_data = e_data.filter(e => e.departamento === gDepto.value);
@@ -2443,7 +2415,7 @@
           gCrEsp.value = validE.includes(currEsp) ? currEsp : "";
         }
 
-        let geoEvs = VIEW;
+        let geoEvs = getGeoBase();
         const fReg = gReg ? gReg.value : "";
         const fDepto = gDepto ? gDepto.value : "";
         const fMuni = gMuni ? gMuni.value : "";
@@ -2698,16 +2670,8 @@
       /* ============================================================
          9 · WORST OFFENDERS
       ============================================================ */
-      function renderWorst() {
-        const fR = document.getElementById("wo-reg") ? document.getElementById("wo-reg").value : "";
-        const fCR = document.getElementById("wo-cr") ? document.getElementById("wo-cr").value : "";
-        const fCS = document.getElementById("wo-cs") ? document.getElementById("wo-cs").value : "";
-
+      function renderWorst() { const VIEW = getLocalView('worst');
         let base = VIEW;
-        if (fR) base = base.filter(e => e.region === fR);
-        if (fCR) base = base.filter(e => e.causa_raiz_macro === fCR);
-        if (fCS) base = base.filter(e => e.causa_suspension_macro === fCS);
-
         const sm = metricasSitio(base);
         const ord = [...sm].sort((a, b) => b.min - a.min);
         const tot = ord.reduce((a, s) => a + s.min, 0);
@@ -2769,9 +2733,20 @@
         if(event) event.stopPropagation();
         geoNivel = { tipo: "depto", depto: null, ciudad: null };
         
-        updateGeoCascade();
-        const geoReg = document.getElementById("geo-reg");
+        
+          const geoMes = document.getElementById("geo-mes");
+          const localMes = document.querySelector('#heatmap .fl-mes');
+          if (geoMes && localMes && localMes.value) geoMes.value = localMes.value;
+          else if (geoMes && document.getElementById('f-mes')) geoMes.value = document.getElementById('f-mes').value;
+updateGeoCascade();
+        
+const geoReg = document.getElementById("geo-reg");
         if (geoReg) geoReg.value = region || "";
+          const gD = document.getElementById("geo-depto");
+          if (gD) gD.value = "";
+          const gM = document.getElementById("geo-muni");
+          if (gM) gM.value = "";
+
         
         updateGeoCascade();
         const geoCs = document.getElementById("geo-cs");
@@ -3016,9 +2991,19 @@
           if(event) event.stopPropagation();
           geoNivel = { tipo: "depto", depto: null, ciudad: null };
           
-          updateGeoCascade();
+          
+          const geoMes = document.getElementById("geo-mes");
+          const localMes = document.querySelector('#heatmap-suspension .fl-mes');
+          if (geoMes && localMes && localMes.value) geoMes.value = localMes.value;
+          else if (geoMes && document.getElementById('f-mes')) geoMes.value = document.getElementById('f-mes').value;
+updateGeoCascade();
           const geoReg = document.getElementById("geo-reg");
           if (geoReg) geoReg.value = region || "";
+          const gD = document.getElementById("geo-depto");
+          if (gD) gD.value = "";
+          const gM = document.getElementById("geo-muni");
+          if (gM) gM.value = "";
+
           
           updateGeoCascade();
           const geoCr = document.getElementById("geo-cr");
@@ -3137,16 +3122,8 @@
       /* ============================================================
          FALLAS MASIVAS
       ============================================================ */
-      function renderMasivas() {
-        const fMes = document.getElementById("mas-mes") ? document.getElementById("mas-mes").value : "";
-        const fR = document.getElementById("mas-reg") ? document.getElementById("mas-reg").value : "";
-        const fCR = document.getElementById("mas-cr") ? document.getElementById("mas-cr").value : "";
-
-        let base = VIEW_TEND; // ignorar mes global
-        if (fMes) base = base.filter(e => String(e.mes_ano) === fMes);
-        if (fR) base = base.filter(e => e.region === fR);
-        if (fCR) base = base.filter(e => e.causa_raiz_macro === fCR);
-
+      function renderMasivas() { const VIEW = getLocalView('masivas');
+        let base = VIEW;
         const masivasData = {};
         base.forEach(r => {
            const mid = r.masiva_id;
@@ -3170,7 +3147,7 @@
            masivasData[mid].eventos.push(r);
         });
 
-        const list = Object.values(masivasData).sort((a, b) => b.minutos - a.minutos);
+        const list = Object.values(masivasData).filter(m => m.sitios.size >= 3).sort((a, b) => b.minutos - a.minutos);
         masCurrentList = list;
         masCurrentPage = 1;
         
@@ -3192,7 +3169,56 @@
         }
 
         updateMasivasTable();
+        renderMasivasTrend(list);
         window.currentMasivasData = masivasData;
+      }
+
+      function renderMasivasTrend(list) {
+         const byDayReg = {};
+         const regionesSet = new Set();
+         
+         list.forEach(m => {
+            if (!m.eventos || m.eventos.length === 0) return;
+            const d = new Date(m.eventos[0].ts);
+            const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            
+            if (!byDayReg[dateStr]) byDayReg[dateStr] = {};
+            byDayReg[dateStr][m.region] = (byDayReg[dateStr][m.region] || 0) + 1;
+            regionesSet.add(m.region);
+         });
+         
+         const dates = Object.keys(byDayReg).sort();
+         const labels = dates.map(dStr => {
+            const parts = dStr.split('-');
+            return parts[2] + '/' + parts[1];
+         });
+         
+         const regiones = Array.from(regionesSet).sort();
+         const datasets = regiones.map((reg, i) => {
+            const data = dates.map(dStr => byDayReg[dStr][reg] || 0);
+            return {
+               label: reg,
+               data: data,
+               backgroundColor: PAL[i % PAL.length]
+            };
+         });
+         
+         destroy('masivastrend');
+         const canvas = document.getElementById('ch-masivas-trend');
+         if (!canvas) return;
+         charts.masivastrend = new Chart(canvas, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+               responsive: true,
+               maintainAspectRatio: false,
+               plugins: { legend: { position: 'bottom' } },
+               scales: {
+                  x: { stacked: true },
+                  y: { stacked: true, beginAtZero: true, title: { display: true, text: "Fallas simultáneas" } }
+               }
+            }
+         });
       }
       
       let masCurrentPage = 1;
@@ -3478,9 +3504,13 @@
         const fMun = sec.querySelector('.fl-mun') ? sec.querySelector('.fl-mun').value : "";
         const fCR = sec.querySelector('.fl-cr') ? sec.querySelector('.fl-cr').value : "";
         const fCS = sec.querySelector('.fl-cs') ? sec.querySelector('.fl-cs').value : "";
-        const fRngs = Array.from(sec.querySelectorAll('.fl-rng:checked')).map(cb => cb.value);
-
-        let v = DATA.filter(s => {
+        const rngEl = sec.querySelector('.fl-rng');
+        let fRngs = [];
+        if (rngEl && rngEl.tagName === 'SELECT') {
+           if (rngEl.value) fRngs = [rngEl.value];
+        } else {
+           fRngs = Array.from(sec.querySelectorAll('input.fl-rng:checked')).map(cb => cb.value);
+        }        let v = DATA.filter(s => {
           let cumpleModo = true;
           if (filtro.modo === "UNIRED") {
              cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
@@ -3490,7 +3520,7 @@
           return cumpleModo;
         });
 
-        if (!ignoreMes && fMes) v = v.filter(e => e.mes_ano === fMes);
+        if (!ignoreMes && fMes) v = v.filter(e => e.mes_ano === +fMes);
         if (fReg) v = v.filter(e => e.region === fReg);
         if (fDep) v = v.filter(e => e.departamento === fDep);
         if (fMun) v = v.filter(e => e.ciudad === fMun);
@@ -3502,30 +3532,59 @@
       }
 
       function initLocalFilters() {
+        const gm = document.getElementById("geo-mes");
+        if (gm) {
+            _MA.forEach(m => gm.add(new Option(m, m)));
+            gm.onchange = () => { updateGeoCascade(); renderGeo(); };
+        }
+
+        const mesesLbl2 = {"01":"Enero","02":"Febrero","03":"Marzo","04":"Abril","05":"Mayo","06":"Junio","07":"Julio","08":"Agosto","09":"Septiembre","10":"Octubre","11":"Noviembre","12":"Diciembre"};
+        const validReg = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+        const validCs = [...new Set(DATA.map(d => d.causa_suspension_macro))].filter(Boolean).sort();
+
         document.querySelectorAll('.filtros-local').forEach(fl => {
           const mes = fl.querySelector('.fl-mes');
           const reg = fl.querySelector('.fl-reg');
           const dep = fl.querySelector('.fl-dep');
           const mun = fl.querySelector('.fl-mun');
-          const cr = fl.querySelector('.fl-cr');
-          const cs = fl.querySelector('.fl-cs');
+          const cr  = fl.querySelector('.fl-cr');
+          const rng = fl.querySelector('.fl-rng');
+          const cs  = fl.querySelector('.fl-cs');
 
-          _MA.forEach(m => mes.add(new Option(m, m)));
-          const validReg = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin informaci\\u00F3n").sort();
-          validReg.forEach(r => reg.add(new Option(r, r)));
-          Object.keys(DEPTOS).forEach(d => dep.add(new Option(d, d)));
-          Object.keys(CAUSA_RAIZ).forEach(c => cr.add(new Option(c, c)));
-          
-          const validCs = [...new Set(DATA.map(d => d.causa_suspension_macro))].filter(Boolean).sort();
-          validCs.forEach(c => cs.add(new Option(c, c)));
-          
-          dep.onchange = () => {
-            mun.innerHTML = '<option value="">Todos</option>';
-            if (dep.value && DEPTOS[dep.value]) {
-               DEPTOS[dep.value].forEach(m => mun.add(new Option(m, m)));
-            }
-            fl.dispatchEvent(new Event('change'));
-          };
+          if (mes) {
+            _MA.forEach(m => { const ms = String(m); const mm = ms.slice(4); const lbl = (mesesLbl2[mm] || mm) + " " + ms.slice(0,4); mes.add(new Option(lbl, m)); });
+            if (_MA.length > 0) mes.value = _MA[_MA.length - 1];
+          }
+          if (reg) {
+            validReg.forEach(r => reg.add(new Option(r, r)));
+            reg.onchange = () => {
+              if (dep) {
+                dep.innerHTML = '<option value="">Todos</option>';
+                const depsForReg = reg.value ? DATA.filter(d => d.region === reg.value) : DATA;
+                const validDeps = [...new Set(depsForReg.map(d => d.departamento))].filter(Boolean).sort();
+                validDeps.forEach(d => dep.add(new Option(d, d)));
+              }
+              if (mun) mun.innerHTML = '<option value="">Todos</option>';
+              fl.dispatchEvent(new Event('change'));
+            };
+          }
+          if (dep) {
+            const validDeps = [...new Set(DATA.map(d => d.departamento))].filter(Boolean).sort();
+            validDeps.forEach(d => dep.add(new Option(d, d)));
+            dep.onchange = () => {
+              if (mun) {
+                mun.innerHTML = '<option value="">Todos</option>';
+                if (dep.value) {
+                   const munsForDep = DATA.filter(d => d.departamento === dep.value);
+                   const validMuns = [...new Set(munsForDep.map(d => d.ciudad))].filter(Boolean).sort();
+                   validMuns.forEach(m => mun.add(new Option(m, m)));
+                }
+              }
+              fl.dispatchEvent(new Event('change'));
+            };
+          }
+          if (cr)  Object.keys(CAUSA_RAIZ).forEach(c => cr.add(new Option(c, c)));
+          if (cs)  validCs.forEach(c => cs.add(new Option(c, c)));
 
           fl.addEventListener('change', (e) => {
             if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') {
@@ -3537,6 +3596,9 @@
                else if (secId === 'heatmap-suspension') renderHeatmapSuspension();
                else if (secId === 'causaraiz') renderCausaRaiz();
                else if (secId === 'suspension') renderSusp();
+               else if (secId === 'worst') renderWorst();
+               else if (secId === 'intermitentes') renderIntermitentes();
+               else if (secId === 'masivas') renderMasivas();
             }
           });
         });
@@ -3572,6 +3634,19 @@
       /* ============================================================
          UPDATE GEO CASCADE LOGIC
       ============================================================ */
+      function getGeoBase() {
+    const geoMes = document.getElementById("geo-mes") ? document.getElementById("geo-mes").value : "";
+    return DATA.filter(s => {
+        let cumpleModo = true;
+        if (filtro.modo === "UNIRED") {
+            cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
+        } else if (filtro.modo === "HUAWEI") {
+            cumpleModo = s.etiqueta_padre === 'NAR';
+        }
+        return cumpleModo && (!geoMes || s.mes_ano === +geoMes);
+    });
+}
+
       function updateGeoCascade() {
         const gReg = document.getElementById("geo-reg");
         const gDepto = document.getElementById("geo-depto");
@@ -3590,7 +3665,7 @@
 
         // Update Reg
         if (gReg) {
-          const validReg = [...new Set(VIEW.map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+          const validReg = [...new Set(getGeoBase().map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
           gReg.innerHTML = '<option value="">Todas</option>';
           validReg.forEach(r => gReg.add(new Option(r, r)));
           gReg.value = validReg.includes(rVal) ? rVal : "";
@@ -3599,7 +3674,7 @@
 
         // Update Depto
         if (gDepto) {
-          let d_data = VIEW;
+          let d_data = getGeoBase();
           if (rValNew) d_data = d_data.filter(e => e.region === rValNew);
           const validD = [...new Set(d_data.map(e => e.departamento))].filter(Boolean).sort();
           gDepto.innerHTML = '<option value="">Todos</option>';
@@ -3611,7 +3686,7 @@
 
         // Update Muni
         if (gMuni) {
-          let m_data = VIEW;
+          let m_data = getGeoBase();
           if (rValNew) m_data = m_data.filter(e => e.region === rValNew);
           if (dValNew) m_data = m_data.filter(e => e.departamento === dValNew);
           const validC = [...new Set(m_data.map(e => e.ciudad))].filter(Boolean).sort();
@@ -3622,7 +3697,7 @@
 
         // Update Causa Global
         if (gCr) {
-          let c_data = VIEW;
+          let c_data = getGeoBase();
           if (rValNew) c_data = c_data.filter(e => e.region === rValNew);
           if (dValNew) c_data = c_data.filter(e => e.departamento === dValNew);
           if (gMuni && gMuni.value) c_data = c_data.filter(e => e.ciudad === gMuni.value);
@@ -3634,7 +3709,7 @@
 
         // Update Causa Especifica
         if (gCrEsp) {
-          let e_data = VIEW;
+          let e_data = getGeoBase();
           if (gCr && gCr.value) e_data = e_data.filter(e => e.causa_raiz_macro === gCr.value);
           if (rValNew) e_data = e_data.filter(e => e.region === rValNew);
           if (dValNew) e_data = e_data.filter(e => e.departamento === dValNew);
@@ -3647,7 +3722,7 @@
 
         const csVal = gCs ? gCs.value : "";
         if (gCs) {
-          let cs_data = VIEW;
+          let cs_data = getGeoBase();
           if (rValNew) cs_data = cs_data.filter(e => e.region === rValNew);
           if (dValNew) cs_data = cs_data.filter(e => e.departamento === dValNew);
           if (gMuni && gMuni.value) cs_data = cs_data.filter(e => e.ciudad === gMuni.value);
@@ -3659,7 +3734,7 @@
 
         const csEspVal = gCsEsp ? gCsEsp.value : "";
         if (gCsEsp) {
-          let cse_data = VIEW;
+          let cse_data = getGeoBase();
           if (gCs && gCs.value) cse_data = cse_data.filter(e => e.causa_suspension_macro === gCs.value);
           if (rValNew) cse_data = cse_data.filter(e => e.region === rValNew);
           if (dValNew) cse_data = cse_data.filter(e => e.departamento === dValNew);
@@ -3677,14 +3752,15 @@
       function initFiltros() {
         const fmodo = document.getElementById("f-modo");
         if (fmodo) {
+           filtro.modo = fmodo.value;
            fmodo.onchange = () => {
              filtro.modo = fmodo.value;
              renderAll();
            };
         }
-        document.getElementById("btn-aplicar").onclick = () => renderAll();
+        document.getElementById("f-modo").onchange = (e) => { filtro.modo = e.target.value; renderAll(); };
         initLocalFilters();
-      }
+
         document.getElementById("cr-comp").onchange = e => { crComp = e.target.value; crSel = null; renderCausaRaiz() };
         const tendMetric = document.getElementById("tend-metric"); if (tendMetric) tendMetric.onchange = () => renderTendencias();
 
