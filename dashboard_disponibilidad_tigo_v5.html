@@ -1203,38 +1203,13 @@
     </nav>
   </header>
 
-  <div class="filtros" id="filtros">
+    <div class="filtros" id="filtros">
     <span class="lbl">Modo</span>
     <select id="f-modo">
       <option value="UNIRED">UNIRED</option>
       <option value="HUAWEI">HUAWEI</option>
     </select>
-    <span class="lbl">Regional</span>
-    <select id="f-reg">
-      <option value="">Todas</option>
-    </select>
-    <span class="lbl">Departamento</span>
-    <select id="f-depto">
-      <option value="">Todos</option>
-    </select>
-    <span class="lbl">Municipio</span>
-    <select id="f-muni">
-      <option value="">Todos</option>
-    </select>
-    <span class="lbl">Causa técnica</span>
-    <select id="f-causa">
-      <option value="">Todas</option>
-    </select>
-    <span class="lbl">Mes</span>
-    <select id="f-mes">
-      <option value="">Todos</option>
-    </select>
-    <span class="lbl">Rango duración</span>
-    <select id="f-rango">
-      <option value="">Todos</option>
-    </select>
     <button class="btn-rojo" id="btn-aplicar">Aplicar</button>
-    <button class="btn-fant" id="btn-reset">Restablecer</button>
     <span class="lbl" style="margin-left:auto" id="filtro-count"></span>
   </div>
 
@@ -1246,6 +1221,22 @@
       <div class="sec-head">
         <h2>Resumen ejecutivo</h2><span class="pregunta">¿Cómo está la red y qué la está frenando?</span>
       </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
+        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <span class="lbl">Rango</span>
+        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
+          <option value="0 a 2 horas">0 a 2 horas</option>
+          <option value="2 a 4 horas">2 a 4 horas</option>
+          <option value="4 a 8 horas">4 a 8 horas</option>
+          <option value="8 a 12 horas">8 a 12 horas</option>
+          <option value="> 12 horas">> 12 horas</option>
+        </select>
+      </div>
       <div class="narrativa" id="narr-resumen"></div>
       <div class="kpis" id="kpi-strip"></div>
     </section>
@@ -1255,6 +1246,22 @@
       <div class="story-step"><span class="n">2</span> ¿CÓMO EVOLUCIONA?</div>
       <div class="sec-head">
         <h2>Tendencia temporal</h2><span class="pregunta">Año → Mes → Semana → Día → Hora · ¿mejora o empeora?</span>
+      </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
+        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <span class="lbl">Rango</span>
+        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
+          <option value="0 a 2 horas">0 a 2 horas</option>
+          <option value="2 a 4 horas">2 a 4 horas</option>
+          <option value="4 a 8 horas">4 a 8 horas</option>
+          <option value="8 a 12 horas">8 a 12 horas</option>
+          <option value="> 12 horas">> 12 horas</option>
+        </select>
       </div>
       <div class="card">
         <div class="card-head">
@@ -1289,6 +1296,22 @@
       <div class="sec-head">
         <h2>Distribución por rangos de tiempo</h2><span class="pregunta">% de minutos y % de eventos por categoría de duración</span>
       </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
+        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <span class="lbl">Rango</span>
+        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
+          <option value="0 a 2 horas">0 a 2 horas</option>
+          <option value="2 a 4 horas">2 a 4 horas</option>
+          <option value="4 a 8 horas">4 a 8 horas</option>
+          <option value="8 a 12 horas">8 a 12 horas</option>
+          <option value="> 12 horas">> 12 horas</option>
+        </select>
+      </div>
       <div class="narrativa" id="narr-pareto"></div>
       <div class="card">
         <div class="card-head">
@@ -1306,6 +1329,22 @@
       <div class="story-step"><span class="n">4</span> CONCENTRACIÓN POR CAUSA SUSPENSIÓN (> 12H)</div>
       <div class="sec-head">
         <h2>Mapa de calor por causa suspensión (> 12h)</h2><span class="pregunta">% de minutos (fallas &gt; 12h) por causa suspensión × regional</span>
+      </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
+        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <span class="lbl">Rango</span>
+        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
+          <option value="0 a 2 horas">0 a 2 horas</option>
+          <option value="2 a 4 horas">2 a 4 horas</option>
+          <option value="4 a 8 horas">4 a 8 horas</option>
+          <option value="8 a 12 horas">8 a 12 horas</option>
+          <option value="> 12 horas">> 12 horas</option>
+        </select>
       </div>
       <div class="narrativa" id="narr-heatmap-suspension">Tabla de concentración de causas de suspensión (solo para fallas mayores a 12 horas) por regional. Las celdas con mayor
         porcentaje se resaltan en naranja. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
@@ -1336,6 +1375,22 @@
       <div class="sec-head">
         <h2>Causa de suspensión</h2><span class="pregunta">Factores logísticos o externos · macro → específica</span>
       </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
+        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <span class="lbl">Rango</span>
+        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
+          <option value="0 a 2 horas">0 a 2 horas</option>
+          <option value="2 a 4 horas">2 a 4 horas</option>
+          <option value="4 a 8 horas">4 a 8 horas</option>
+          <option value="8 a 12 horas">8 a 12 horas</option>
+          <option value="> 12 horas">> 12 horas</option>
+        </select>
+      </div>
       <div class="narrativa">Las <b>causas de suspensión</b> son los bloqueos que impiden cerrar el plan: seguridad,
         logística, clima, acceso. No son fallas de red sino del <b>proceso de restauración</b>. Un sitio puede tener
         causa raíz resuelta pero seguir caído por suspensión.</div>
@@ -1364,6 +1419,22 @@
       <div class="sec-head">
         <h2>Mapa de calor por causa raíz</h2><span class="pregunta">% de minutos por causa raíz × regional</span>
       </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
+        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <span class="lbl">Rango</span>
+        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
+          <option value="0 a 2 horas">0 a 2 horas</option>
+          <option value="2 a 4 horas">2 a 4 horas</option>
+          <option value="4 a 8 horas">4 a 8 horas</option>
+          <option value="8 a 12 horas">8 a 12 horas</option>
+          <option value="> 12 horas">> 12 horas</option>
+        </select>
+      </div>
       <div class="narrativa" id="narr-heatmap">Tabla de concentración de causas raíz por regional. Las celdas con mayor
         porcentaje se resaltan en rojo. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
         macro.</div>
@@ -1379,6 +1450,22 @@
       <div class="story-step"><span class="n">7</span> CAUSA RAÍZ · RED</div>
       <div class="sec-head">
         <h2>Causa raíz</h2><span class="pregunta">Asociada a componentes de red · macro → específica</span>
+      </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
+        <span class="lbl">Causa Susp.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <span class="lbl">Rango</span>
+        <select class="fl-rng" multiple size="3" style="vertical-align: middle; height: auto; min-width:120px;">
+          <option value="0 a 2 horas">0 a 2 horas</option>
+          <option value="2 a 4 horas">2 a 4 horas</option>
+          <option value="4 a 8 horas">4 a 8 horas</option>
+          <option value="8 a 12 horas">8 a 12 horas</option>
+          <option value="> 12 horas">> 12 horas</option>
+        </select>
       </div>
       <div class="narrativa">Las <b>causas raíz</b> apuntan a la falla técnica del elemento de red (energía,
         transmisión, hardware, radio). Selecciona una causa macro para abrir el detalle de subcausas. <span
@@ -1878,7 +1965,7 @@
         const idx = (p / 100) * (arr.length - 1); const lo = Math.floor(idx), hi = Math.ceil(idx);
         return Math.round(arr[lo] + (arr[hi] - arr[lo]) * (idx - lo));
       }
-      function renderResumen() {
+      function renderResumen() { const VIEW = getLocalView('resumen');
         const tot = VIEW.reduce((a, s) => a + s.minutos_caidos, 0);
         const nEv = VIEW.length;
         const sitiosAfect = new Set(VIEW.map(s => s.sitio_id)).size;
@@ -1933,7 +2020,7 @@
         }
         return { labels, mins, evct, sitiosArr, keys, drillTipo };
       }
-      function renderTendencias() {
+      function renderTendencias() { const VIEW = getLocalView('tendencias'); const VIEW_TEND = getLocalView('tendencias', true);
         const tblWrap = document.getElementById("wrap-tend-tbl");
         if (tblWrap) tblWrap.style.display = "none";
         const b = bucketsTemporales();
@@ -2068,7 +2155,7 @@
       /* ============================================================
          3 · DISTRIBUCIÓN (percentiles + histograma + Pareto)
       ============================================================ */
-      function renderPareto() {
+      function renderPareto() { const VIEW = getLocalView('pareto');
         const RANGOS = [
           { lbl: "> 12 horas", min: 720, max: Infinity },
           { lbl: "8 a 12 Horas", min: 480, max: 720 },
@@ -2554,7 +2641,7 @@
          5 · CAUSA RAÍZ (macro -> esp, filtro componente)
       ============================================================ */
       let crSel = null, crComp = "";
-      function renderCausaRaiz() {
+      function renderCausaRaiz() { const VIEW = getLocalView('causaraiz');
         // selector componente
         const sel = document.getElementById("cr-comp");
         if (sel.options.length <= 1) COMPONENTES.forEach(c => sel.add(new Option(c, c)));
@@ -2593,7 +2680,7 @@
          6 · CAUSA SUSPENSIÓN
       ============================================================ */
       let csSel = null;
-      function renderSusp() {
+      function renderSusp() { const VIEW = getLocalView('suspension');
         const agg = {};
         VIEW.filter(s => s.causa_suspension_macro && s.causa_suspension_macro !== "Sin dato").forEach(s => agg[s.causa_suspension_macro] = (agg[s.causa_suspension_macro] || 0) + s.minutos_caidos);
         const rows = Object.entries(agg).sort((a, b) => b[1] - a[1]);
@@ -2724,7 +2811,7 @@
         if(secGeo) secGeo.scrollIntoView({ behavior: "smooth" });
       };
 
-      function renderHeatmap() {
+      function renderHeatmap() { const VIEW = getLocalView('heatmap');
         const regiones = [...new Set(VIEW.map(e => e.region))].filter(Boolean).sort();
         const macros = Object.keys(CAUSA_RAIZ);
         const totMin = VIEW.reduce((a, c) => a + c.minutos_caidos, 0) || 1;
@@ -2901,7 +2988,7 @@
       /* ============================================================
          MAPA DE CALOR POR CAUSA SUSPENSIÓN (> 12H)
       ============================================================ */
-      function renderHeatmapSuspension() {
+      function renderHeatmapSuspension() { const VIEW = getLocalView('heatmap-suspension');
         let VIEW_MAYORES = VIEW.filter(e => e.minutos_caidos > 720); // > 12h
         const chkHide = document.getElementById("chk-hide-sindato-hs");
         if (chkHide && chkHide.checked) {
@@ -3396,6 +3483,81 @@
       /* ============================================================
          RENDER GLOBAL
       ============================================================ */
+      function getLocalView(secId, ignoreMes = false) {
+        const sec = document.getElementById(secId);
+        if (!sec) return window.VIEW || DATA;
+        
+        const fMes = sec.querySelector('.fl-mes') ? sec.querySelector('.fl-mes').value : "";
+        const fReg = sec.querySelector('.fl-reg') ? sec.querySelector('.fl-reg').value : "";
+        const fDep = sec.querySelector('.fl-dep') ? sec.querySelector('.fl-dep').value : "";
+        const fMun = sec.querySelector('.fl-mun') ? sec.querySelector('.fl-mun').value : "";
+        const fCR = sec.querySelector('.fl-cr') ? sec.querySelector('.fl-cr').value : "";
+        const fCS = sec.querySelector('.fl-cs') ? sec.querySelector('.fl-cs').value : "";
+        const rngSelect = sec.querySelector('.fl-rng');
+        const fRngs = rngSelect ? Array.from(rngSelect.selectedOptions).filter(o => o.selected).map(o => o.value) : [];
+
+        let v = DATA.filter(s => {
+          let cumpleModo = true;
+          if (filtro.modo === "UNIRED") {
+             cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
+          } else if (filtro.modo === "HUAWEI") {
+             cumpleModo = s.etiqueta_padre === 'NAR';
+          }
+          return cumpleModo;
+        });
+
+        if (!ignoreMes && fMes) v = v.filter(e => e.mes_ano === fMes);
+        if (fReg) v = v.filter(e => e.region === fReg);
+        if (fDep) v = v.filter(e => e.departamento === fDep);
+        if (fMun) v = v.filter(e => e.ciudad === fMun);
+        if (fCR) v = v.filter(e => e.causa_raiz_macro === fCR);
+        if (fCS) v = v.filter(e => e.causa_suspension_macro === fCS);
+        if (fRngs.length > 0) v = v.filter(e => fRngs.includes(e.rango));
+        
+        return v;
+      }
+
+      function initLocalFilters() {
+        document.querySelectorAll('.filtros-local').forEach(fl => {
+          const mes = fl.querySelector('.fl-mes');
+          const reg = fl.querySelector('.fl-reg');
+          const dep = fl.querySelector('.fl-dep');
+          const mun = fl.querySelector('.fl-mun');
+          const cr = fl.querySelector('.fl-cr');
+          const cs = fl.querySelector('.fl-cs');
+
+          _MA.forEach(m => mes.add(new Option(m, m)));
+          const validReg = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin informaci\\u00F3n").sort();
+          validReg.forEach(r => reg.add(new Option(r, r)));
+          Object.keys(DEPTOS).forEach(d => dep.add(new Option(d, d)));
+          Object.keys(CAUSA_RAIZ).forEach(c => cr.add(new Option(c, c)));
+          
+          const validCs = [...new Set(DATA.map(d => d.causa_suspension_macro))].filter(Boolean).sort();
+          validCs.forEach(c => cs.add(new Option(c, c)));
+          
+          dep.onchange = () => {
+            mun.innerHTML = '<option value="">Todos</option>';
+            if (dep.value && DEPTOS[dep.value]) {
+               DEPTOS[dep.value].forEach(m => mun.add(new Option(m, m)));
+            }
+            fl.dispatchEvent(new Event('change'));
+          };
+
+          fl.addEventListener('change', (e) => {
+            if (e.target.tagName === 'SELECT') {
+               const secId = fl.closest('section').id;
+               if (secId === 'resumen') renderResumen();
+               else if (secId === 'tendencias') renderTendencias();
+               else if (secId === 'pareto') renderPareto();
+               else if (secId === 'heatmap') renderHeatmap();
+               else if (secId === 'heatmap-suspension') renderHeatmapSuspension();
+               else if (secId === 'causaraiz') renderCausaRaiz();
+               else if (secId === 'suspension') renderSusp();
+            }
+          });
+        });
+      }
+
       function renderAll() {
         VIEW = aplicaFiltro(filtro);
         VIEW_TEND = aplicaFiltro({ ...filtro, mes: "" });
