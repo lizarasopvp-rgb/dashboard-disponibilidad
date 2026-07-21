@@ -3317,22 +3317,58 @@ updateGeoCascade();
         const planCounts = typeof _PLAN500_COUNTS !== 'undefined' ? _PLAN500_COUNTS : {};
         const byMonth = {};
         
+        // 1. Agrupar por sitio para deduplicación
+        const eventsBySite = {};
         _E.forEach(r => {
           const site_cd = _S[r[0]]; 
-          const executionMonth = planDates[site_cd];
-          if (!executionMonth) return;
-          
+          if (!planDates[site_cd]) return;
           const causaGlobal = _S[r[7]].toLowerCase();
           if (!causaGlobal.includes('energ')) return;
-          
-          const mesAnoInt = r[16];
-          const mesAno = String(r[16]);
-          
-          if (!byMonth[mesAno]) {
-             byMonth[mesAno] = { mins: 0, events: [] };
-          }
-          byMonth[mesAno].mins += r[6];
-          byMonth[mesAno].events.push(r);
+          if (!eventsBySite[site_cd]) eventsBySite[site_cd] = [];
+          eventsBySite[site_cd].push(r);
+        });
+
+        // 2. Unificar eventos solapados (Deduplicación)
+        const dedupedEvents = [];
+        for (const site in eventsBySite) {
+           const evs = eventsBySite[site].map(r => {
+              const ts = new Date(r[12].replace(' ', 'T')).getTime();
+              const mins = r[6];
+              const tf = ts + mins * 60000;
+              return { r, ts, tf, mins };
+           }).sort((a, b) => a.ts - b.ts);
+
+           let current = null;
+           for (const ev of evs) {
+              if (!current) {
+                 current = { ...ev, tickets: [_S[ev.r[10]]] };
+              } else {
+                 if (ev.ts <= current.tf + 60000) { // Si se solapan o hay < 1 min de diferencia
+                    current.tf = Math.max(current.tf, ev.tf);
+                    current.mins = (current.tf - current.ts) / 60000;
+                    current.tickets.push(_S[ev.r[10]]);
+                 } else {
+                    dedupedEvents.push(current);
+                    current = { ...ev, tickets: [_S[ev.r[10]]] };
+                 }
+              }
+           }
+           if (current) dedupedEvents.push(current);
+        }
+
+        // 3. Agregar a byMonth
+        dedupedEvents.forEach(ev => {
+           const d = new Date(ev.ts);
+           const mesAno = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0');
+           if (!byMonth[mesAno]) byMonth[mesAno] = { mins: 0, events: [] };
+           byMonth[mesAno].mins += ev.mins;
+           
+           const mergedR = [...ev.r];
+           mergedR[6] = ev.mins; // Minutos reales sin duplicar
+           if (ev.tickets.length > 1) {
+              mergedR.customTicket = Array.from(new Set(ev.tickets)).join(' | ');
+           }
+           byMonth[mesAno].events.push(mergedR);
         });
 
         if (typeof _MA !== 'undefined') {
@@ -3443,9 +3479,8 @@ updateGeoCascade();
           plugins: [plan500LabelsPlugin]
         });
       }
-
-      let p5CurrentPage = 1;
-      let p5CurrentEvents = [];
+      var p5CurrentPage = 1;
+      var p5CurrentEvents = [];
       
       function renderPlan500Table(mes, events) {
         p5CurrentEvents = events.sort((a, b) => b[6] - a[6]);
@@ -3479,9 +3514,10 @@ updateGeoCascade();
            html += `<tr><td colspan="5" style="text-align:center; color:var(--gris); padding: 15px;">No hay fallas para mostrar en este mes</td></tr>`;
         } else {
            pageEvents.forEach(r => {
+             const ticketStr = r.customTicket || _S[r[10]];
              html += `<tr>
                <td><b>${_S[r[0]]}</b><br><span style="font-size:10.5px;color:var(--gris)">${_S[r[1]]}</span></td>
-               <td><span class="tdpill" style="background:var(--azul-marino)">${_S[r[10]]}</span></td>
+               <td style="max-width: 150px; word-break: break-all;"><span class="tdpill" style="background:var(--azul-marino); white-space: normal;">${ticketStr}</span></td>
                <td>${_S[r[8]]}</td>
                <td style="font-family: var(--f-mono); font-size: 11px;">${r[12]}</td>
                <td class="num" style="font-weight:600; color:var(--rojo)">${r[6].toFixed(1)}</td>
