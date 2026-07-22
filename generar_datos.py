@@ -169,7 +169,7 @@ df['SITE_CD'] = df['sitio_homologado'].fillna('Sin dato')
 df['SITE_NAME'] = df['SITE_CD'].apply(lambda x: site_name_map.get(str(x).strip(), str(x).strip()) if pd.notna(x) else 'Sin dato')
 
 # Estado
-df['ESTADO_RAD'] = 'Restaurado'
+df['ESTADO_RAD'] = df['faultresolvingtime'].isna().apply(lambda x: 'Activo' if x else 'Restaurado')
 
 # Tecnología
 df['TECNOLOGIA'] = df['domain'].replace({'RAN-3G': '3G', 'RAN-4G': '4G', 'RAN-2G': '2G', 'RAN-5G': '5G'}).fillna('4G')
