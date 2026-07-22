@@ -1577,8 +1577,6 @@
         <select id="geo-cs-esp">
           <option value="">Todas</option>
         </select>
-        <button type="button" class="btn-rojo" id="geo-btn-aplicar" style="padding: 4px 12px; margin-left:10px;"
-          onclick="aplicarGeografia()">Actualizar</button>
       </div>
       <div class="grid-geo">
         <div class="card">
@@ -4352,29 +4350,31 @@ updateGeoCascade();
         const tendMetric = document.getElementById("tend-metric"); if (tendMetric) tendMetric.onchange = () => renderTendencias();
 
         // Filtros secundarios Geografía
+        const geoMes = document.getElementById("geo-mes");
+        if (geoMes) geoMes.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
         const geoCr = document.getElementById("geo-cr");
-        if (geoCr) geoCr.onchange = () => updateGeoCascade();
+        if (geoCr) geoCr.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
         const geoCrEsp = document.getElementById("geo-cr-esp");
-        if (geoCrEsp) geoCrEsp.onchange = () => updateGeoCascade();
+        if (geoCrEsp) geoCrEsp.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
 
         const geoCs = document.getElementById("geo-cs");
-        if (geoCs) geoCs.onchange = () => updateGeoCascade();
+        if (geoCs) geoCs.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
         const geoCsEsp = document.getElementById("geo-cs-esp");
-        if (geoCsEsp) geoCsEsp.onchange = () => updateGeoCascade();
+        if (geoCsEsp) geoCsEsp.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
 
         const geoRango = document.getElementById("geo-rango");
         if (geoRango) {
           const rangos = [...new Set(DATA.map(d => d.rango))];
           rangos.forEach(r => geoRango.add(new Option(r, r)));
-          geoRango.onchange = () => updateGeoCascade();
+          geoRango.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
         }
 
         const geoReg = document.getElementById("geo-reg");
-        if (geoReg) geoReg.onchange = () => updateGeoCascade();
+        if (geoReg) geoReg.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
         const geoDepto = document.getElementById("geo-depto");
-        if (geoDepto) geoDepto.onchange = () => updateGeoCascade();
+        if (geoDepto) geoDepto.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
         const geoMuni = document.getElementById("geo-muni");
-        if (geoMuni) geoMuni.onchange = () => updateGeoCascade();
+        if (geoMuni) geoMuni.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
 
         // Filtros secundarios Worst Offenders
         const woR = document.getElementById("wo-reg");
