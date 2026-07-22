@@ -17,8 +17,8 @@ Mapeo de columnas (Data.xlsx):
 import pandas as pd
 import json
 
-print("Leyendo Data.xlsx...")
-xls = pd.ExcelFile('Data.xlsx')
+print("Leyendo DataV2.xlsx...")
+xls = pd.ExcelFile('DataV2.xlsx')
 sheet_to_parse = 'Data' if 'Data' in xls.sheet_names else xls.sheet_names[0]
 df = xls.parse(sheet_to_parse)
 print(f"  {len(df)} filas, {len(df.columns)} columnas leídas")
@@ -77,30 +77,17 @@ for _, row in cmdb.dropna(subset=['Nombre_Site']).iterrows():
     if pd.notna(nodeb) and str(nodeb).strip():
         site_name_map[str(nodeb).strip()] = name
 
-# Coordenadas por site y ciudad (usando NodeB_Name y CODIGO_EMPLAZAMIENTO)
-site_coords = {}
-for _, row in cmdb_op.dropna(subset=['Latitude', 'Longitude']).iterrows():
-    lat, lng = row['Latitude'], row['Longitude']
-    codigo = row.get('CODIGO_EMPLAZAMIENTO')
-    nodeb = row.get('NodeB_Name')
-    if pd.notna(codigo) and str(codigo).strip():
-        site_coords[str(codigo).strip()] = {'lat': lat, 'lng': lng}
-    if pd.notna(nodeb) and str(nodeb).strip():
-        site_coords[str(nodeb).strip()] = {'lat': lat, 'lng': lng}
-
-city_coords = cmdb_op.dropna(subset=['Latitude','Longitude']).groupby('Ciudad').agg(
-    lat=('Latitude','mean'), lng=('Longitude','mean')
-).to_dict('index')
+# Las coordenadas ahora vienen nativas en DataV2.xlsx (Latitud, Longitud)
 
 # ============================================================
 # DERIVAR COLUMNAS SEGÚN INSTRUCCIONES DEL USUARIO
 # ============================================================
 
-# Ciudad: city_name_x, si vacío usa city_name_y
-df['CITY_DS'] = df['city_name_x'].fillna(df['city_name_y']).fillna('Sin dato')
+# Ciudad y Departamento (nuevas columnas DataV2)
+df['CITY_DS'] = df['Ciudad'].fillna('Sin dato')
 
-# Departamento: department_name_x, si vacío usa department_name_y
-df['DEPARTMENT_DS'] = df['department_name_x'].fillna(df['department_name_y']).fillna('Sin dato')
+# Departamento
+df['DEPARTMENT_DS'] = df['Departamento'].fillna('Sin dato')
 
 # Regional: siteregion
 df['REGION_OP'] = df['siteregion'].fillna('Sin dato')
@@ -121,7 +108,7 @@ df['TICKET'] = df['orderid'].fillna('Sin dato')
 df['CAUSA_RAIZ'] = df['causa_final'].fillna('Sin dato')
 
 # Causa global
-df['CAUSA_GLOBAL'] = df['Causa global'].fillna('Sin dato')
+df['CAUSA_GLOBAL'] = df['causa_global'].fillna('Sin dato')
 
 # Solución: procsolutiondes
 df['SOLUCION_TICKET'] = df['procsolutiondes'].fillna('Sin dato')
@@ -136,6 +123,44 @@ def build_detalle(row):
     return ' | '.join(parts) if parts else 'Sin detalle'
 
 df['DETALLE_FALLA'] = df.apply(build_detalle, axis=1)
+
+# Lógica IA
+import re
+def normalize_text(text):
+    if not isinstance(text, str) or not text.strip():
+        return ""
+    text = text.lower().replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u').replace('ñ', 'n')
+    return re.sub(r'\s+', ' ', text).strip()
+
+def get_causa_ia(row):
+    norm = normalize_text(row['DETALLE_FALLA'])
+    if not norm:
+        return 'Otra'
+    vm_negative = r'(no\s+se\s+encuentra|no\s+registra|no\s+presenta|no\s+hay|sin)\s+(con\s+)?(mantenimiento\s+programado|mto\s+programado)'
+    vm_positive = r'mantenimiento\s+programado|mto\.?\s+programado|trabajo\s+programado'
+    is_vm = bool(re.search(vm_positive, norm)) and not bool(re.search(vm_negative, norm))
+    
+    red_mt_pattern = r'red\s+(de\s+)?media\s+tension|linea\s+(de\s+)?media\s+tension|transformador|trafo|canuela'
+    is_red_mt = bool(re.search(red_mt_pattern, norm))
+    
+    tx_pattern = r'corte\s+(de\s+)?fibra|fibra\s+corte|falla\s+(el\s+|de\s+|del\s+)?atn|atn\s+caid|equipo\s+carrier|falla\s+(de\s+|del\s+)?equipo\s+carrier|falla\s+carrier'
+    is_tx = bool(re.search(tx_pattern, norm))
+    
+    tormenta_pattern = r'tormenta|vendaval|lluvia|lluvias|inundac|deslizamiento|derrumb'
+    is_tormenta = bool(re.search(tormenta_pattern, norm))
+    
+    if is_vm:
+        return 'VM electrificadora'
+    elif is_red_mt:
+        return 'MT'
+    elif is_tx:
+        return 'TX'
+    elif is_tormenta:
+        return 'Climatológicos'
+    else:
+        return 'Otra'
+
+df['CAUSA_IA'] = df.apply(get_causa_ia, axis=1)
 
 # Site ID y Name
 df['SITE_CD'] = df['sitio_homologado'].fillna('Sin dato')
@@ -163,12 +188,15 @@ df['Rangos'] = df['MIN_IND_DIA'].apply(get_rango)
 # Fecha
 df['FECHA_DIA'] = pd.to_datetime(df['fecha_inicio_sintetica'], errors='coerce')
 
-# Mes-Año
-df['MES_ANO'] = df['Mes'].astype(str).str.replace('-', '').fillna('0').astype(int)
+# Mapear la columna `mes` al formato requerido MES_ANO
+df['MES_ANO'] = df['mes'].astype(str).str.replace('-', '').fillna('0').astype(int)
 
 # Fechas para agrupamiento masivas
 df['fi'] = pd.to_datetime(df['faultfirstoccurtime'] if 'faultfirstoccurtime' in df.columns else df['fecha_inicio_sintetica'], errors='coerce')
 df['ff'] = pd.to_datetime(df['fecha_fin_sintetica'], errors='coerce')
+
+# Falla Activa (Si faultresolvingtime está vacio, sigue activa)
+df['is_active'] = df['faultresolvingtime'].isna()
 
 # Eventos con falla real
 eventos = df[df['MIN_IND_DIA'] > 0].copy()
@@ -217,9 +245,12 @@ print(f"  Total fallas masivas detectadas: {len(masiva_clusters)}")
 
 for col in ['CAUSA_GLOBAL','CAUSA_RAIZ','TICKET','SOLUCION_TICKET','DETALLE_FALLA',
             'SITE_CD','SITE_NAME','CITY_DS','DEPARTMENT_DS','TECNOLOGIA','REGION_OP',
-            'Rangos','ESTADO_RAD','CAUSA_SUSPENSION_MACRO', 'CAUSA_SUSPENSION_ESPECIFICA','etiqueta_padre']:
+            'Rangos','ESTADO_RAD','CAUSA_SUSPENSION_MACRO', 'CAUSA_SUSPENSION_ESPECIFICA','etiqueta_padre', 'CAUSA_IA']:
     if col in eventos.columns:
         eventos[col] = eventos[col].fillna('Sin dato')
+
+eventos['Latitud'] = pd.to_numeric(eventos['Latitud'], errors='coerce').fillna(4.6)
+eventos['Longitud'] = pd.to_numeric(eventos['Longitud'], errors='coerce').fillna(-74.1)
 
 # String interning: index repetitive strings to save space
 str_pool = {}
@@ -242,17 +273,8 @@ for _, r in eventos.iterrows():
     ts = r['FECHA_DIA']
     if pd.isna(ts):
         continue
-    sc = str(r['SITE_CD']).strip()
-    lat = site_coords.get(sc, {}).get('lat')
-    lng = site_coords.get(sc, {}).get('lng')
-    if lat is None:
-        city_key = str(r['CITY_DS']).strip().upper()
-        for k, v in city_coords.items():
-            if str(k).strip().upper() == city_key:
-                lat, lng = v['lat'], v['lng']
-                break
-    if lat is None:
-        lat, lng = 4.6, -74.1
+    lat = r['Latitud']
+    lng = r['Longitud']
 
     data.append([
         intern(r['SITE_CD']),              # 0: sitio_id
@@ -277,6 +299,8 @@ for _, r in eventos.iterrows():
         intern(truncate(r['DETALLE_FALLA'], 500)), # 19: detalle falla
         intern(r['etiqueta_padre']),               # 20: etiqueta_padre
         intern(r['MASIVA_ID']),                    # 21: masiva_id
+        intern(r['CAUSA_IA']),                     # 22: causa_ia
+        1 if r['is_active'] else 0,                # 23: is_active (1 o 0)
     ])
 
 print(f"Eventos: {len(data)}, Strings pool: {len(str_list)}")

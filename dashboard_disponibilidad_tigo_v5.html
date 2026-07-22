@@ -90,6 +90,29 @@
       color: #B8C8D8
     }
 
+    .meta-chip {
+      display: inline-block;
+      background: var(--linea);
+      color: var(--azul-marino);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    @keyframes pulso {
+      0% { transform: scale(0.85); fill-opacity: 1; }
+      50% { transform: scale(1.4); fill-opacity: 0.4; }
+      100% { transform: scale(0.85); fill-opacity: 1; }
+    }
+    path.pulso-rojo {
+      animation: pulso 1.2s infinite ease-in-out;
+      transform-origin: center;
+      box-shadow: 0 0 10px red;
+    }
+
     .badge-mock {
       margin-left: auto;
       font-family: var(--f-mono);
@@ -1893,7 +1916,8 @@
         rango: S[e[15]],
         mes_ano: e[16],
         masiva_id: S[e[21]],
-        causa_ia: S[e[22]] || 'Otra'
+        causa_ia: S[e[22]] || 'Otra',
+        is_active: e[23] === 1
       }));
       const fmtDT = ts => ts ? new Date(ts).toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
       const fmtISO = ts => ts ? new Date(ts).toISOString() : '';
@@ -1919,15 +1943,16 @@
           if (!m[k]) m[k] = {
             sitio_id: k, nombre: ev.nombre, departamento: ev.departamento, ciudad: ev.ciudad,
             tecnologia: ev.tecnologia, componente: ev.componente, perfil: ev.perfil,
-            min: 0, nEv: 0, estados: [], crE: {}, csE: {}, maxEv: null
+            min: 0, nEv: 0, estados: [], crE: {}, csE: {}, maxEv: null, is_active: false
           };
           const s = m[k]; s.min += ev.minutos_caidos; s.nEv++; s.estados.push(ev.estado);
+          if (ev.is_active) s.is_active = true;
           s.crE[ev.causa_raiz_especifica] = (s.crE[ev.causa_raiz_especifica] || 0) + 1;
           s.csE[ev.causa_suspension_especifica] = (s.csE[ev.causa_suspension_especifica] || 0) + 1;
           if (!s.maxEv || ev.minutos_caidos > s.maxEv.minutos_caidos) s.maxEv = ev;
         });
         return Object.values(m).map(s => {
-          s.estado = s.estados.includes("Activo") ? "Activo" : s.estados.includes("En_gestión") ? "En_gestión" : "Restaurado";
+          s.estado = s.is_active ? "Activo" : (s.estados.includes("En_gestión") ? "En_gestión" : "Restaurado");
           s.crTop = Object.entries(s.crE).sort((a, b) => b[1] - a[1])[0][0];
           s.csTop = Object.entries(s.csE).sort((a, b) => b[1] - a[1])[0][0];
           s.mttr = +(s.min / s.nEv).toFixed(0); // minutos promedio por evento
@@ -2340,27 +2365,29 @@
         if (geoNivel.tipo === "depto") {
            evs.forEach(e => {
              const k = e.departamento;
-             if (!agg[k]) agg[k] = { nombre: k, min: 0, latSum: 0, lngSum: 0, n: 0, nivel: 'Departamento' };
+             if (!agg[k]) agg[k] = { nombre: k, min: 0, latSum: 0, lngSum: 0, n: 0, nivel: 'Departamento', activos: 0 };
              agg[k].min += e.minutos_caidos;
              agg[k].latSum += e.lat;
              agg[k].lngSum += e.lng;
              agg[k].n++;
+             if (e.is_active) agg[k].activos++;
            });
         } else if (geoNivel.tipo === "ciudad") {
            evs.forEach(e => {
              if (e.departamento !== geoNivel.depto) return;
              const k = e.ciudad;
-             if (!agg[k]) agg[k] = { nombre: k, min: 0, latSum: 0, lngSum: 0, n: 0, nivel: 'Ciudad' };
+             if (!agg[k]) agg[k] = { nombre: k, min: 0, latSum: 0, lngSum: 0, n: 0, nivel: 'Ciudad', activos: 0 };
              agg[k].min += e.minutos_caidos;
              agg[k].latSum += e.lat;
              agg[k].lngSum += e.lng;
              agg[k].n++;
+             if (e.is_active) agg[k].activos++;
            });
         } else {
            const sm = metricasSitio(evs.filter(e => e.departamento === geoNivel.depto && e.ciudad === geoNivel.ciudad));
            sm.forEach(s => {
              const e = evs.find(x => x.sitio_id === s.sitio_id);
-             agg[s.sitio_id] = { nombre: s.nombre, codigo: s.sitio_id, min: s.min, lat: e.lat, lng: e.lng, nivel: 'Sitio', sub: s };
+             agg[s.sitio_id] = { nombre: s.nombre, codigo: s.sitio_id, min: s.min, lat: e.lat, lng: e.lng, nivel: 'Sitio', sub: s, activos: s.estado === 'Activo' ? 1 : 0 };
            });
         }
 
@@ -2377,9 +2404,12 @@
            let color, radius;
            const ratio = maxMin > 0 ? i.min / maxMin : 0;
            
-           if (ratio >= 0.6) {
-               color = "var(--critico)"; // Rojo, grande
+           if (i.activos > 0) {
+               color = "var(--critico)";
                radius = 16;
+           } else if (ratio >= 0.6) {
+               color = "var(--critico)"; // Rojo, grande
+               radius = 14;
            } else if (ratio >= 0.2) {
                color = "var(--critico-medio)"; // Naranja, mediano
                radius = 11;
@@ -2389,11 +2419,16 @@
            }
 
            let popupHtml = i.nivel==='Sitio' ? `<strong>${i.codigo}</strong><br><span style="font-size:11px;color:var(--gris)">${i.nombre}</span><br>Nivel: ${i.nivel}<br><b>${fmt(i.min)} min</b>` : `<strong>${i.nombre}</strong><br>Nivel: ${i.nivel}<br><b>${fmt(i.min)} min</b>`;
+           if (i.activos > 0) popupHtml += `<br><span style="color:var(--critico);font-weight:bold;">⚠️ ${i.activos} incidentes activos</span>`;
+
            if (i.nivel === 'Sitio') {
                popupHtml += `<br>${i.sub.ciudad}, ${i.sub.departamento}<br>${i.sub.componente} · ${i.sub.tecnologia}<br>${i.sub.nEv} eventos · ${i.sub.estado}<br><small>CR: ${i.sub.crTop}</small>`;
            }
 
-           L.circleMarker([i.lat, i.lng], { radius: radius, color: color, fillColor: color, fillOpacity: 0.65, weight: 1 })
+           L.circleMarker([i.lat, i.lng], { 
+               radius: radius, color: color, fillColor: color, fillOpacity: 0.65, weight: 1,
+               className: i.activos > 0 ? 'pulso-rojo' : ''
+           })
              .bindPopup(popupHtml)
              .addTo(capaMarcadores);
         });
