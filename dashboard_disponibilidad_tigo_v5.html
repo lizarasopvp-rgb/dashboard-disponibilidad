@@ -1213,18 +1213,18 @@
     </div>
     <nav id="navmenu">
       <a href="#resumen" data-go="resumen" class="activo">1 · Resumen</a>
-      <a href="#tendencias" data-go="tendencias">2 · Tendencias</a>
-      <a href="#pareto" data-go="pareto">3 · Distribución por rangos de tiempo</a>
-      <a href="#heatmap-suspension" data-go="heatmap-suspension">4 · Mapa causa suspensión</a>
-      <a href="#suspension" data-go="suspension">5 · Causa suspensión</a>
-      <a href="#heatmap" data-go="heatmap">6 · Mapa causa raíz</a>
-      <a href="#causaraiz" data-go="causaraiz">7 · Causa raíz</a>
-      <a href="#geografico" data-go="geografico">8 · Geografía</a>
-      <a href="#worst" data-go="worst">9 · Worst offenders</a>
-      <a href="#intermitentes" data-go="intermitentes">10 · Intermitentes</a>
-      <a href="#masivas" data-go="masivas">11 · Fallas simultáneas</a>
-      <a href="#plan500" data-go="plan500">12 · Plan 500</a>
-      <a href="#disponibilidad-nar" data-go="disponibilidad-nar">13 · Gráfica Disponibilidad</a>
+      <a href="#disponibilidad-nar" data-go="disponibilidad-nar">2 · Gráfica disponibilidad</a>
+      <a href="#tendencias" data-go="tendencias">3 · Tendencias</a>
+      <a href="#pareto" data-go="pareto">4 · Distribución por rangos de tiempo</a>
+      <a href="#heatmap-suspension" data-go="heatmap-suspension">5 · Mapa calor - Causa suspensión</a>
+      <a href="#suspension" data-go="suspension">6 · Causa suspensión macro</a>
+      <a href="#heatmap" data-go="heatmap">7 · Mapa calor - Causa raíz</a>
+      <a href="#causaraiz" data-go="causaraiz">8 · Causa raíz macro</a>
+      <a href="#geografico" data-go="geografico">9 · Análisis geográfico - Fallas</a>
+      <a href="#worst" data-go="worst">10 · Worst offenders</a>
+      <a href="#intermitentes" data-go="intermitentes">11 · Sitios intermitentes</a>
+      <a href="#masivas" data-go="masivas">12 · Fallas relevantes</a>
+      <a href="#plan500" data-go="plan500">13 · Evolución plan 500</a>
     </nav>
   </header>
 
@@ -1243,7 +1243,7 @@
     <section id="resumen">
       <div class="story-step"><span class="n">1</span> VISIÓN EJECUTIVA</div>
       <div class="sec-head">
-        <h2>Resumen ejecutivo</h2><span class="pregunta">¿Cómo está la red y qué la está frenando?</span>
+        <h2>Resumen</h2><span class="pregunta">¿Cómo está la red y qué la está frenando?</span>
       </div>
       
       <div class="narrativa" id="narr-resumen"></div>
@@ -1252,9 +1252,9 @@
 
     <!-- 13 · GRÁFICA DE DISPONIBILIDAD -->
     <section id="disponibilidad-nar">
-      <div class="story-step"><span class="n">13</span> INDICADORES</div>
+      <div class="story-step"><span class="n">2</span> INDICADORES</div>
       <div class="sec-head">
-        <h2>Gráfica de Disponibilidad</h2><span class="pregunta">Evolución mensual del indicador NAR para 4G</span>
+        <h2>Gráfica disponibilidad</h2><span class="pregunta">Evolución mensual del indicador NAR para 4G</span>
       </div>
       <div class="narrativa" id="narr-disp-nar">Indicador NAR 4G histórico consultado desde la API oficial de disponibilidad. La fuente se selecciona automáticamente según el filtro superior de Modo (HUAWEI = Excluye parada reloj · UNIRED = Sin exclusiones).</div>
 
@@ -1288,9 +1288,9 @@
     </section>
     <!-- 2 · TENDENCIAS (drill temporal) -->
     <section id="tendencias">
-      <div class="story-step"><span class="n">2</span> ¿CÓMO EVOLUCIONA?</div>
+      <div class="story-step"><span class="n">3</span> ¿CÓMO EVOLUCIONA?</div>
       <div class="sec-head">
-        <h2>Tendencia temporal</h2><span class="pregunta">Año → Mes → Día → Hora · ¿mejora o empeora?</span>
+        <h2>Tendencias</h2><span class="pregunta">Año → Mes → Día → Hora · ¿mejora o empeora?</span>
       </div>
             <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
         <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
@@ -1346,7 +1346,7 @@
 
     <!-- 3 · DISTRIBUCIÓN -->
     <section id="pareto">
-      <div class="story-step"><span class="n">3</span> DISTRIBUCIÓN POR RANGOS DE TIEMPO</div>
+      <div class="story-step"><span class="n">4</span> DISTRIBUCIÓN POR RANGOS DE TIEMPO</div>
       <div class="sec-head">
         <h2>Distribución por rangos de tiempo</h2><span class="pregunta">% de minutos y % de eventos por categoría de duración</span>
       </div>
@@ -1372,9 +1372,9 @@
 
     <!-- 4 · MAPA DE CALOR POR CAUSA SUSPENSIÓN (> 12H) -->
     <section id="heatmap-suspension">
-      <div class="story-step"><span class="n">4</span> CONCENTRACIÓN POR CAUSA SUSPENSIÓN (> 12H)</div>
+      <div class="story-step"><span class="n">5</span> CONCENTRACIÓN POR CAUSA SUSPENSIÓN (> 12H)</div>
       <div class="sec-head">
-        <h2>Mapa de calor por causa suspensión (> 12h)</h2><span class="pregunta">% de minutos (fallas &gt; 12h) por causa suspensión × regional</span>
+        <h2>Mapa calor - Causa suspensión</h2><span class="pregunta">% de minutos (fallas &gt; 12h) por causa suspensión × regional</span>
       </div>
       <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
         <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
@@ -1410,9 +1410,9 @@
 
     <!-- 5 · CAUSA SUSPENSIÓN -->
     <section id="suspension">
-      <div class="story-step"><span class="n">5</span> CAUSA SUSPENSIÓN · EXTERNA</div>
+      <div class="story-step"><span class="n">6</span> CAUSA SUSPENSIÓN · EXTERNA</div>
       <div class="sec-head">
-        <h2>Causa de suspensión</h2><span class="pregunta">Factores logísticos o externos · macro → específica</span>
+        <h2>Causa suspensión macro</h2><span class="pregunta">Factores logísticos o externos · macro → específica</span>
       </div>
       <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
         <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
@@ -1450,9 +1450,9 @@
 
     <!-- 6 · MAPA DE CALOR POR CAUSA RAÍZ -->
     <section id="heatmap">
-      <div class="story-step"><span class="n">6</span> CONCENTRACIÓN POR CAUSA</div>
+      <div class="story-step"><span class="n">7</span> CONCENTRACIÓN POR CAUSA</div>
       <div class="sec-head">
-        <h2>Mapa de calor por causa raíz</h2><span class="pregunta">% de minutos por causa raíz × regional</span>
+        <h2>Mapa calor - Causa raíz</h2><span class="pregunta">% de minutos por causa raíz × regional</span>
       </div>
       <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
         <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
@@ -1475,9 +1475,9 @@
 
     <!-- 7 · CAUSA RAÍZ -->
     <section id="causaraiz">
-      <div class="story-step"><span class="n">7</span> CAUSA RAÍZ · RED</div>
+      <div class="story-step"><span class="n">8</span> CAUSA RAÍZ · RED</div>
       <div class="sec-head">
-        <h2>Causa raíz</h2><span class="pregunta">Asociada a componentes de red · macro → específica</span>
+        <h2>Causa raíz macro</h2><span class="pregunta">Asociada a componentes de red → macro → específica</span>
       </div>
       <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
         
@@ -1516,9 +1516,9 @@
 
     <!-- 8 · GEOGRAFÍA -->
     <section id="geografico">
-      <div class="story-step"><span class="n">8</span> ¿DÓNDE?</div>
+      <div class="story-step"><span class="n">9</span> ¿DÓNDE?</div>
       <div class="sec-head">
-        <h2>Análisis geográfico</h2><span class="pregunta">Departamento → Ciudad → Sitio</span>
+        <h2>Análisis geográfico - Fallas</h2><span class="pregunta">Departamento → Ciudad → Sitio</span>
       </div>
       
       <div id="geo-insights" style="display:flex; gap:20px; margin: 15px 0 25px 0; align-items:center; font-weight:700; color:var(--azul-marino);">
@@ -1604,9 +1604,9 @@
 
     <!-- 9 · WORST OFFENDERS -->
     <section id="worst">
-      <div class="story-step"><span class="n">9</span> ¿DÓNDE INTERVENIR?</div>
+      <div class="story-step"><span class="n">10</span> ¿DÓNDE INTERVENIR?</div>
       <div class="sec-head">
-        <h2>Worst offenders · Top sitios</h2><span class="pregunta">¿Qué sitios maximizan la eficiencia de la
+        <h2>Worst offenders</h2><span class="pregunta">¿Qué sitios maximizan la eficiencia de la
           intervención?</span>
       </div>
       <div class="narrativa" id="narr-worst"></div>
@@ -1636,7 +1636,7 @@
 
     <!-- 10 · INTERMITENTES -->
     <section id="intermitentes">
-      <div class="story-step"><span class="n">10</span> EL DEFECTO CRÓNICO</div>
+      <div class="story-step"><span class="n">11</span> EL DEFECTO CRÓNICO</div>
       <div class="sec-head">
         <h2>Sitios intermitentes</h2><span class="pregunta">¿Qué sitios caen una y otra vez? · ranking por
           frecuencia</span>
@@ -1668,9 +1668,9 @@
 
     <!-- 11 · FALLAS SIMULTÁNEAS -->
     <section id="masivas">
-      <div class="story-step"><span class="n">11</span> FALLAS SIMULTÁNEAS</div>
+      <div class="story-step"><span class="n">12</span> FALLAS RELEVANTES</div>
       <div class="sec-head">
-        <h2>Fallas simultáneas</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
+        <h2>Fallas relevantes</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
       </div>
       <div class="narrativa" id="narr-masivas">Agrupación automática de clústeres de fallas ocurridas en el mismo día y hora (aprox), con la misma causa raíz y cercanía geográfica (prefijo de sitio). Ideal para solicitar exclusiones.</div>
             <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
@@ -1746,9 +1746,9 @@
 
     <!-- 12 · PLAN 500 -->
     <section id="plan500">
-      <div class="story-step"><span class="n">12</span> PLAN 500</div>
+      <div class="story-step"><span class="n">13</span> PLAN 500</div>
       <div class="sec-head">
-        <h2>Plan 500</h2><span class="pregunta">Minutograma y evolución de sitios finalizados (Causa: Energía)</span>
+        <h2>Evolución plan 500</h2><span class="pregunta">Minutograma y evolución de sitios finalizados (Causa: Energía)</span>
       </div>
       <div class="narrativa" id="narr-plan500">Análisis mensual de minutos de indisponibilidad por <b>energía</b> en sitios con plan de acción <b>finalizado</b>.</div>
       
