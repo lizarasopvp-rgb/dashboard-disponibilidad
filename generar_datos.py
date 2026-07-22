@@ -27,7 +27,16 @@ if 'etiqueta_padre' not in df.columns:
 
 print("Leyendo PLAN 500_UNIRED.xlsx...")
 try:
-    plan500_df = pd.read_excel('PLAN 500_UNIRED.xlsx')
+    plan500_file = pd.ExcelFile('PLAN 500_UNIRED.xlsx')
+    plan500_df = None
+    for sheet in plan500_file.sheet_names:
+        df_temp = pd.read_excel(plan500_file, sheet_name=sheet)
+        if any('Estado de plan' in c for c in df_temp.columns) and any('FECHA DE EJECUCI' in c for c in df_temp.columns):
+            plan500_df = df_temp
+            break
+    if plan500_df is None:
+        plan500_df = pd.read_excel(plan500_file) # fallback
+    
     estado_col = [c for c in plan500_df.columns if 'Estado de plan' in c]
     date_col = [c for c in plan500_df.columns if 'FECHA DE EJECUCI' in c]
     
