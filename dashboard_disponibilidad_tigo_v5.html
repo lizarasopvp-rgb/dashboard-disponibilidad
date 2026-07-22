@@ -2989,6 +2989,22 @@ const geoReg = document.getElementById("geo-reg");
           tbody.appendChild(tr);
           subRows.forEach(sr => tbody.appendChild(sr));
         });
+
+        const trTotal = document.createElement("tr");
+        trTotal.style.fontWeight = "bold";
+        trTotal.style.background = "#f4f6f9";
+        trTotal.style.borderTop = "2px solid var(--rojo)";
+        let totalHtml = `<td>TOTAL</td>`;
+        let sumGlobal = 0;
+        regiones.forEach(d => {
+          let sumReg = 0;
+          macros.forEach(m => { if (agg[m] && agg[m].reg[d]) sumReg += agg[m].reg[d]; });
+          sumGlobal += sumReg;
+          totalHtml += `<td class="num">${(100 * sumReg / totMin).toFixed(1)}%</td>`;
+        });
+        totalHtml += `<td class="num">${(100 * sumGlobal / totMin).toFixed(1)}%</td>`;
+        trTotal.innerHTML = totalHtml;
+        tbody.appendChild(trTotal);
       }
 
       /* ============================================================
@@ -3221,6 +3237,22 @@ updateGeoCascade();
           tbody.appendChild(tr);
           subRows.forEach(sr => tbody.appendChild(sr));
         });
+
+        const trTotal = document.createElement("tr");
+        trTotal.style.fontWeight = "bold";
+        trTotal.style.background = "#f4f6f9";
+        trTotal.style.borderTop = "2px solid var(--rojo)";
+        let totalHtml = `<td>TOTAL</td>`;
+        let sumGlobal = 0;
+        regiones.forEach(d => {
+          let sumReg = 0;
+          macros.forEach(m => { if (agg[m] && agg[m].reg[d]) sumReg += agg[m].reg[d]; });
+          sumGlobal += sumReg;
+          totalHtml += `<td class="num">${(100 * sumReg / totMin).toFixed(1)}%</td>`;
+        });
+        totalHtml += `<td class="num">${(100 * sumGlobal / totMin).toFixed(1)}%</td>`;
+        trTotal.innerHTML = totalHtml;
+        tbody.appendChild(trTotal);
       }
 
       /* ============================================================
