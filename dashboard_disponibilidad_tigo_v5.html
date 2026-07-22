@@ -1249,11 +1249,47 @@
       <div class="kpis" id="kpi-strip"></div>
     </section>
 
+    <!-- 13 · GRÁFICA DE DISPONIBILIDAD -->
+    <section id="disponibilidad-nar">
+      <div class="story-step"><span class="n">13</span> INDICADORES</div>
+      <div class="sec-head">
+        <h2>Gráfica de Disponibilidad</h2><span class="pregunta">Evolución mensual del indicador NAR para 4G</span>
+      </div>
+      <div class="narrativa" id="narr-disp-nar">Indicador NAR 4G histórico consultado desde la API oficial de disponibilidad. La fuente se selecciona automáticamente según el filtro superior de Modo (HUAWEI = Excluye parada reloj · UNIRED = Sin exclusiones).</div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3>NAR 4G — Evolución Mensual</h3>
+            <p class="sub" id="disp-nar-subtitle">Fuente: cargando...</p>
+          </div>
+          <div class="toolbar" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button class="btn-rojo" onclick="syncDisponibilidad()" id="btn-sync-disp">🔄 Actualizar información</button>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div id="disp-nar-kpis" style="display:flex; flex-wrap:wrap; gap:12px; margin:14px 0;"></div>
+
+        <!-- Chart -->
+        <div style="position:relative; height:400px;">
+          <canvas id="ch-disp-nar"></canvas>
+        </div>
+
+        <!-- Data table -->
+        <details style="margin-top:14px; background: #f9fafb; border: 1px solid var(--linea); border-radius: 6px; padding: 10px;">
+          <summary style="cursor:pointer; color:var(--azul-marino); font-weight:600; font-size: 13px; outline: none;">Desplegar tabla de datos</summary>
+          <div class="scrollx" style="margin-top:10px">
+            <table class="datos" id="tbl-disp-nar"></table>
+          </div>
+        </details>
+      </div>
+    </section>
     <!-- 2 · TENDENCIAS (drill temporal) -->
     <section id="tendencias">
       <div class="story-step"><span class="n">2</span> ¿CÓMO EVOLUCIONA?</div>
       <div class="sec-head">
-        <h2>Tendencia temporal</h2><span class="pregunta">Año → Mes → Semana → Día → Hora · ¿mejora o empeora?</span>
+        <h2>Tendencia temporal</h2><span class="pregunta">Año → Mes → Día → Hora · ¿mejora o empeora?</span>
       </div>
             <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
         <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
@@ -1762,42 +1798,6 @@
       </div>
     </section>
 
-    <!-- 13 · GRÁFICA DE DISPONIBILIDAD -->
-    <section id="disponibilidad-nar">
-      <div class="story-step"><span class="n">13</span> INDICADORES</div>
-      <div class="sec-head">
-        <h2>Gráfica de Disponibilidad</h2><span class="pregunta">Evolución mensual del indicador NAR para 4G</span>
-      </div>
-      <div class="narrativa" id="narr-disp-nar">Indicador NAR 4G histórico consultado desde la API oficial de disponibilidad. La fuente se selecciona automáticamente según el filtro superior de Modo (HUAWEI = Excluye parada reloj · UNIRED = Sin exclusiones).</div>
-
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <h3>NAR 4G — Evolución Mensual</h3>
-            <p class="sub" id="disp-nar-subtitle">Fuente: cargando...</p>
-          </div>
-          <div class="toolbar" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <button class="btn-rojo" onclick="syncDisponibilidad()" id="btn-sync-disp">🔄 Actualizar información</button>
-          </div>
-        </div>
-
-        <!-- KPIs -->
-        <div id="disp-nar-kpis" style="display:flex; flex-wrap:wrap; gap:12px; margin:14px 0;"></div>
-
-        <!-- Chart -->
-        <div style="position:relative; height:400px;">
-          <canvas id="ch-disp-nar"></canvas>
-        </div>
-
-        <!-- Data table -->
-        <details style="margin-top:14px; background: #f9fafb; border: 1px solid var(--linea); border-radius: 6px; padding: 10px;">
-          <summary style="cursor:pointer; color:var(--azul-marino); font-weight:600; font-size: 13px; outline: none;">Desplegar tabla de datos</summary>
-          <div class="scrollx" style="margin-top:10px">
-            <table class="datos" id="tbl-disp-nar"></table>
-          </div>
-        </details>
-      </div>
-    </section>
   </main>
 
   <footer style="text-align: center; padding: 30px; font-size: 11.5px; color: var(--gris); border-top: 1px solid var(--linea); margin-top: 20px; font-weight: 500;">
@@ -2032,7 +2032,7 @@
    <div class="kpi k-cm"><div class="et">Mediana de duración (P50)</div><div class="valor">${(p50 / 60).toFixed(1)}h</div><div class="delta">mitad de eventos por debajo</div></div>
    <div class="kpi k-al"><div class="et">Cola P99</div><div class="valor">${(p99 / 60).toFixed(1)}h</div><div class="delta">el 1% peor · ${(p99 / p50).toFixed(0)}× la mediana</div></div>`;
         document.getElementById("narr-resumen").innerHTML =
-          `En el periodo analizado, la red registra <b>${fmt(nEv)} incidentes</b> distribuidos en <b>${sitiosAfect} sitios</b>, impactando directamente la operación con <b>${fmt(tot)} minutos caídos</b> acumulados. El análisis revela una fuerte dispersión operativa: aunque la mayoría de las fallas se cierran en <b>${(p50 / 60).toFixed(1)}h</b>, una pequeña fracción de casos críticos arrastra el P99 hasta <b>${(p99 / 60).toFixed(1)}h</b>. El objetivo es estabilizar la disponibilidad acercándola al target del <b>99.000%</b> reduciendo el volumen y la reincidencia técnica.`;
+          `En el periodo analizado, la red registra <b>${fmt(nEv)} incidentes</b> distribuidos en <b>${sitiosAfect} sitios</b>, impactando la operación con <b>${fmt(tot)} minutos caídos</b> reales. Con <b>${activos} fallas actualmente activas</b>, la prioridad es acelerar su resolución y restauración física. El análisis muestra que aunque la mayoría de tickets se cierran en <b>${(p50 / 60).toFixed(1)}h</b>, el P99 se arrastra hasta <b>${(p99 / 60).toFixed(1)}h</b> por casos complejos. El objetivo es mantener la disponibilidad en <b>99.000%</b>.`;
       }
 
       /* ============================================================
@@ -2050,7 +2050,7 @@
           evs.filter(e => String(e.mes_ano).startsWith(String(tendNivel.y))).forEach(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; (agg[mo] = agg[mo] || { m: 0, n: 0, s: new Set() }).m += e.minutos_caidos; agg[mo].n++; agg[mo].s.add(e.sitio_id) });
           const maxMo = Math.max(...MESES_ACTIVOS, 5);
           for (let mo = 0; mo <= maxMo; mo++) { labels.push(MESES[mo]); mins.push(agg[mo]?.m || 0); evct.push(agg[mo]?.n || 0); sitiosArr.push(agg[mo] ? agg[mo].s.size : 0); keys.push(mo); }
-          drillTipo = "semana";
+          drillTipo = "dia";
         } else if (tendNivel.tipo === "semana") {
           const agg = {};
           evs.filter(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; return String(e.mes_ano).startsWith(String(tendNivel.y)) && mo === tendNivel.m; }).forEach(e => { const d = new Date(e.ts); const wk = Math.ceil(d.getDate() / 7); (agg[wk] = agg[wk] || { m: 0, n: 0, s: new Set() }).m += e.minutos_caidos; agg[wk].n++; agg[wk].s.add(e.sitio_id) });
@@ -2058,7 +2058,7 @@
           drillTipo = "dia";
         } else if (tendNivel.tipo === "dia") {
           const agg = {};
-          evs.filter(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; const d = new Date(e.ts); return String(e.mes_ano).startsWith(String(tendNivel.y)) && mo === tendNivel.m && Math.ceil(d.getDate() / 7) === tendNivel.w; }).forEach(e => { const dia = new Date(e.ts).getDate(); (agg[dia] = agg[dia] || { m: 0, n: 0, s: new Set() }).m += e.minutos_caidos; agg[dia].n++; agg[dia].s.add(e.sitio_id) });
+          evs.filter(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; const d = new Date(e.ts); return String(e.mes_ano).startsWith(String(tendNivel.y)) && mo === tendNivel.m ; }).forEach(e => { const dia = new Date(e.ts).getDate(); (agg[dia] = agg[dia] || { m: 0, n: 0, s: new Set() }).m += e.minutos_caidos; agg[dia].n++; agg[dia].s.add(e.sitio_id) });
           Object.keys(agg).map(Number).sort((a, b) => a - b).forEach(dia => { labels.push("D" + dia); mins.push(agg[dia].m); evct.push(agg[dia].n); sitiosArr.push(agg[dia].s.size); keys.push(dia); });
           drillTipo = "hora";
         } else { // hora
@@ -2077,14 +2077,14 @@
         // breadcrumb
         const bc = document.getElementById("tend-bread");
         let crumbs = [`<button data-t="mes">${tendNivel.y}</button>`];
-        if (tendNivel.tipo !== "mes") crumbs.push(`<span class="sep">›</span><button data-t="semana" data-m="${tendNivel.m}">${MESES[tendNivel.m]}</button>`);
-        if (tendNivel.tipo === "dia" || tendNivel.tipo === "hora") crumbs.push(`<span class="sep">›</span><button data-t="dia" data-w="${tendNivel.w}">Sem ${tendNivel.w}</button>`);
+        if (tendNivel.tipo !== "mes") crumbs.push(`<span class="sep">›</span><button data-t="dia" data-m="${tendNivel.m}">${MESES[tendNivel.m]}</button>`);
+        if (tendNivel.tipo === "dia" || tendNivel.tipo === "hora") 
         if (tendNivel.tipo === "hora") crumbs.push(`<span class="sep">›</span><span class="actual">D${tendNivel.d}</span>`);
         bc.innerHTML = crumbs.join("");
         bc.querySelectorAll("[data-t]").forEach(btn => btn.onclick = () => {
           if (btn.dataset.t === "mes") tendNivel = { tipo: "mes", y: 2026 };
-          else if (btn.dataset.t === "semana") tendNivel = { tipo: "semana", y: 2026, m: +btn.dataset.m };
-          else if (btn.dataset.t === "dia") tendNivel = { tipo: "dia", y: 2026, m: tendNivel.m, w: +btn.dataset.w };
+          else if (btn.dataset.t === "semana") tendNivel = { tipo: "dia", y: 2026, m: +btn.dataset.m };
+          else if (btn.dataset.t === "dia") tendNivel = { tipo: "dia", y: 2026, m: +btn.dataset.m };
           renderTendencias();
         });
         // Build datasets with minutes (bars) and sites (line)
@@ -2103,7 +2103,7 @@
               if (el.length) {
                 const k = b.keys[el[0].index];
                 if (b.drillTipo) {
-                  if (b.drillTipo === "semana") tendNivel = { tipo: "semana", y: 2026, m: k };
+                  if (b.drillTipo === "semana") tendNivel = { tipo: "dia", y: 2026, m: k };
                   else if (b.drillTipo === "dia") tendNivel = { tipo: "dia", y: 2026, m: tendNivel.m, w: k };
                   else if (b.drillTipo === "hora") tendNivel = { tipo: "hora", y: 2026, m: tendNivel.m, w: tendNivel.w, d: k };
                   renderTendencias();
