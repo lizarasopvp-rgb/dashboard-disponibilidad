@@ -4204,23 +4204,17 @@ updateGeoCascade();
         }
       }
 
-      // Sync manual
+      // Refrescar grafica con datos de Supabase
       async function syncDisponibilidad() {
         const btn = document.getElementById('btn-sync-disp');
-        if (btn) { btn.disabled = true; btn.textContent = 'Sincronizando...'; }
+        if (btn) { btn.disabled = true; btn.textContent = 'Actualizando...'; }
         try {
-          const resp = await fetch(`${getApiBaseUrl()}/api/disponibilidad/sync`, { method: 'POST' });
-          const data = await resp.json();
-          if (data.ok) {
-            alert('Sincronizacion completada: ' + data.registros + ' registros actualizados.');
-            renderDisponibilidadNAR();
-          } else {
-            alert('Error en sincronizacion: ' + (data.error || 'desconocido'));
-          }
+          await renderDisponibilidadNAR();
+          alert('Gráfica actualizada con los datos más recientes.');
         } catch (e) {
-          alert('Error de conexion: ' + e.message);
+          alert('Error de conexión: ' + e.message);
         } finally {
-          if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDD04 Actualizar informacion'; }
+          if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDD04 Actualizar información'; }
         }
       }
 

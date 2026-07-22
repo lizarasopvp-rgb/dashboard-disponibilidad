@@ -274,18 +274,6 @@ def obtener_disponibilidad(fuente):
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/api/disponibilidad/sync', methods=['POST'])
-def sync_disponibilidad_manual():
-    """Ejecuta sincronizacion manual con la API de disponibilidad."""
-    try:
-        from sync_disponibilidad import sync
-        total = sync()
-        return jsonify({"ok": True, "registros": total}), 200
-    except Exception as e:
-        print(f"Error sync manual: {e}")
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-
 # ============================================================
 #  TEST DE CONEXION
 # ============================================================
