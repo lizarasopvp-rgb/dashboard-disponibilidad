@@ -69,8 +69,11 @@ cmdb = pd.read_excel('CMDB.xlsx')
 
 # CMDB: inventario operativo
 cmdb_op = cmdb[cmdb['Site_state'].fillna('').str.upper() == 'OPERATIVO'].copy()
-# Normalizar nombre de Cartagena para que coincida con Data.xlsx
-cmdb_op['Ciudad'] = cmdb_op['Ciudad'].replace({'CARTAGENA DE INDIAS': 'CARTAGENA', 'Cartagena de Indias': 'Cartagena'})
+# Normalizar nombre de Cartagena y Cali para que coincida con Data.xlsx
+cmdb_op['Ciudad'] = cmdb_op['Ciudad'].replace({
+    'CARTAGENA DE INDIAS': 'CARTAGENA', 'Cartagena de Indias': 'Cartagena',
+    'SANTIAGO DE CALI': 'CALI', 'Santiago de Cali': 'Cali'
+})
 sitios_por_ciudad = cmdb_op.groupby('Ciudad')['NodeB_Name'].nunique().to_dict()
 sitios_por_depto = cmdb_op.groupby('Departamento')['NodeB_Name'].nunique().to_dict()
 total_sitios_red = int(cmdb_op['NodeB_Name'].nunique())
