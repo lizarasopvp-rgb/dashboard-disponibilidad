@@ -2078,12 +2078,10 @@
         const bc = document.getElementById("tend-bread");
         let crumbs = [`<button data-t="mes">${tendNivel.y}</button>`];
         if (tendNivel.tipo !== "mes") crumbs.push(`<span class="sep">›</span><button data-t="dia" data-m="${tendNivel.m}">${MESES[tendNivel.m]}</button>`);
-        if (tendNivel.tipo === "dia" || tendNivel.tipo === "hora") 
-        if (tendNivel.tipo === "hora") crumbs.push(`<span class="sep">›</span><span class="actual">D${tendNivel.d}</span>`);
+        if (tendNivel.tipo === "hora") crumbs.push(`<span class="sep">›</span><span class="actual">Día ${tendNivel.d}</span>`);
         bc.innerHTML = crumbs.join("");
         bc.querySelectorAll("[data-t]").forEach(btn => btn.onclick = () => {
           if (btn.dataset.t === "mes") tendNivel = { tipo: "mes", y: 2026 };
-          else if (btn.dataset.t === "semana") tendNivel = { tipo: "dia", y: 2026, m: +btn.dataset.m };
           else if (btn.dataset.t === "dia") tendNivel = { tipo: "dia", y: 2026, m: +btn.dataset.m };
           renderTendencias();
         });
@@ -2103,9 +2101,8 @@
               if (el.length) {
                 const k = b.keys[el[0].index];
                 if (b.drillTipo) {
-                  if (b.drillTipo === "semana") tendNivel = { tipo: "dia", y: 2026, m: k };
-                  else if (b.drillTipo === "dia") tendNivel = { tipo: "dia", y: 2026, m: tendNivel.m, w: k };
-                  else if (b.drillTipo === "hora") tendNivel = { tipo: "hora", y: 2026, m: tendNivel.m, w: tendNivel.w, d: k };
+                  if (b.drillTipo === "dia") tendNivel = { tipo: "dia", y: 2026, m: k };
+                  else if (b.drillTipo === "hora") tendNivel = { tipo: "hora", y: 2026, m: tendNivel.m, d: k };
                   renderTendencias();
                 } else {
                   renderTendenciaTabla(k);
