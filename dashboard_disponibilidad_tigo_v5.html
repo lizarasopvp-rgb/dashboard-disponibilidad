@@ -1200,6 +1200,7 @@
       <a href="#intermitentes" data-go="intermitentes">10 · Intermitentes</a>
       <a href="#masivas" data-go="masivas">11 · Fallas simultáneas</a>
       <a href="#plan500" data-go="plan500">12 · Plan 500</a>
+      <a href="#disponibilidad-nar" data-go="disponibilidad-nar">13 · Gráfica Disponibilidad</a>
     </nav>
   </header>
 
@@ -1602,8 +1603,6 @@
           </div>
         </details>
       </div>
-        </div>
-      </div>
     </section>
 
     <!-- 11 · FALLAS SIMULTÁNEAS -->
@@ -1615,6 +1614,7 @@
       <div class="narrativa" id="narr-masivas">Agrupación automática de clústeres de fallas ocurridas en el mismo día y hora (aprox), con la misma causa raíz y cercanía geográfica (prefijo de sitio). Ideal para solicitar exclusiones.</div>
             <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
         <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Fecha Inicio</span><input type="date" class="fl-fecha-ini" style="padding: 2px 6px; border: 1px solid var(--linea); border-radius: 4px; font-family: var(--f-body); color: var(--tinta); font-size: 13px; max-width:130px; outline:none; cursor:pointer; margin-right:15px;">
         <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
@@ -1655,6 +1655,31 @@
           </div>
         </div>
         <canvas id="ch-masivas-trend" style="max-height:280px"></canvas>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card-head">
+          <div>
+            <h3 id="masivas-ia-title">Fallas masivas por Causa</h3>
+            <p class="sub">Drill-down: Mes → Día → Hora</p>
+          </div>
+          <div class="toolbar" style="display:flex; align-items:center; gap:10px;">
+            <div class="bread" id="masivas-ia-bread" style="margin:0"></div>
+            <select id="masivas-ia-metrica" onchange="iaMetrica=this.value; renderMasivasIA()" style="padding:2px 8px; font-size:12px; border-radius:4px; border:1px solid var(--linea); color:var(--azul-marino); outline:none; cursor:pointer;">
+              <option value="cantidad">Cantidad</option>
+              <option value="minutos">Minutos</option>
+            </select>
+          </div>
+        </div>
+        <div id="masivas-ia-insights" style="display:flex; flex-wrap:wrap; gap:15px; margin: 15px 0; align-items:center;"></div>
+        <canvas id="ch-masivas-ia" style="max-height:350px"></canvas>
+        <div class="scrollx" id="wrap-masivas-ia-det" style="margin-top:20px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
+          <div style="padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="masivas-ia-det-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle Fallas por Causa</h3>
+            <button class="btn-fant" onclick="document.getElementById('wrap-masivas-ia-det').style.display='none'">✕ Cerrar</button>
+          </div>
+          <table class="datos" id="tbl-masivas-ia-det"></table>
+        </div>
       </div>
     </section>
 
@@ -1711,6 +1736,43 @@
           </div>
           <table class="datos" id="tbl-plan500"></table>
         </div>
+      </div>
+    </section>
+
+    <!-- 13 · GRÁFICA DE DISPONIBILIDAD -->
+    <section id="disponibilidad-nar">
+      <div class="story-step"><span class="n">13</span> INDICADORES</div>
+      <div class="sec-head">
+        <h2>Gráfica de Disponibilidad</h2><span class="pregunta">Evolución mensual del indicador NAR para 4G</span>
+      </div>
+      <div class="narrativa" id="narr-disp-nar">Indicador NAR 4G histórico consultado desde la API oficial de disponibilidad. La fuente se selecciona automáticamente según el filtro superior de Modo (HUAWEI = Excluye parada reloj · UNIRED = Sin exclusiones).</div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3>NAR 4G — Evolución Mensual</h3>
+            <p class="sub" id="disp-nar-subtitle">Fuente: cargando...</p>
+          </div>
+          <div class="toolbar" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button class="btn-rojo" onclick="syncDisponibilidad()" id="btn-sync-disp">🔄 Actualizar información</button>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div id="disp-nar-kpis" style="display:flex; flex-wrap:wrap; gap:12px; margin:14px 0;"></div>
+
+        <!-- Chart -->
+        <div style="position:relative; height:400px;">
+          <canvas id="ch-disp-nar"></canvas>
+        </div>
+
+        <!-- Data table -->
+        <details style="margin-top:14px; background: #f9fafb; border: 1px solid var(--linea); border-radius: 6px; padding: 10px;">
+          <summary style="cursor:pointer; color:var(--azul-marino); font-weight:600; font-size: 13px; outline: none;">Desplegar tabla de datos</summary>
+          <div class="scrollx" style="margin-top:10px">
+            <table class="datos" id="tbl-disp-nar"></table>
+          </div>
+        </details>
       </div>
     </section>
   </main>
@@ -1830,7 +1892,8 @@
         lng: e[14],
         rango: S[e[15]],
         mes_ano: e[16],
-        masiva_id: S[e[21]]
+        masiva_id: S[e[21]],
+        causa_ia: S[e[22]] || 'Otra'
       }));
       const fmtDT = ts => ts ? new Date(ts).toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
       const fmtISO = ts => ts ? new Date(ts).toISOString() : '';
@@ -3137,7 +3200,8 @@ updateGeoCascade();
                  depto: r.departamento,
                  minutos: 0,
                  sitios: new Set(),
-                 eventos: []
+                 eventos: [],
+                 causas_ia: {}
               };
            }
            masivasData[mid].minutos += r.minutos_caidos;
@@ -3145,6 +3209,9 @@ updateGeoCascade();
            masivasData[mid].causas_raiz.add(r.causa_raiz_especifica);
            masivasData[mid].causas_macro.add(r.causa_raiz_macro);
            masivasData[mid].eventos.push(r);
+           if (r.causa_ia && r.causa_ia !== 'Otra') {
+              masivasData[mid].causas_ia[r.causa_ia] = (masivasData[mid].causas_ia[r.causa_ia] || 0) + 1;
+           }
         });
 
         const list = Object.values(masivasData).filter(m => m.sitios.size >= 3).sort((a, b) => b.minutos - a.minutos);
@@ -3170,6 +3237,15 @@ updateGeoCascade();
 
         updateMasivasTable();
         renderMasivasTrend(list);
+        
+        list.forEach(m => {
+           let maxCa = 'Otra', maxVal = 0;
+           for (const [c, v] of Object.entries(m.causas_ia)) {
+              if (v > maxVal) { maxVal = v; maxCa = c; }
+           }
+           m.causa_ia_final = maxCa;
+        });
+        renderMasivasIA(list);
         window.currentMasivasData = masivasData;
       }
 
@@ -3221,6 +3297,191 @@ updateGeoCascade();
          });
       }
       
+      let iaNivel = { tipo: "mes", mes: null, dia: null };
+      let iaMetrica = "cantidad";
+      
+      function renderMasivasIA(list) {
+         if (!list) list = masCurrentList;
+         const canvas = document.getElementById('ch-masivas-ia');
+         if (!canvas) return;
+         
+         const base = list.filter(m => m.causa_ia_final && m.causa_ia_final !== 'Otra');
+         
+         let agg = {};
+         let labels = [];
+         
+         base.forEach(m => {
+            if (!m.eventos || !m.eventos.length) return;
+            const d = new Date(m.eventos[0].ts);
+            const causa = m.causa_ia_final;
+            
+            let key = "";
+            let match = true;
+            
+            const mStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0');
+            const dStr = mStr + "-" + String(d.getDate()).padStart(2,'0');
+            const hStr = dStr + " " + String(d.getHours()).padStart(2,'0') + ":00";
+
+            if (iaNivel.tipo === "mes") {
+               key = mStr;
+            } else if (iaNivel.tipo === "dia") {
+               if (mStr !== iaNivel.mes) match = false;
+               key = dStr;
+            } else if (iaNivel.tipo === "hora") {
+               if (dStr !== iaNivel.dia) match = false;
+               key = hStr;
+            }
+            
+            if (match) {
+               if (!agg[key]) agg[key] = { 
+                  'TX': { c: 0, m: 0 }, 
+                  'Climatológicos': { c: 0, m: 0 }, 
+                  'VM electrificadora': { c: 0, m: 0 }, 
+                  'MT': { c: 0, m: 0 }, 
+                  _items: [] 
+               };
+               if (agg[key][causa] !== undefined) {
+                  agg[key][causa].c++;
+                  agg[key][causa].m += m.minutos;
+                  agg[key]._items.push(m);
+               }
+            }
+         });
+         
+         const isMin = iaMetrica === 'minutos';
+         const yTitle = isMin ? "Minutos Totales" : "Cant. Masivas";
+
+         labels = Object.keys(agg).sort();
+         const datasets = [
+            { label: 'TX', data: labels.map(k => isMin ? agg[k]['TX'].m : agg[k]['TX'].c), backgroundColor: '#1A2238' },
+            { label: 'Climatológicos', data: labels.map(k => isMin ? agg[k]['Climatológicos'].m : agg[k]['Climatológicos'].c), backgroundColor: '#00A3E0' },
+            { label: 'VM electrificadora', data: labels.map(k => isMin ? agg[k]['VM electrificadora'].m : agg[k]['VM electrificadora'].c), backgroundColor: '#FF9900' },
+            { label: 'MT', data: labels.map(k => isMin ? agg[k]['MT'].m : agg[k]['MT'].c), backgroundColor: '#94a3b8' }
+         ];
+
+         let insTX = 0, insClima = 0, insVM = 0, insMT = 0;
+         datasets[0].data.forEach(v => insTX += v);
+         datasets[1].data.forEach(v => insClima += v);
+         datasets[2].data.forEach(v => insVM += v);
+         datasets[3].data.forEach(v => insMT += v);
+         let insTotal = insTX + insClima + insVM + insMT;
+
+         const formatNum = n => isMin ? Math.round(n).toLocaleString() : n.toLocaleString();
+         const metricLabel = isMin ? "Minutos" : "Fallas";
+
+         const insightsHtml = `
+            <span style="border-left:5px solid var(--rojo); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:24px; color:var(--rojo); line-height:1;">${formatNum(insTotal)}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Total ${metricLabel}</div>
+            </span>
+            <span style="border-left:5px solid #1A2238; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#1A2238; line-height:1;">${formatNum(insTX)}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">TX</div>
+            </span>
+            <span style="border-left:5px solid #00A3E0; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#00A3E0; line-height:1;">${formatNum(insClima)}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Climatológicos</div>
+            </span>
+            <span style="border-left:5px solid #FF9900; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#FF9900; line-height:1;">${formatNum(insVM)}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">VM Electrificadora</div>
+            </span>
+            <span style="border-left:5px solid #94a3b8; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#94a3b8; line-height:1;">${formatNum(insMT)}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">MT</div>
+            </span>
+         `;
+         const insContainer = document.getElementById('masivas-ia-insights');
+         if (insContainer) {
+             insContainer.innerHTML = insightsHtml;
+         }
+         
+         let breadHtml = `<button data-t="mes">Por Mes</button>`;
+         if (iaNivel.tipo === 'dia' || iaNivel.tipo === 'hora') {
+             breadHtml += `<span class="sep">›</span><button data-t="dia">${iaNivel.mes}</button>`;
+         }
+         if (iaNivel.tipo === 'hora') {
+             breadHtml += `<span class="sep">›</span><span class="actual">${iaNivel.dia}</span>`;
+         }
+         const breadWrap = document.getElementById('masivas-ia-bread');
+         if (breadWrap) {
+             breadWrap.innerHTML = breadHtml;
+             breadWrap.querySelectorAll('button').forEach(b => {
+                 b.onclick = () => {
+                     const t = b.dataset.t;
+                     if (t === 'mes') iaNivel = { tipo: "mes" };
+                     else if (t === 'dia') iaNivel = { tipo: "dia", mes: iaNivel.mes };
+                     renderMasivasIA(list);
+                 };
+             });
+         }
+         
+         destroy('masivasia');
+         charts.masivasia = new Chart(canvas, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+               responsive: true,
+               maintainAspectRatio: false,
+               plugins: { legend: { position: 'bottom' } },
+               scales: {
+                  x: { stacked: true },
+                  y: { stacked: true, beginAtZero: true, title: { display: true, text: yTitle } }
+               },
+               onClick: (e, els) => {
+                  if (!els.length) return;
+                  const idx = els[0].index;
+                  const datasetIdx = els[0].datasetIndex;
+                  const key = labels[idx];
+                  
+                  if (iaNivel.tipo === "mes") {
+                     iaNivel = { tipo: "dia", mes: key };
+                     renderMasivasIA(list);
+                  } else if (iaNivel.tipo === "dia") {
+                     iaNivel = { tipo: "hora", dia: key, mes: iaNivel.mes };
+                     renderMasivasIA(list);
+                  } else if (iaNivel.tipo === "hora") {
+                     const causaName = datasets[datasetIdx].label;
+                     const items = agg[key]._items.filter(m => m.causa_ia_final === causaName);
+                     mostrarDetalleMasivasIA(items, causaName, key);
+                  }
+               }
+            }
+         });
+      }
+      
+      function mostrarDetalleMasivasIA(items, causaName, horaStr) {
+         const wrap = document.getElementById('wrap-masivas-ia-det');
+         const tbody = document.getElementById('tbl-masivas-ia-det');
+         document.getElementById('masivas-ia-det-title').textContent = `Masivas de ${causaName} a las ${horaStr} (${items.length})`;
+         wrap.style.display = 'block';
+         
+         let html = `<tr><th>ID Masiva</th><th>Región / Depto</th><th>Causa Original</th><th>Inicio</th><th class="num">Sitios</th><th class="num">Minutos</th></tr>`;
+         if (!items.length) {
+            html += `<tr><td colspan="6" style="text-align:center;">No hay datos para esta selección</td></tr>`;
+         } else {
+            items.sort((a,b)=>b.minutos - a.minutos).forEach(m => {
+               const cMacro = Array.from(m.causas_macro).join(' / ');
+               const cRaiz = Array.from(m.causas_raiz).join(' / ');
+               let fecha = "";
+               if (m.eventos && m.eventos.length) {
+                  const d = new Date(m.eventos[0].ts);
+                  fecha = d.toLocaleString('es-CO', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+               }
+               html += `<tr class="clickable" onclick='abrirMasivaDetalle(${JSON.stringify(m.id)})'>
+                 <td><span class="tdpill" style="background:var(--azul-marino)">${m.id}</span></td>
+                 <td><b>${m.region}</b><br><span style="font-size:10.5px;color:var(--gris)">${m.depto}</span></td>
+                 <td><b>${cMacro}</b><br><span style="font-size:10.5px;color:var(--gris)">${cRaiz}</span></td>
+                 <td style="font-family:var(--f-mono); font-size:11px;">${fecha}</td>
+                 <td class="num" style="font-weight:600">${m.sitios.size}</td>
+                 <td class="num" style="font-weight:600">${Math.round(m.minutos)}</td>
+               </tr>`;
+            });
+         }
+         tbody.innerHTML = html;
+         wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
       let masCurrentPage = 1;
       let masCurrentList = [];
       
@@ -3246,13 +3507,14 @@ updateGeoCascade();
           <th>ID Masiva</th>
           <th>Región / Depto</th>
           <th>Causa Raíz</th>
+          <th>Fecha de inicio</th>
           <th class="num">Sitios</th>
           <th class="num">Minutos</th>
           <th style="text-align:center">Criticidad</th>
         </tr>`;
 
         if (masCurrentList.length === 0) {
-           html += `<tr><td colspan="6" style="text-align:center; color:var(--gris); padding:15px;">No hay fallas simultáneas con los filtros actuales.</td></tr>`;
+           html += `<tr><td colspan="7" style="text-align:center; color:var(--gris); padding:15px;">No hay fallas simultáneas con los filtros actuales.</td></tr>`;
         } else {
            pageList.forEach(m => {
              let crit = "Media";
@@ -3265,10 +3527,17 @@ updateGeoCascade();
              if(cMacro.length > 30) cMacro = cMacro.substring(0, 30) + '...';
              if(cRaiz.length > 40) cRaiz = cRaiz.substring(0, 40) + '...';
 
+             let fechaInicio = "";
+             if (m.eventos && m.eventos.length > 0) {
+                 const d = new Date(m.eventos[0].ts);
+                 fechaInicio = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+             }
+
              html += `<tr class="clickable" onclick='abrirMasivaDetalle(${JSON.stringify(m.id)})'>
                <td><span class="tdpill" style="background:var(--azul-marino)">${m.id}</span></td>
                <td><b>${m.region}</b><br><span style="font-size:10.5px;color:var(--gris)">${m.depto}</span></td>
                <td><b>${cMacro}</b><br><span style="font-size:10.5px;color:var(--gris)">${cRaiz}</span></td>
+               <td style="font-family: var(--f-mono); font-size: 11px; text-align: center;">${fechaInicio}</td>
                <td class="num" style="font-weight:600">${m.sitios.size}</td>
                <td class="num" style="font-weight:600">${Math.round(m.minutos)}</td>
                <td style="text-align:center"><span style="color: ${color}; font-weight:600; font-family:var(--f-disp); font-size:11.5px; border: 1px solid ${color}; border-radius: 4px; padding: 2px 6px;">${crit}</span></td>
@@ -3540,6 +3809,7 @@ updateGeoCascade();
         const fMun = sec.querySelector('.fl-mun') ? sec.querySelector('.fl-mun').value : "";
         const fCR = sec.querySelector('.fl-cr') ? sec.querySelector('.fl-cr').value : "";
         const fCS = sec.querySelector('.fl-cs') ? sec.querySelector('.fl-cs').value : "";
+        const fFechaIni = sec.querySelector('.fl-fecha-ini') ? sec.querySelector('.fl-fecha-ini').value : "";
         const rngEl = sec.querySelector('.fl-rng');
         let fRngs = [];
         if (rngEl && rngEl.tagName === 'SELECT') {
@@ -3562,6 +3832,14 @@ updateGeoCascade();
         if (fMun) v = v.filter(e => e.ciudad === fMun);
         if (fCR) v = v.filter(e => e.causa_raiz_macro === fCR);
         if (fCS) v = v.filter(e => e.causa_suspension_macro === fCS);
+        if (fFechaIni) {
+           v = v.filter(e => {
+              if(!e.ts) return false;
+              const d = new Date(e.ts);
+              const fStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+              return fStr === fFechaIni;
+           });
+        }
         if (fRngs.length > 0) v = v.filter(e => fRngs.includes(e.rango));
         
         return v;
@@ -3645,7 +3923,7 @@ updateGeoCascade();
         VIEW_TEND = aplicaFiltro({ ...filtro, mes: "" });
         const nSit = new Set(VIEW.map(s => s.sitio_id)).size;
         document.getElementById("filtro-count").textContent = `${VIEW.length} eventos · ${nSit} sitios`;
-        renderResumen(); renderTendencias(); renderPareto(); renderHeatmap(); renderHeatmapSuspension(); renderCausaRaiz(); renderSusp(); renderGeo(); renderWorst(); renderIntermitentes(); updateGeoCascade(); renderMasivas(); renderPlan500();
+        renderResumen(); renderTendencias(); renderPareto(); renderHeatmap(); renderHeatmapSuspension(); renderCausaRaiz(); renderSusp(); renderGeo(); renderWorst(); renderIntermitentes(); updateGeoCascade(); renderMasivas(); renderPlan500(); renderDisponibilidadNAR();
       }
 
       /* ============================================================
@@ -3779,6 +4057,170 @@ updateGeoCascade();
           gCsEsp.innerHTML = '<option value="">Todas</option>';
           validCsE.forEach(e => gCsEsp.add(new Option(e, e)));
           gCsEsp.value = validCsE.includes(csEspVal) ? csEspVal : "";
+        }
+      }
+
+      /* ============================================================
+         MÓDULO 13: GRÁFICA DE DISPONIBILIDAD NAR 4G
+      ============================================================ */
+      let dispNarData = [];
+      const DISP_COLORS = {
+        'GLOBAL':  { line: '#3B82F6', bg: 'rgba(59,130,246,0.08)' },
+        'ANDINA':  { line: '#10B981', bg: 'rgba(16,185,129,0.06)' },
+        'CARIBE':  { line: '#F59E0B', bg: 'rgba(245,158,11,0.06)' },
+        'CENTRO':  { line: '#EF4444', bg: 'rgba(239,68,68,0.06)' },
+        'SUR':     { line: '#5B21B6', bg: 'rgba(91,33,182,0.06)' },
+      };
+
+      function getApiBaseUrl() {
+        // Si se abre como archivo local, apuntar al localhost. Si está en web (Render), usar ruta relativa.
+        return window.location.protocol === 'file:' ? 'http://127.0.0.1:5000' : '';
+      }
+
+      async function fetchDispNAR(fuente) {
+        let url = `${getApiBaseUrl()}/api/disponibilidad/${fuente}`;
+        try {
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          return await resp.json();
+        } catch (e) {
+          console.error('Error fetching disponibilidad:', e);
+          return [];
+        }
+      }
+
+      async function renderDisponibilidadNAR() {
+        const canvas = document.getElementById('ch-disp-nar');
+        if (!canvas) return;
+
+        const fuente = filtro.modo === 'HUAWEI' ? 'Huawei' : 'UNIRED';
+        const fuenteLabel = filtro.modo === 'HUAWEI' ? 'Excluye parada reloj' : 'Sin exclusiones';
+        const subEl = document.getElementById('disp-nar-subtitle');
+        if (subEl) subEl.textContent = `Fuente: ${fuente} (${fuenteLabel})`;
+
+        let rows = await fetchDispNAR(fuente);
+        // Filtrar solo desde Octubre 2025
+        rows = rows.filter(r => r.mes && r.mes.slice(0, 7) >= '2025-10');
+        dispNarData = rows;
+
+        // Group by month
+        const months = [...new Set(rows.map(r => r.mes.slice(0, 7)))].sort();
+        const regions = ['GLOBAL', 'ANDINA', 'CARIBE', 'CENTRO', 'SUR'];
+        const byMonthRegion = {};
+        rows.forEach(r => {
+          const key = r.mes.slice(0, 7) + '|' + r.region;
+          byMonthRegion[key] = r;
+        });
+
+        // KPIs - last month values
+        const lastMonth = months[months.length - 1];
+        const kpiDiv = document.getElementById('disp-nar-kpis');
+        if (kpiDiv && lastMonth) {
+          let kpiHtml = '';
+          regions.forEach(reg => {
+            const r = byMonthRegion[lastMonth + '|' + reg];
+            const pct = r ? r.nar_pct.toFixed(2) : '--';
+            const col = DISP_COLORS[reg]?.line || '#333';
+            kpiHtml += `<span style="border-left:5px solid ${col}; padding:10px 15px; background:#f9fafb; flex:1; min-width:120px; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:${reg === 'GLOBAL' ? '24' : '20'}px; color:${col}; line-height:1;">${pct}%</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">${reg}</div>
+              <div style="color:var(--gris); font-size:10px;">${lastMonth}</div>
+            </span>`;
+          });
+          kpiDiv.innerHTML = kpiHtml;
+        }
+
+        // Chart datasets
+        const datasets = regions.map(reg => ({
+          label: reg,
+          data: months.map(m => {
+            const r = byMonthRegion[m + '|' + reg];
+            return r ? r.nar_pct : null;
+          }),
+          borderColor: DISP_COLORS[reg]?.line || '#333',
+          backgroundColor: DISP_COLORS[reg]?.bg || 'rgba(0,0,0,0.05)',
+          borderWidth: reg === 'GLOBAL' ? 3 : 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.3,
+          fill: false,
+        }));
+
+        const labels = months.map(m => {
+          const [y, mo] = m.split('-');
+          const mNames = { '01':'Ene','02':'Feb','03':'Mar','04':'Abr','05':'May','06':'Jun','07':'Jul','08':'Ago','09':'Sep','10':'Oct','11':'Nov','12':'Dic' };
+          return (mNames[mo] || mo) + ' ' + y;
+        });
+
+        destroy('dispnar');
+        charts.dispnar = new Chart(canvas, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 12 } } },
+              tooltip: {
+                backgroundColor: 'rgba(26,34,56,0.92)',
+                titleFont: { size: 13 },
+                bodyFont: { size: 12 },
+                callbacks: {
+                  label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(2) + '%' : 'N/A'}`
+                }
+              },
+              datalabels: false,
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              y: {
+                beginAtZero: false,
+                suggestedMin: 95,
+                suggestedMax: 100,
+                title: { display: true, text: 'NAR %', font: { size: 12 } },
+                ticks: { callback: v => v.toFixed(1) + '%', font: { size: 11 } },
+              }
+            }
+          }
+        });
+
+        // Table
+        const tbl = document.getElementById('tbl-disp-nar');
+        if (tbl) {
+          let html = '<thead><tr><th>Mes</th>';
+          regions.forEach(r => html += `<th>${r}</th>`);
+          html += '</tr></thead><tbody>';
+          months.forEach(m => {
+            html += `<tr><td>${m}</td>`;
+            regions.forEach(r => {
+              const d = byMonthRegion[m + '|' + r];
+              html += `<td>${d ? d.nar_pct.toFixed(2) + '%' : '-'}</td>`;
+            });
+            html += '</tr>';
+          });
+          html += '</tbody>';
+          tbl.innerHTML = html;
+        }
+      }
+
+      // Sync manual
+      async function syncDisponibilidad() {
+        const btn = document.getElementById('btn-sync-disp');
+        if (btn) { btn.disabled = true; btn.textContent = 'Sincronizando...'; }
+        try {
+          const resp = await fetch(`${getApiBaseUrl()}/api/disponibilidad/sync`, { method: 'POST' });
+          const data = await resp.json();
+          if (data.ok) {
+            alert('Sincronizacion completada: ' + data.registros + ' registros actualizados.');
+            renderDisponibilidadNAR();
+          } else {
+            alert('Error en sincronizacion: ' + (data.error || 'desconocido'));
+          }
+        } catch (e) {
+          alert('Error de conexion: ' + e.message);
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDD04 Actualizar informacion'; }
         }
       }
 

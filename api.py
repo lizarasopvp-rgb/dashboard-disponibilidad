@@ -233,6 +233,60 @@ def resumen_notas():
         return jsonify({"sitios": [], "fallas": [], "analisis": [], "error": str(e)}), 500
 
 # ============================================================
+#  DISPONIBILIDAD 4G - Historico NAR
+# ============================================================
+@app.route('/api/disponibilidad/<fuente>', methods=['GET'])
+def obtener_disponibilidad(fuente):
+    """Retorna historico NAR 4G filtrado por fuente (Huawei o UNIRED)."""
+    if fuente not in ('Huawei', 'UNIRED'):
+        return jsonify({"error": "Fuente debe ser 'Huawei' o 'UNIRED'"}), 400
+    try:
+        desde = request.args.get('desde')  # formato: 2025-10
+        hasta = request.args.get('hasta')  # formato: 2026-06
+        conn = get_db()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        sql = "SELECT mes, region, nar_pct, cantidad_eventos, minutos_falla, fecha_consulta FROM disponibilidad_4g_historico WHERE fuente = %s"
+        params = [fuente]
+
+        if desde:
+            sql += " AND mes >= %s"
+            params.append(desde + '-01')
+        if hasta:
+            sql += " AND mes <= %s"
+            params.append(hasta + '-01')
+
+        sql += " ORDER BY mes, region"
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        for r in rows:
+            r['mes'] = str(r['mes'])
+            r['nar_pct'] = float(r['nar_pct']) if r['nar_pct'] else None
+            if r['fecha_consulta']:
+                r['fecha_consulta'] = str(r['fecha_consulta'])
+
+        return jsonify(rows), 200
+    except Exception as e:
+        print(f"Error disponibilidad GET: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/disponibilidad/sync', methods=['POST'])
+def sync_disponibilidad_manual():
+    """Ejecuta sincronizacion manual con la API de disponibilidad."""
+    try:
+        from sync_disponibilidad import sync
+        total = sync()
+        return jsonify({"ok": True, "registros": total}), 200
+    except Exception as e:
+        print(f"Error sync manual: {e}")
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+# ============================================================
 #  TEST DE CONEXION
 # ============================================================
 @app.route('/ping', methods=['GET'])
@@ -243,6 +297,7 @@ def ping():
         return jsonify({"ok": True, "msg": "Conectado a PostgreSQL"}), 200
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
 
 if __name__ == '__main__':
     print("== Servidor API Dashboard Notas ==")
