@@ -3628,32 +3628,14 @@ updateGeoCascade();
           eventsBySite[site_cd].push(r);
         });
 
-        // 2. Unificar eventos solapados (Deduplicación)
+        // 2. No deduplicar, tomar todos los eventos individuales
         const dedupedEvents = [];
         for (const site in eventsBySite) {
-           const evs = eventsBySite[site].map(r => {
+           eventsBySite[site].forEach(r => {
               const ts = new Date(r[12].replace(' ', 'T')).getTime();
               const mins = r[6];
-              const tf = ts + mins * 60000;
-              return { r, ts, tf, mins };
-           }).sort((a, b) => a.ts - b.ts);
-
-           let current = null;
-           for (const ev of evs) {
-              if (!current) {
-                 current = { ...ev, tickets: [_S[ev.r[10]]] };
-              } else {
-                 if (ev.ts <= current.tf + 60000) { // Si se solapan o hay < 1 min de diferencia
-                    current.tf = Math.max(current.tf, ev.tf);
-                    current.mins = (current.tf - current.ts) / 60000;
-                    current.tickets.push(_S[ev.r[10]]);
-                 } else {
-                    dedupedEvents.push(current);
-                    current = { ...ev, tickets: [_S[ev.r[10]]] };
-                 }
-              }
-           }
-           if (current) dedupedEvents.push(current);
+              dedupedEvents.push({ r, ts, mins, tickets: [_S[r[10]]] });
+           });
         }
 
         // 3. Agregar a byMonth
