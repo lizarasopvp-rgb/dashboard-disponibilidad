@@ -96,7 +96,9 @@ df['REGION_OP'] = df['siteregion'].fillna('Sin dato')
 df['CAUSA_SUSPENSION_ESPECIFICA'] = df['slapausereason'].fillna('Sin dato')
 
 # Nueva columna Causa suspension global
-if 'Causa suspension global' in df.columns:
+if 'Causa suspensión global' in df.columns:
+    df['CAUSA_SUSPENSION_MACRO'] = df['Causa suspensión global'].fillna('Sin dato')
+elif 'Causa suspension global' in df.columns:
     df['CAUSA_SUSPENSION_MACRO'] = df['Causa suspension global'].fillna('Sin dato')
 else:
     df['CAUSA_SUSPENSION_MACRO'] = df['CAUSA_SUSPENSION_ESPECIFICA']
