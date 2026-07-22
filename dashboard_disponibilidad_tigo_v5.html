@@ -4204,15 +4204,49 @@ updateGeoCascade();
         }
       }
 
+      // Notificacion tipo Toast
+      function showToast(message, isError = false) {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.padding = '12px 24px';
+        toast.style.backgroundColor = isError ? '#e74c3c' : '#2ecc71';
+        toast.style.color = '#fff';
+        toast.style.borderRadius = '8px';
+        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+        toast.style.fontFamily = 'inherit';
+        toast.style.fontSize = '0.9rem';
+        toast.style.fontWeight = '500';
+        toast.style.zIndex = '9999';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        toast.style.transition = 'all 0.3s ease';
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.style.opacity = '1';
+          toast.style.transform = 'translateY(0)';
+        }, 10);
+        
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(20px)';
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
       // Refrescar grafica con datos de Supabase
       async function syncDisponibilidad() {
         const btn = document.getElementById('btn-sync-disp');
         if (btn) { btn.disabled = true; btn.textContent = 'Actualizando...'; }
         try {
           await renderDisponibilidadNAR();
-          alert('Gráfica actualizada con los datos más recientes.');
+          showToast('✅ Gráfica actualizada con los datos más recientes.');
         } catch (e) {
-          alert('Error de conexión: ' + e.message);
+          showToast('❌ Error de conexión: ' + e.message, true);
         } finally {
           if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDD04 Actualizar información'; }
         }
