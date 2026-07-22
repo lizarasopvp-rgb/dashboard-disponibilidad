@@ -1432,6 +1432,9 @@
             <div>
               <h3>Causa suspensión macro</h3>
               <p class="sub">Clic para drill-down a causa específica</p>
+              <label style="font-size:12px; display:inline-block; margin-top:6px; cursor:pointer;">
+                <input type="checkbox" id="chk-hide-sin-causa-susp" onchange="renderSusp()" checked> Ocultar "Sin causa de suspensión"
+              </label>
             </div>
           </div><canvas id="ch-cs-macro"></canvas>
         </div>
@@ -2734,7 +2737,12 @@
       let csSel = null;
       function renderSusp() { const VIEW = getLocalView('suspension');
         const agg = {};
-        VIEW.filter(s => s.causa_suspension_macro && s.causa_suspension_macro !== "Sin dato").forEach(s => agg[s.causa_suspension_macro] = (agg[s.causa_suspension_macro] || 0) + s.minutos_caidos);
+        const hideSinCausa = document.getElementById("chk-hide-sin-causa-susp")?.checked;
+        VIEW.filter(s => {
+          if (!s.causa_suspension_macro || s.causa_suspension_macro === "Sin dato") return false;
+          if (hideSinCausa && s.causa_suspension_macro === "Sin causa de suspensión") return false;
+          return true;
+        }).forEach(s => agg[s.causa_suspension_macro] = (agg[s.causa_suspension_macro] || 0) + s.minutos_caidos);
         const rows = Object.entries(agg).sort((a, b) => b[1] - a[1]);
         destroy("csmacro");
         charts.csmacro = new Chart(document.getElementById("ch-cs-macro"), {
@@ -2742,10 +2750,11 @@
           data: { labels: rows.map(r => r[0]), datasets: [{ data: rows.map(r => r[1]), backgroundColor: PAL }] },
           options: { responsive: true, onClick: (e, el) => { if (el.length) { csSel = rows[el[0].index][0]; drillCS() } }, plugins: { legend: { position: "right" } } }
         });
-        if (!csSel) csSel = rows[0] ? rows[0][0] : null;
+        if (!csSel || !rows.find(r => r[0] === csSel)) csSel = rows[0] ? rows[0][0] : null;
         drillCS();
       }
       function drillCS() {
+        const VIEW = getLocalView('suspension');
         document.getElementById("cs-bread").innerHTML = `<span class="sep">Causa específica de</span> <span class="actual">${csSel || "–"}</span>`;
         const base = VIEW.filter(s => s.causa_suspension_macro === csSel && s.causa_suspension_especifica && s.causa_suspension_especifica !== "Sin dato");
         const agg = {};
@@ -4167,11 +4176,15 @@ updateGeoCascade();
         });
 
         destroy('dispnar');
+        
+        const localPlugins = [];
         if (typeof ChartDataLabels !== 'undefined') {
-          Chart.register(ChartDataLabels);
+          localPlugins.push(ChartDataLabels);
         }
+
         charts.dispnar = new Chart(canvas, {
           type: 'line',
+          plugins: localPlugins,
           data: { labels, datasets },
           options: {
             responsive: true,
