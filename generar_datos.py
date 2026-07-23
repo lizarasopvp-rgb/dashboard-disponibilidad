@@ -281,6 +281,8 @@ def truncate(s, max_len=1500):
     s = str(s)
     return s[:max_len] + '...' if len(s) > max_len else s
 
+eventos['SEMANA'] = 'W' + eventos['FECHA_DIA'].dt.isocalendar().week.astype(str).str.zfill(2)
+
 data = []
 for _, r in eventos.iterrows():
     ts = r['FECHA_DIA']
@@ -314,6 +316,7 @@ for _, r in eventos.iterrows():
         intern(r['MASIVA_ID']),                    # 21: masiva_id
         intern(r['CAUSA_IA']),                     # 22: causa_ia
         1 if r['is_active'] else 0,                # 23: is_active (1 o 0)
+        intern(r['SEMANA']),                       # 24: semana
     ])
 
 print(f"Eventos: {len(data)}, Strings pool: {len(str_list)}")

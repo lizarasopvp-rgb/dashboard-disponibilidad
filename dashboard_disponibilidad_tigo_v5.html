@@ -1305,6 +1305,7 @@
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Suspens.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <span class="lbl">Semana</span><select class="fl-sem"><option value="">Todas</option></select>
         <div style="display:inline-flex; align-items:center; gap:14px; margin-left:10px; padding: 6px 14px; background: #f8fafc; border: 1px solid var(--linea); border-radius: 8px;">
           <span class="lbl" style="margin:0; font-weight: 700; color: var(--azul-marino);">Rangos:</span>
           <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
@@ -1336,7 +1337,8 @@
         </div>
         <canvas id="ch-tend" style="max-height:320px"></canvas>
         <p class="nota" id="nota-tend"></p>
-        <div class="scrollx" id="wrap-tend-tbl" style="margin-top:14px; display:none;">
+        <div class="scrollx" id="wrap-tend-tbl" style="margin-top:14px; display:none; position:relative; padding-top:20px;">
+          <button onclick="document.getElementById('wrap-tend-tbl').style.display='none'" style="position:absolute; top:0; right:0; background:var(--naranja); color:white; border:none; padding:4px 10px; cursor:pointer; border-radius:4px; font-size:11px; font-weight:bold; z-index:10;">Cerrar tabla (x)</button>
           <table class="datos" id="tbl-tend"></table>
         </div>
       </div>
@@ -1649,6 +1651,7 @@
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
       </div>
+      <div class="insights-container" id="intermitentes-insights" style="display:flex; margin-bottom:15px; border-radius:6px; overflow:hidden; gap:10px;"></div>
       <div class="card">
         <div class="card-head">
           <div>
@@ -1680,6 +1683,7 @@
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Suspens.</span><select class="fl-cs"><option value="">Todas</option></select>
+        <span class="lbl">Semana</span><select class="fl-sem"><option value="">Todas</option></select>
       </div>
       <div class="kpis" id="kpi-masivas" style="margin-bottom: 16px;"></div>
       <div class="card">
@@ -2284,6 +2288,32 @@
         let acc = 0;
         const minsAcum = top.map(s => { acc += s.min; return acc; });
 
+        const topMin = top.reduce((a, s) => a + s.min, 0);
+        const topEventos = top.reduce((a, s) => a + (s.ev || s.nEv || 1), 0);
+        const topPromedio = top.length > 0 ? topMin / top.length : 0;
+        const topPromedioEv = topEventos > 0 ? topMin / topEventos : 0;
+        const intermIns = document.getElementById('intermitentes-insights');
+        if (intermIns) {
+            intermIns.innerHTML = `
+                <span style="border-left:5px solid var(--naranja); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:24px; color:var(--naranja); line-height:1;">${fmt(topEventos)}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Eventos Totales</div>
+                </span>
+                <span style="border-left:5px solid var(--azul-marino); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:24px; color:var(--azul-marino); line-height:1;">${fmt(Math.round(topMin))}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Minutos Totales</div>
+                </span>
+                <span style="border-left:5px solid #00A3E0; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:24px; color:#00A3E0; line-height:1;">${fmt(Math.round(topPromedio))}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Sitio</div>
+                </span>
+                <span style="border-left:5px solid var(--ok); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:24px; color:var(--ok); line-height:1;">${fmt(Math.round(topPromedioEv))}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Evento</div>
+                </span>
+            `;
+        }
+
         destroy("interm");
         charts.interm = new Chart(document.getElementById("ch-interm"), {
           data: {
@@ -2780,21 +2810,27 @@
         let acc = 0; const cum = top.map(s => { acc += s.min; return +(100 * acc / (tot || 1)).toFixed(1) });
         
         const topMin = top.reduce((a, s) => a + s.min, 0);
+        const topEventos = top.reduce((a, s) => a + (s.ev || s.nEv || 1), 0);
         const topPromedio = top.length > 0 ? topMin / top.length : 0;
+        const topPromedioEv = topEventos > 0 ? topMin / topEventos : 0;
         const worstIns = document.getElementById('worst-insights');
         if (worstIns) {
             worstIns.innerHTML = `
                 <span style="border-left:5px solid var(--naranja); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
-                  <div style="font-size:24px; color:var(--naranja); line-height:1;">${top.length}</div>
-                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Sitios (Top ${top.length})</div>
+                  <div style="font-size:24px; color:var(--naranja); line-height:1;">${fmt(topEventos)}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Eventos Totales</div>
                 </span>
                 <span style="border-left:5px solid var(--azul-marino); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
-                  <div style="font-size:20px; color:var(--azul-marino); line-height:1;">${fmt(Math.round(topMin))}</div>
+                  <div style="font-size:24px; color:var(--azul-marino); line-height:1;">${fmt(Math.round(topMin))}</div>
                   <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Minutos Totales</div>
                 </span>
                 <span style="border-left:5px solid #00A3E0; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
-                  <div style="font-size:20px; color:#00A3E0; line-height:1;">${fmt(Math.round(topPromedio))}</div>
+                  <div style="font-size:24px; color:#00A3E0; line-height:1;">${fmt(Math.round(topPromedio))}</div>
                   <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Sitio</div>
+                </span>
+                <span style="border-left:5px solid var(--ok); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:24px; color:var(--ok); line-height:1;">${fmt(Math.round(topPromedioEv))}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Evento</div>
                 </span>
             `;
         }
@@ -3162,7 +3198,12 @@ updateGeoCascade();
           }
           
           const geoRango = document.getElementById("geo-rango");
-          if (geoRango) geoRango.value = "";
+          const localRngo = document.querySelector('#heatmap-suspension .fl-rng');
+          if (geoRango && localRngo && localRngo.value) {
+            geoRango.value = localRngo.value;
+          } else if (geoRango) {
+            geoRango.value = "";
+          }
           
           renderGeo();
           
@@ -3884,6 +3925,7 @@ updateGeoCascade();
         const fDep = sec.querySelector('.fl-dep') ? sec.querySelector('.fl-dep').value : "";
         const fMun = sec.querySelector('.fl-mun') ? sec.querySelector('.fl-mun').value : "";
         const fCR = sec.querySelector('.fl-cr') ? sec.querySelector('.fl-cr').value : "";
+        const fSem = sec.querySelector('.fl-sem') ? sec.querySelector('.fl-sem').value : "";
         const fCS = sec.querySelector('.fl-cs') ? sec.querySelector('.fl-cs').value : "";
         const fFechaIni = sec.querySelector('.fl-fecha-ini') ? sec.querySelector('.fl-fecha-ini').value : "";
         const rngEl = sec.querySelector('.fl-rng');
@@ -3907,6 +3949,7 @@ updateGeoCascade();
         if (fDep) v = v.filter(e => e.departamento === fDep);
         if (fMun) v = v.filter(e => e.ciudad === fMun);
         if (fCR) v = v.filter(e => e.causa_raiz_macro === fCR);
+        if (fSem) v = v.filter(e => e.semana === fSem);
         if (fCS) v = v.filter(e => e.causa_suspension_macro === fCS);
         if (fFechaIni) {
            v = v.filter(e => {
@@ -3940,6 +3983,7 @@ updateGeoCascade();
           const cr  = fl.querySelector('.fl-cr');
           const rng = fl.querySelector('.fl-rng');
           const cs  = fl.querySelector('.fl-cs');
+          const sem = fl.querySelector('.fl-sem');
 
           if (mes) {
             _MA.forEach(m => { const ms = String(m); const mm = ms.slice(4); const lbl = (mesesLbl2[mm] || mm) + " " + ms.slice(0,4); mes.add(new Option(lbl, m)); });
@@ -3975,6 +4019,10 @@ updateGeoCascade();
           }
           if (cr)  Object.keys(CAUSA_RAIZ).forEach(c => cr.add(new Option(c, c)));
           if (cs)  validCs.forEach(c => cs.add(new Option(c, c)));
+          if (sem) {
+             const validSem = [...new Set(DATA.map(d => d.semana))].filter(Boolean).sort();
+             validSem.forEach(s => sem.add(new Option(s, s)));
+          }
 
           fl.addEventListener('change', (e) => {
             if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') {
