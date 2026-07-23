@@ -1336,9 +1336,11 @@
           </div>
         </div>
         <canvas id="ch-tend" style="max-height:320px"></canvas>
-        <p class="nota" id="nota-tend"></p>
-        <div class="scrollx" id="wrap-tend-tbl" style="margin-top:14px; display:none; position:relative; padding-top:20px;">
-          <button onclick="document.getElementById('wrap-tend-tbl').style.display='none'" style="position:absolute; top:0; right:0; background:var(--naranja); color:white; border:none; padding:4px 10px; cursor:pointer; border-radius:4px; font-size:11px; font-weight:bold; z-index:10;">Cerrar tabla (x)</button>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:14px;">
+          <p class="nota" id="nota-tend" style="margin:0;"></p>
+          <button id="btn-cerrar-tend" onclick="document.getElementById('wrap-tend-tbl').style.display='none'; document.getElementById('nota-tend').style.display='none'; this.style.display='none';" style="display:none; background:var(--naranja); color:white; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; font-size:12px; font-weight:bold; margin-bottom:5px;">Cerrar detalles (X)</button>
+        </div>
+        <div class="scrollx" id="wrap-tend-tbl" style="display:none; position:relative;">
           <table class="datos" id="tbl-tend"></table>
         </div>
       </div>
@@ -2078,6 +2080,8 @@
       function renderTendencias() { const VIEW = getLocalView('tendencias'); const VIEW_TEND = getLocalView('tendencias', true);
         const tblWrap = document.getElementById("wrap-tend-tbl");
         if (tblWrap) tblWrap.style.display = "none";
+        const btnCerrar = document.getElementById("btn-cerrar-tend");
+        if(btnCerrar) btnCerrar.style.display = "none";
         const b = bucketsTemporales(VIEW_TEND);
         const totalSitiosRed = _TSR;
         // breadcrumb
@@ -2189,6 +2193,9 @@
       function renderTendenciaTabla(h) {
         const wrap = document.getElementById("wrap-tend-tbl");
         wrap.style.display = "block";
+        document.getElementById("nota-tend").style.display = "block";
+        const btnCerrar = document.getElementById("btn-cerrar-tend");
+        if(btnCerrar) btnCerrar.style.display = "block";
         const targetMo = tendNivel.m;
         tendEvs = VIEW_TEND.filter(e => {
           const mo = parseInt(String(e.mes_ano).slice(4)) - 1;
@@ -2292,6 +2299,7 @@
         const topEventos = top.reduce((a, s) => a + (s.ev || s.nEv || 1), 0);
         const topPromedio = top.length > 0 ? topMin / top.length : 0;
         const topPromedioEv = topEventos > 0 ? topMin / topEventos : 0;
+        const topPromedioEvSitio = top.length > 0 ? topEventos / top.length : 0;
         const intermIns = document.getElementById('intermitentes-insights');
         if (intermIns) {
             intermIns.innerHTML = `
@@ -2310,6 +2318,10 @@
                 <span style="border-left:5px solid var(--ok); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
                   <div style="font-size:24px; color:var(--ok); line-height:1;">${fmt(Math.round(topPromedioEv))}</div>
                   <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Evento</div>
+                </span>
+                <span style="border-left:5px solid #8b5cf6; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:24px; color:#8b5cf6; line-height:1;">${fmt(Math.round(topPromedioEvSitio))}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Eventos / Sitio</div>
                 </span>
             `;
         }
@@ -2813,6 +2825,7 @@
         const topEventos = top.reduce((a, s) => a + (s.ev || s.nEv || 1), 0);
         const topPromedio = top.length > 0 ? topMin / top.length : 0;
         const topPromedioEv = topEventos > 0 ? topMin / topEventos : 0;
+        const topPromedioEvSitio = top.length > 0 ? topEventos / top.length : 0;
         const worstIns = document.getElementById('worst-insights');
         if (worstIns) {
             worstIns.innerHTML = `
@@ -2831,6 +2844,10 @@
                 <span style="border-left:5px solid var(--ok); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
                   <div style="font-size:24px; color:var(--ok); line-height:1;">${fmt(Math.round(topPromedioEv))}</div>
                   <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Evento</div>
+                </span>
+                <span style="border-left:5px solid #8b5cf6; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:24px; color:#8b5cf6; line-height:1;">${fmt(Math.round(topPromedioEvSitio))}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Eventos / Sitio</div>
                 </span>
             `;
         }
