@@ -2920,24 +2920,40 @@
         const topEvts = base.filter(e => topIds.includes(e.sitio_id));
         const causasHM = [...new Set(topEvts.map(e => e.causa_suspension_macro))].filter(c => c && c !== 'Sin dato').sort();
         
+        const fReg = document.querySelector('#worst .fl-reg').value;
+        const fDep = document.querySelector('#worst .fl-dep').value;
+        const fMun = document.querySelector('#worst .fl-mun').value;
+        
+        let aggKey = 'region';
+        let aggLabel = 'Regional';
+        if (fMun) { aggKey = 'sitio_id'; aggLabel = 'Sitio'; }
+        else if (fDep) { aggKey = 'ciudad'; aggLabel = 'Ciudad'; }
+        else if (fReg) { aggKey = 'departamento'; aggLabel = 'Departamento'; }
+
         const hmTbl = document.getElementById("tbl-worst-hm");
         if(hmTbl) {
           if (causasHM.length === 0) {
               hmTbl.innerHTML = "<tr><td style='padding:10px;text-align:center;'>No hay causas de suspensión clasificadas para estos sitios.</td></tr>";
           } else {
-              let hml = `<thead><tr><th style="text-align:left">Sitio (Top 20)</th>`;
+              let hml = `<thead><tr><th style="text-align:left">${aggLabel} (Top 20)</th>`;
               causasHM.forEach(c => hml += `<th class="num" style="min-width:100px">${c}</th>`);
               hml += `</tr></thead><tbody>`;
               
-              top.forEach(s => {
-                  const sEvts = topEvts.filter(e => e.sitio_id === s.sitio_id && e.causa_suspension_macro !== 'Sin dato');
-                  const sTot = sEvts.reduce((acc, curr) => acc + curr.minutos_caidos, 0);
-                  
-                  hml += `<tr><td><b>${s.sitio_id}</b><br><span style="font-size:10px;color:var(--gris)">${s.nombre}</span></td>`;
+              const groups = {};
+              topEvts.filter(e => e.causa_suspension_macro !== 'Sin dato').forEach(e => {
+                  const k = e[aggKey] || 'N/A';
+                  if (!groups[k]) groups[k] = { name: k, totalMin: 0, causes: {} };
+                  groups[k].totalMin += e.minutos_caidos;
+                  groups[k].causes[e.causa_suspension_macro] = (groups[k].causes[e.causa_suspension_macro] || 0) + e.minutos_caidos;
+              });
+              
+              const sortedGroups = Object.values(groups).sort((a,b) => b.totalMin - a.totalMin);
+              
+              sortedGroups.forEach(g => {
+                  hml += `<tr><td><b>${g.name}</b></td>`;
                   causasHM.forEach(c => {
-                      const cEvts = sEvts.filter(e => e.causa_suspension_macro === c);
-                      const cMin = cEvts.reduce((acc, curr) => acc + curr.minutos_caidos, 0);
-                      const pct = sTot > 0 ? cMin / sTot : 0;
+                      const cMin = g.causes[c] || 0;
+                      const pct = g.totalMin > 0 ? cMin / g.totalMin : 0;
                       
                       let bg = '';
                       if (pct >= 0.5) bg = 'background:rgba(239,68,68,0.7);color:white;';
