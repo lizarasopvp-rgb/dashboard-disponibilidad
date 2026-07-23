@@ -1305,7 +1305,7 @@
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Suspens.</span><select class="fl-cs"><option value="">Todas</option></select>
-        <span class="lbl">Semana</span><select class="fl-sem"><option value="">Todas</option></select>
+        
         <div style="display:inline-flex; align-items:center; gap:14px; margin-left:10px; padding: 6px 14px; background: #f8fafc; border: 1px solid var(--linea); border-radius: 8px;">
           <span class="lbl" style="margin:0; font-weight: 700; color: var(--azul-marino);">Rangos:</span>
           <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
@@ -1685,7 +1685,7 @@
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
         <span class="lbl">Causa Suspens.</span><select class="fl-cs"><option value="">Todas</option></select>
-        <span class="lbl">Semana</span><select class="fl-sem"><option value="">Todas</option></select>
+        
       </div>
       <div class="kpis" id="kpi-masivas" style="margin-bottom: 16px;"></div>
       <div class="card">
@@ -3335,7 +3335,9 @@ updateGeoCascade();
       /* ============================================================
          FALLAS MASIVAS
       ============================================================ */
-      function renderMasivas() { const VIEW = getLocalView('masivas');
+      function renderMasivas() { 
+        const VIEW = getLocalView('masivas');
+        iaNivel = { tipo: "mes", mes: null, dia: null };
         let base = VIEW;
         const masivasData = {};
         base.forEach(r => {
@@ -3937,7 +3939,6 @@ updateGeoCascade();
         const fDep = sec.querySelector('.fl-dep') ? sec.querySelector('.fl-dep').value : "";
         const fMun = sec.querySelector('.fl-mun') ? sec.querySelector('.fl-mun').value : "";
         const fCR = sec.querySelector('.fl-cr') ? sec.querySelector('.fl-cr').value : "";
-        const fSem = sec.querySelector('.fl-sem') ? sec.querySelector('.fl-sem').value : "";
         const fCS = sec.querySelector('.fl-cs') ? sec.querySelector('.fl-cs').value : "";
         const fFechaIni = sec.querySelector('.fl-fecha-ini') ? sec.querySelector('.fl-fecha-ini').value : "";
         const rngEl = sec.querySelector('.fl-rng');
@@ -3961,7 +3962,6 @@ updateGeoCascade();
         if (fDep) v = v.filter(e => e.departamento === fDep);
         if (fMun) v = v.filter(e => e.ciudad === fMun);
         if (fCR) v = v.filter(e => e.causa_raiz_macro === fCR);
-        if (fSem) v = v.filter(e => e.semana === fSem);
         if (fCS) v = v.filter(e => e.causa_suspension_macro === fCS);
         if (fFechaIni) {
            v = v.filter(e => {
@@ -3995,8 +3995,6 @@ updateGeoCascade();
           const cr  = fl.querySelector('.fl-cr');
           const rng = fl.querySelector('.fl-rng');
           const cs  = fl.querySelector('.fl-cs');
-          const sem = fl.querySelector('.fl-sem');
-
           if (mes) {
             _MA.forEach(m => { const ms = String(m); const mm = ms.slice(4); const lbl = (mesesLbl2[mm] || mm) + " " + ms.slice(0,4); mes.add(new Option(lbl, m)); });
             if (_MA.length > 0) mes.value = _MA[_MA.length - 1];
@@ -4031,11 +4029,6 @@ updateGeoCascade();
           }
           if (cr)  Object.keys(CAUSA_RAIZ).forEach(c => cr.add(new Option(c, c)));
           if (cs)  validCs.forEach(c => cs.add(new Option(c, c)));
-          if (sem) {
-             const validSem = [...new Set(DATA.map(d => d.semana))].filter(Boolean).sort();
-             validSem.forEach(s => sem.add(new Option(s, s)));
-          }
-
           fl.addEventListener('change', (e) => {
             if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') {
                const secId = fl.closest('section').id;
