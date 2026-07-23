@@ -2327,8 +2327,8 @@
           let detHtml = `<td colspan="8" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
           evts.forEach(e => {
             const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
-            const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
-            const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
+            const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+            const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
             detHtml += `<tr><td>${e.ticket}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-sitio="${e.ticket}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
           });
           detHtml += `</tbody></table></td>`;
@@ -2643,8 +2643,8 @@
             let detHtml = `<td colspan="7" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>Hora Inicio</th><th>Hora Fin</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
             evts.forEach(e => {
               const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
-              const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
-              const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
+              const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+              const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
               detHtml += `<tr><td>${e.ticket}</td><td style="font-size:11px">${fmtDT(e.ts)}</td><td style="font-size:11px">${fmtDT(e.ts_fin)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-tipo="falla" data-ticket="${e.ticket}" data-inicio="${fmtISO(e.ts)}" data-fin="${fmtISO(e.ts_fin)}" data-duracion="${e.minutos_caidos}" data-causa="${e.causa_raiz_especifica}" data-solucion="${(e.solucion || '').substring(0, 100).replace(/"/g, '&quot;')}" data-codigo="${e.sitio_id}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
             });
             detHtml += `</tbody></table></td>`;
@@ -2816,8 +2816,8 @@
           let detHtml = `<td colspan="10" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
           evts.forEach(e => {
             const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
-            const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
-            const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
+            const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+            const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
             detHtml += `<tr><td>${e.ticket}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-sitio="${e.ticket}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
           });
           detHtml += `</tbody></table></td>`;
@@ -3637,15 +3637,18 @@ updateGeoCascade();
             <th>Sitio</th>
             <th>Ticket</th>
             <th>Causa Raíz</th>
+            <th>Solución</th>
             <th>Fecha Inicio</th>
             <th>Fecha Fin</th>
             <th class="num">Minutos</th>
          </tr>`;
          events.forEach(r => {
+             const solTxt = r.solucion && r.solucion.trim() && r.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${r.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
              html += `<tr>
                <td><b>${r.sitio_id}</b><br><span style="font-size:10.5px;color:var(--gris)">${r.nombre}</span></td>
                <td><span class="tdpill" style="background:var(--rojo)">${r.ticket}</span></td>
                <td style="font-size:10.5px;color:var(--gris);max-width:180px;">${r.causa_raiz_especifica}</td>
+               <td>${solTxt}</td>
                <td style="font-family: var(--f-mono); font-size: 11px;">${fmtDT(r.ts)}</td>
                <td style="font-family: var(--f-mono); font-size: 11px;">${fmtDT(r.ts_fin)}</td>
                <td class="num" style="font-weight:600">${r.minutos_caidos.toFixed(1)}</td>

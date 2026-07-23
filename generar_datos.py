@@ -278,7 +278,7 @@ def intern(s):
 
 # Build events with short keys and interned strings
 # Truncate long text fields to save space
-def truncate(s, max_len=300):
+def truncate(s, max_len=1500):
     s = str(s)
     return s[:max_len] + '...' if len(s) > max_len else s
 
@@ -310,7 +310,7 @@ for _, r in eventos.iterrows():
         int(r['MES_ANO']),                 # 16: mes_ano
         intern(r['CAUSA_SUSPENSION_MACRO']),       # 17: causa suspensión macro
         intern(r['CAUSA_SUSPENSION_ESPECIFICA']),  # 18: causa suspensión especifica
-        intern(truncate(r['DETALLE_FALLA'], 500)), # 19: detalle falla
+        intern(truncate(r['DETALLE_FALLA'])), # 19: detalle falla
         intern(r['etiqueta_padre']),               # 20: etiqueta_padre
         intern(r['MASIVA_ID']),                    # 21: masiva_id
         intern(r['CAUSA_IA']),                     # 22: causa_ia
