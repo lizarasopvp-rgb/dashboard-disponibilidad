@@ -1603,45 +1603,10 @@
       </div>
     </section>
 
-    <!-- 10 · MAPA DE CALOR POR CAUSA SUSPENSIÓN -->
-    <section id="heatmap-suspension">
-      <div class="story-step"><span class="n">10</span> CONCENTRACIÓN POR CAUSA SUSPENSIÓN</div>
-      <div class="sec-head">
-        <h2>Mapa calor - Causa suspensión</h2><span class="pregunta">% de minutos por causa suspensión × regional</span>
-      </div>
-      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
-        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
-        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
-        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
-        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
-        <span class="lbl">Rango</span><select class="fl-rng"><option value="">Todos</option><option value="> 48 horas">&gt; 48 horas</option><option value="24 horas a 48 horas">24 horas a 48 horas</option><option value="4 horas a 24 horas">4 horas a 24 horas</option><option value="30 min a 4 horas">30 min a 4 horas</option><option value="0 a 30 min">0 a 30 min</option></select>
-      </div>
-      <div class="narrativa" id="narr-heatmap-suspension">Tabla de concentración de causas de suspensión por regional. Las celdas con mayor
-        porcentaje se resaltan en naranja. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
-        macro.</div>
-      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
-        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; color:var(--azul-marino); font-weight:600;">
-          <input type="checkbox" id="chk-hide-sindato-hs" onchange="renderHeatmapSuspension()" checked>
-          Ocultar "Sin dato"
-        </label>
-      </div>
-      <div class="card">
-        <div class="scrollx">
-          <table class="datos" id="tbl-heatmap-suspension"></table>
-        </div>
-        <div class="scrollx" id="wrap-hs-tbl" style="margin-top:14px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
-          <div style="padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="hs-tbl-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle de fallas</h3>
-            <button class="btn-fant" onclick="document.getElementById('wrap-hs-tbl').style.display='none'">✕ Cerrar</button>
-          </div>
-          <table class="datos" id="tbl-hs"></table>
-        </div>
-      </div>
-    </section>
-
-    <!-- 11 · INTERMITENTES -->
+    
+    <!-- 10 · INTERMITENTES -->
     <section id="intermitentes">
-      <div class="story-step"><span class="n">11</span> EL DEFECTO CRÓNICO</div>
+      <div class="story-step"><span class="n">10</span> EL DEFECTO CRÓNICO</div>
       <div class="sec-head">
         <h2>Sitios intermitentes</h2><span class="pregunta">¿Qué sitios caen una y otra vez? · ranking por
           frecuencia</span>
@@ -1672,9 +1637,9 @@
       </div>
     </section>
 
-    <!-- 12 · FALLAS SIMULTÁNEAS -->
+    <!-- 11 · FALLAS SIMULTÁNEAS -->
     <section id="masivas">
-      <div class="story-step"><span class="n">12</span> FALLAS RELEVANTES</div>
+      <div class="story-step"><span class="n">11</span> FALLAS RELEVANTES</div>
       <div class="sec-head">
         <h2>Fallas relevantes</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
       </div>
@@ -1751,9 +1716,9 @@
       </div>
     </section>
 
-    <!-- 13 · PLAN 500 -->
+    <!-- 12 · PLAN 500 -->
     <section id="plan500">
-      <div class="story-step"><span class="n">13</span> PLAN 500</div>
+      <div class="story-step"><span class="n">12</span> PLAN 500</div>
       <div class="sec-head">
         <h2>Evolución plan 500</h2><span class="pregunta">Minutograma y evolución de sitios finalizados (Causa: Energía)</span>
       </div>
@@ -2906,6 +2871,44 @@
           tbody.appendChild(tr);
           tbody.appendChild(detTr);
         });
+      
+        const topIds = top.map(s => s.sitio_id);
+        const topEvts = base.filter(e => topIds.includes(e.sitio_id));
+        const causasHM = [...new Set(topEvts.map(e => e.causa_suspension_macro))].filter(c => c && c !== 'Sin dato').sort();
+        
+        const hmTbl = document.getElementById("tbl-worst-hm");
+        if(hmTbl) {
+          if (causasHM.length === 0) {
+              hmTbl.innerHTML = "<tr><td style='padding:10px;text-align:center;'>No hay causas de suspensión clasificadas para estos sitios.</td></tr>";
+          } else {
+              let hml = `<thead><tr><th style="text-align:left">Sitio (Top 20)</th>`;
+              causasHM.forEach(c => hml += `<th class="num" style="min-width:100px">${c}</th>`);
+              hml += `</tr></thead><tbody>`;
+              
+              top.forEach(s => {
+                  const sEvts = topEvts.filter(e => e.sitio_id === s.sitio_id && e.causa_suspension_macro !== 'Sin dato');
+                  const sTot = sEvts.reduce((acc, curr) => acc + curr.minutos_caidos, 0);
+                  
+                  hml += `<tr><td><b>${s.sitio_id}</b><br><span style="font-size:10px;color:var(--gris)">${s.nombre}</span></td>`;
+                  causasHM.forEach(c => {
+                      const cEvts = sEvts.filter(e => e.causa_suspension_macro === c);
+                      const cMin = cEvts.reduce((acc, curr) => acc + curr.minutos_caidos, 0);
+                      const pct = sTot > 0 ? cMin / sTot : 0;
+                      
+                      let bg = '';
+                      if (pct >= 0.5) bg = 'background:rgba(239,68,68,0.7);color:white;';
+                      else if (pct >= 0.25) bg = 'background:rgba(249,115,22,0.5);';
+                      else if (pct > 0) bg = 'background:rgba(254,240,138,0.5);';
+                      else bg = 'background:transparent;color:#d1d5db;';
+                      
+                      hml += `<td class="num" style="${bg} font-weight:600">${cMin > 0 ? (pct * 100).toFixed(0) + '%' : '-'}</td>`;
+                  });
+                  hml += `</tr>`;
+              });
+              hml += `</tbody>`;
+              hmTbl.innerHTML = hml;
+          }
+        }
       }
 
       /* ============================================================
