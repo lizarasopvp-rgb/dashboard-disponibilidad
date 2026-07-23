@@ -1644,6 +1644,13 @@
         <div class="scrollx">
           <table class="datos" id="tbl-worst-hm"></table>
         </div>
+        <div class="scrollx" id="wrap-worst-hs-tbl" style="margin-top:14px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
+          <div style="padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="worst-hs-tbl-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle de Causas Específicas</h3>
+            <button class="btn-fant" onclick="document.getElementById('wrap-worst-hs-tbl').style.display='none'">✕ Cerrar</button>
+          </div>
+          <table class="datos" id="tbl-worst-hs"></table>
+        </div>
       </div>
     </section>
 
@@ -2938,7 +2945,7 @@
           } else {
               let hml = `<thead><tr><th style="text-align:left">${aggLabel} (Top 20)</th>`;
               causasHM.forEach(c => hml += `<th class="num" style="min-width:100px">${c}</th>`);
-              hml += `</tr></thead><tbody>`;
+              hml += `<th class="num" style="min-width:80px; background:#f3f4f6">Total</th></tr></thead><tbody>`;
               
               const groups = {};
               let grandTotal = 0;
@@ -2964,10 +2971,22 @@
                       else if (pct > 0.02) bg = 'background:rgba(254,240,138,0.5);';
                       else bg = 'background:transparent;color:#d1d5db;';
                       
-                      hml += `<td class="num" style="${bg} font-weight:600">${cMin > 0 ? (pct * 100).toFixed(1) + '%' : '-'}</td>`;
+                      let cursor = cMin > 0 ? 'cursor:pointer;' : '';
+                      hml += `<td class="num" style="${bg} font-weight:600; ${cursor}" onclick="if(${cMin}>0) window.showWorstHmDetail('${g.name}', '${c}')">${cMin > 0 ? (pct * 100).toFixed(1) + '%' : '-'}</td>`;
                   });
+                  const rowPct = grandTotal > 0 ? (g.totalMin / grandTotal * 100).toFixed(1) : 0;
+                  hml += `<td class="num" style="background:#f3f4f6; font-weight:bold">${rowPct}%</td>`;
                   hml += `</tr>`;
               });
+              
+              hml += `<tr style="background:#e5e7eb; font-weight:bold"><td>Total General</td>`;
+              causasHM.forEach(c => {
+                  const cTot = sortedGroups.reduce((acc, g) => acc + (g.causes[c] || 0), 0);
+                  const cPct = grandTotal > 0 ? (cTot / grandTotal * 100).toFixed(1) : 0;
+                  hml += `<td class="num">${cTot > 0 ? cPct + '%' : '-'}</td>`;
+              });
+              hml += `<td class="num">100.0%</td></tr>`;
+              
               hml += `</tbody>`;
               hmTbl.innerHTML = hml;
           }
@@ -3183,6 +3202,52 @@ const geoReg = document.getElementById("geo-reg");
            html += `</td></tr></tfoot>`;
         }
         tbl.innerHTML = html;
+      };
+
+      window.showWorstHmDetail = function(geo, macro) {
+        const wrap = document.getElementById("wrap-worst-hs-tbl");
+        wrap.style.display = "block";
+        document.getElementById("worst-hs-tbl-title").textContent = `Causas específicas: ${macro} en ${geo}`;
+        
+        const VIEW = getLocalView('worst');
+        const fReg = document.querySelector('#worst .fl-reg').value;
+        const fDep = document.querySelector('#worst .fl-dep').value;
+        const fMun = document.querySelector('#worst .fl-mun').value;
+        
+        let aggKey = 'region';
+        if (fMun) aggKey = 'sitio_id';
+        else if (fDep) aggKey = 'ciudad';
+        else if (fReg) aggKey = 'departamento';
+        
+        const sm = metricasSitio(VIEW);
+        const ord = [...sm].sort((a, b) => b.min - a.min);
+        const top = ord.slice(0, 20);
+        const topIds = top.map(s => s.sitio_id);
+        const topEvts = VIEW.filter(e => topIds.includes(e.sitio_id));
+        
+        let cellEvts = topEvts.filter(e => e.causa_suspension_macro === macro && (e[aggKey] || 'N/A') === geo);
+        
+        const espAgg = {};
+        let totalCell = 0;
+        cellEvts.forEach(e => {
+            const esp = e.causa_suspension_especifica || 'Sin especificar';
+            if (!espAgg[esp]) espAgg[esp] = { min: 0, evts: 0 };
+            espAgg[esp].min += e.minutos_caidos;
+            espAgg[esp].evts++;
+            totalCell += e.minutos_caidos;
+        });
+        
+        const sortedEsp = Object.entries(espAgg).sort((a,b) => b[1].min - a[1].min);
+        let thtml = `<thead><tr><th style="text-align:left">Causa Específica</th><th>Minutos</th><th>%</th><th>Eventos</th></tr></thead><tbody>`;
+        if(sortedEsp.length === 0) thtml += `<tr><td colspan="4" style="text-align:center">No hay datos</td></tr>`;
+        else {
+            sortedEsp.forEach(([esp, vals]) => {
+                const pct = totalCell > 0 ? (vals.min / totalCell * 100).toFixed(1) : 0;
+                thtml += `<tr><td style="text-align:left">${esp}</td><td class="num">${fmt(vals.min)}</td><td class="num">${pct}%</td><td class="num">${vals.evts}</td></tr>`;
+            });
+        }
+        thtml += `</tbody>`;
+        document.getElementById("tbl-worst-hs").innerHTML = thtml;
       };
 
       window.showHsDetail = function(macro, esp, reg, event) {
