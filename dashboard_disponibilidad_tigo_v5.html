@@ -1308,7 +1308,10 @@
         <div style="display:inline-flex; align-items:center; gap:14px; margin-left:10px; padding: 6px 14px; background: #f8fafc; border: 1px solid var(--linea); border-radius: 8px;">
           <span class="lbl" style="margin:0; font-weight: 700; color: var(--azul-marino);">Rangos:</span>
           <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
-            <input type="checkbox" class="fl-rng" value="> 12 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> &gt; 12h
+            <input type="checkbox" class="fl-rng" value="> 36 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> &gt; 36h
+          </label>
+          <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
+            <input type="checkbox" class="fl-rng" value="12 a 36 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 12 a 36h
           </label>
           <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
             <input type="checkbox" class="fl-rng" value="8 a 12 Horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 8 a 12h
@@ -2213,14 +2216,15 @@
       ============================================================ */
       function renderPareto() { const VIEW = getLocalView('pareto');
         const RANGOS = [
-          { lbl: "> 12 horas", min: 720, max: Infinity },
+          { lbl: "> 36 horas", min: 2160, max: Infinity },
+          { lbl: "12 a 36 horas", min: 720, max: 2160 },
           { lbl: "8 a 12 Horas", min: 480, max: 720 },
           { lbl: "4 a 8 horas", min: 240, max: 480 },
           { lbl: "30 Min a 4 horas", min: 30, max: 240 },
           { lbl: "Flapping", min: 10, max: 30 },
           { lbl: "< 10 Minutos", min: 0, max: 10 }
         ];
-        const tigoBlues = ["#1A2238", "#293659", "#3B4D80", "#576BA6", "#8293C2", "#B5C0E0"];
+        const tigoBlues = ["#000000", "#1A2238", "#293659", "#3B4D80", "#576BA6", "#8293C2", "#B5C0E0"];
         const dur = VIEW.map(s => s.minutos_caidos);
         const tot = dur.reduce((a, c) => a + c, 0);
         const nTotal = dur.length;
@@ -2231,7 +2235,7 @@
         if (nTotal === 0) {
             document.getElementById("narr-pareto").innerHTML = "<b>No hay datos</b> para la combinación de filtros seleccionada.";
         } else {
-            document.getElementById("narr-pareto").innerHTML = `Los eventos de <b>> 12 horas</b> representan el <b>${pctMin[0]}%</b> de los minutos totales pero solo el <b>${pctEv[0]}%</b> de los eventos. En contraste, las fallas cortas tipo <b>Flapping</b> suman el <b>${pctEv[4]}%</b> de los eventos pero apenas el <b>${pctMin[4]}%</b> de los minutos. Priorizar la reducción de fallas largas maximiza el impacto en disponibilidad.`;
+            document.getElementById("narr-pareto").innerHTML = `Los eventos de <b>&gt; 36 horas</b> y <b>12 a 36 horas</b> representan el <b>${(pctMin[0]+pctMin[1]).toFixed(1)}%</b> de los minutos totales pero solo el <b>${(pctEv[0]+pctEv[1]).toFixed(1)}%</b> de los eventos. En contraste, las fallas cortas tipo <b>Flapping</b> suman el <b>${pctEv[5]}%</b> de los eventos pero apenas el <b>${pctMin[5]}%</b> de los minutos. Priorizar la reducción de fallas largas maximiza el impacto en disponibilidad.`;
         }
         // skip old narrative
         destroy("distrib");
@@ -3171,7 +3175,7 @@ updateGeoCascade();
           }
           
           const geoRango = document.getElementById("geo-rango");
-          if (geoRango) geoRango.value = "> 12 horas";
+          if (geoRango) geoRango.value = "";
           
           renderGeo();
           
