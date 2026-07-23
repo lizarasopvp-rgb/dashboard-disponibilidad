@@ -2940,11 +2940,13 @@
               hml += `</tr></thead><tbody>`;
               
               const groups = {};
+              let grandTotal = 0;
               topEvts.filter(e => e.causa_suspension_macro !== 'Sin dato').forEach(e => {
                   const k = e[aggKey] || 'N/A';
                   if (!groups[k]) groups[k] = { name: k, totalMin: 0, causes: {} };
                   groups[k].totalMin += e.minutos_caidos;
                   groups[k].causes[e.causa_suspension_macro] = (groups[k].causes[e.causa_suspension_macro] || 0) + e.minutos_caidos;
+                  grandTotal += e.minutos_caidos;
               });
               
               const sortedGroups = Object.values(groups).sort((a,b) => b.totalMin - a.totalMin);
@@ -2953,15 +2955,15 @@
                   hml += `<tr><td><b>${g.name}</b></td>`;
                   causasHM.forEach(c => {
                       const cMin = g.causes[c] || 0;
-                      const pct = g.totalMin > 0 ? cMin / g.totalMin : 0;
+                      const pct = grandTotal > 0 ? cMin / grandTotal : 0;
                       
                       let bg = '';
-                      if (pct >= 0.5) bg = 'background:rgba(239,68,68,0.7);color:white;';
-                      else if (pct >= 0.25) bg = 'background:rgba(249,115,22,0.5);';
-                      else if (pct > 0) bg = 'background:rgba(254,240,138,0.5);';
+                      if (pct > 0.25) bg = 'background:rgba(239,68,68,0.7);color:white;';
+                      else if (pct > 0.10) bg = 'background:rgba(249,115,22,0.5);';
+                      else if (pct > 0.02) bg = 'background:rgba(254,240,138,0.5);';
                       else bg = 'background:transparent;color:#d1d5db;';
                       
-                      hml += `<td class="num" style="${bg} font-weight:600">${cMin > 0 ? (pct * 100).toFixed(0) + '%' : '-'}</td>`;
+                      hml += `<td class="num" style="${bg} font-weight:600">${cMin > 0 ? (pct * 100).toFixed(1) + '%' : '-'}</td>`;
                   });
                   hml += `</tr>`;
               });
