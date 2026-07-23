@@ -1624,6 +1624,7 @@
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
         <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
       </div>
+      <div class="insights-container" id="worst-insights" style="display:flex; margin-bottom:15px; border-radius:6px; overflow:hidden; gap:10px;"></div>
       <div class="card">
         <div class="card-head">
           <div>
@@ -2786,6 +2787,27 @@
         const tot = ord.reduce((a, s) => a + s.min, 0);
         const top = ord.slice(0, 20);
         let acc = 0; const cum = top.map(s => { acc += s.min; return +(100 * acc / (tot || 1)).toFixed(1) });
+        
+        const topMin = top.reduce((a, s) => a + s.min, 0);
+        const topPromedio = top.length > 0 ? topMin / top.length : 0;
+        const worstIns = document.getElementById('worst-insights');
+        if (worstIns) {
+            worstIns.innerHTML = `
+                <span style="border-left:5px solid var(--naranja); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:24px; color:var(--naranja); line-height:1;">${top.length}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Sitios (Top ${top.length})</div>
+                </span>
+                <span style="border-left:5px solid var(--azul-marino); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:20px; color:var(--azul-marino); line-height:1;">${fmt(Math.round(topMin))}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Minutos Totales</div>
+                </span>
+                <span style="border-left:5px solid #00A3E0; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                  <div style="font-size:20px; color:#00A3E0; line-height:1;">${fmt(Math.round(topPromedio))}</div>
+                  <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Sitio</div>
+                </span>
+            `;
+        }
+
         destroy("worst");
         charts.worst = new Chart(document.getElementById("ch-worst"), {
           data: {
@@ -3413,9 +3435,9 @@ updateGeoCascade();
             if (match) {
                if (!agg[key]) agg[key] = { 
                   'TX': { c: 0, m: 0 }, 
-                  'Climatológicos': { c: 0, m: 0 }, 
+                  'Tormenta eléctrica / Vendaval': { c: 0, m: 0 }, 
                   'VM electrificadora': { c: 0, m: 0 }, 
-                  'MT': { c: 0, m: 0 }, 
+                  'Línea Media tensión': { c: 0, m: 0 }, 
                   _items: [] 
                };
                if (agg[key][causa] !== undefined) {
@@ -3432,9 +3454,9 @@ updateGeoCascade();
          labels = Object.keys(agg).sort();
          const datasets = [
             { label: 'TX', data: labels.map(k => isMin ? agg[k]['TX'].m : agg[k]['TX'].c), backgroundColor: '#1A2238' },
-            { label: 'Climatológicos', data: labels.map(k => isMin ? agg[k]['Climatológicos'].m : agg[k]['Climatológicos'].c), backgroundColor: '#00A3E0' },
+            { label: 'Tormenta eléctrica / Vendaval', data: labels.map(k => isMin ? agg[k]['Tormenta eléctrica / Vendaval'].m : agg[k]['Tormenta eléctrica / Vendaval'].c), backgroundColor: '#00A3E0' },
             { label: 'VM electrificadora', data: labels.map(k => isMin ? agg[k]['VM electrificadora'].m : agg[k]['VM electrificadora'].c), backgroundColor: '#FF9900' },
-            { label: 'MT', data: labels.map(k => isMin ? agg[k]['MT'].m : agg[k]['MT'].c), backgroundColor: '#94a3b8' }
+            { label: 'Línea Media tensión', data: labels.map(k => isMin ? agg[k]['Línea Media tensión'].m : agg[k]['Línea Media tensión'].c), backgroundColor: '#94a3b8' }
          ];
 
          let insTX = 0, insClima = 0, insVM = 0, insMT = 0;
@@ -3458,7 +3480,7 @@ updateGeoCascade();
             </span>
             <span style="border-left:5px solid #00A3E0; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
               <div style="font-size:20px; color:#00A3E0; line-height:1;">${formatNum(insClima)}</div>
-              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Climatológicos</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Tormenta eléctrica / Vendaval</div>
             </span>
             <span style="border-left:5px solid #FF9900; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
               <div style="font-size:20px; color:#FF9900; line-height:1;">${formatNum(insVM)}</div>
@@ -3466,7 +3488,7 @@ updateGeoCascade();
             </span>
             <span style="border-left:5px solid #94a3b8; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
               <div style="font-size:20px; color:#94a3b8; line-height:1;">${formatNum(insMT)}</div>
-              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">MT</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Línea Media tensión</div>
             </span>
          `;
          const insContainer = document.getElementById('masivas-ia-insights');

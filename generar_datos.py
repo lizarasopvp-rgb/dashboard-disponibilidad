@@ -166,11 +166,11 @@ def get_causa_ia(row):
     if is_vm:
         return 'VM electrificadora'
     elif is_red_mt:
-        return 'MT'
+        return 'Línea Media tensión'
     elif is_tx:
         return 'TX'
     elif is_tormenta:
-        return 'Climatológicos'
+        return 'Tormenta eléctrica / Vendaval'
     else:
         return 'Otra'
 
