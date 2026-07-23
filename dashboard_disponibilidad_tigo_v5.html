@@ -1308,22 +1308,19 @@
         <div style="display:inline-flex; align-items:center; gap:14px; margin-left:10px; padding: 6px 14px; background: #f8fafc; border: 1px solid var(--linea); border-radius: 8px;">
           <span class="lbl" style="margin:0; font-weight: 700; color: var(--azul-marino);">Rangos:</span>
           <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
-            <input type="checkbox" class="fl-rng" value="> 36 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> &gt; 36h
+            <input type="checkbox" class="fl-rng" value="> 48 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> &gt; 48h
           </label>
           <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
-            <input type="checkbox" class="fl-rng" value="12 a 36 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 12 a 36h
+            <input type="checkbox" class="fl-rng" value="24 horas a 48 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 24h a 48h
           </label>
           <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
-            <input type="checkbox" class="fl-rng" value="8 a 12 Horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 8 a 12h
+            <input type="checkbox" class="fl-rng" value="4 horas a 24 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 4h a 24h
           </label>
           <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
-            <input type="checkbox" class="fl-rng" value="4 a 8 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 4 a 8h
+            <input type="checkbox" class="fl-rng" value="30 min a 4 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 30m a 4h
           </label>
           <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
-            <input type="checkbox" class="fl-rng" value="30 Min a 4 horas" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 30m a 4h
-          </label>
-          <label style="font-size:12px; color:var(--texto); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:500;">
-            <input type="checkbox" class="fl-rng" value="Flapping" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> Flapping
+            <input type="checkbox" class="fl-rng" value="0 a 30 min" checked style="accent-color: var(--naranja); cursor:pointer; width:14px; height:14px;"> 0 a 30m
           </label>
         </div>
       </div>
@@ -2216,15 +2213,13 @@
       ============================================================ */
       function renderPareto() { const VIEW = getLocalView('pareto');
         const RANGOS = [
-          { lbl: "> 36 horas", min: 2160, max: Infinity },
-          { lbl: "12 a 36 horas", min: 720, max: 2160 },
-          { lbl: "8 a 12 Horas", min: 480, max: 720 },
-          { lbl: "4 a 8 horas", min: 240, max: 480 },
-          { lbl: "30 Min a 4 horas", min: 30, max: 240 },
-          { lbl: "Flapping", min: 10, max: 30 },
-          { lbl: "< 10 Minutos", min: 0, max: 10 }
+          { lbl: "> 48 horas", min: 2880, max: Infinity },
+          { lbl: "24 horas a 48 horas", min: 1440, max: 2880 },
+          { lbl: "4 horas a 24 horas", min: 240, max: 1440 },
+          { lbl: "30 min a 4 horas", min: 30, max: 240 },
+          { lbl: "0 a 30 min", min: 0, max: 30 }
         ];
-        const tigoBlues = ["#000000", "#1A2238", "#293659", "#3B4D80", "#576BA6", "#8293C2", "#B5C0E0"];
+        const tigoBlues = ["#1A2238", "#3B4D80", "#576BA6", "#8293C2", "#B5C0E0"];
         const dur = VIEW.map(s => s.minutos_caidos);
         const tot = dur.reduce((a, c) => a + c, 0);
         const nTotal = dur.length;
@@ -2235,7 +2230,7 @@
         if (nTotal === 0) {
             document.getElementById("narr-pareto").innerHTML = "<b>No hay datos</b> para la combinación de filtros seleccionada.";
         } else {
-            document.getElementById("narr-pareto").innerHTML = `Los eventos de <b>&gt; 36 horas</b> y <b>12 a 36 horas</b> representan el <b>${(pctMin[0]+pctMin[1]).toFixed(1)}%</b> de los minutos totales pero solo el <b>${(pctEv[0]+pctEv[1]).toFixed(1)}%</b> de los eventos. En contraste, las fallas cortas tipo <b>Flapping</b> suman el <b>${pctEv[5]}%</b> de los eventos pero apenas el <b>${pctMin[5]}%</b> de los minutos. Priorizar la reducción de fallas largas maximiza el impacto en disponibilidad.`;
+            document.getElementById("narr-pareto").innerHTML = `Los eventos de <b>&gt; 48 horas</b> y <b>24 horas a 48 horas</b> representan el <b>${(pctMin[0]+pctMin[1]).toFixed(1)}%</b> de los minutos totales pero solo el <b>${(pctEv[0]+pctEv[1]).toFixed(1)}%</b> de los eventos. En contraste, las fallas cortas tipo <b>0 a 30 min</b> suman el <b>${pctEv[4]}%</b> de los eventos pero apenas el <b>${pctMin[4]}%</b> de los minutos. Priorizar la reducción de fallas largas maximiza el impacto en disponibilidad.`;
         }
         // skip old narrative
         destroy("distrib");
@@ -3331,11 +3326,11 @@ updateGeoCascade();
             const avgMinutos = totalMasivas > 0 ? (totalMinutosMasivas / totalMasivas).toFixed(0) : 0;
             
             kpis.innerHTML = `
-            <div class="kpi k-cr"><div class="et">Masivas Detectadas</div><div class="valor">${totalMasivas}</div></div>
+            <div class="kpi k-cr"><div class="et">Simultáneas Detectadas</div><div class="valor">${totalMasivas}</div></div>
             <div class="kpi k-al"><div class="et">Sitios Afectados</div><div class="valor">${totalSitiosMasivas}</div></div>
             <div class="kpi k-cm"><div class="et">Minutos Totales</div><div class="valor">${Math.round(totalMinutosMasivas).toLocaleString()}</div></div>
-            <div class="kpi"><div class="et">Sitios Prom. / Masiva</div><div class="valor">${avgSitios}</div></div>
-            <div class="kpi"><div class="et">Minutos Prom. / Masiva</div><div class="valor">${Number(avgMinutos).toLocaleString()}</div></div>
+            <div class="kpi"><div class="et">Sitios Prom. / Simultánea</div><div class="valor">${avgSitios}</div></div>
+            <div class="kpi"><div class="et">Minutos Prom. / Simultánea</div><div class="valor">${Number(avgMinutos).toLocaleString()}</div></div>
             `;
         }
 
@@ -3453,7 +3448,7 @@ updateGeoCascade();
          });
          
          const isMin = iaMetrica === 'minutos';
-         const yTitle = isMin ? "Minutos Totales" : "Cant. Masivas";
+         const yTitle = isMin ? "Minutos Totales" : "Cant. Simultáneas";
 
          labels = Object.keys(agg).sort();
          const datasets = [
@@ -3557,10 +3552,10 @@ updateGeoCascade();
       function mostrarDetalleMasivasIA(items, causaName, horaStr) {
          const wrap = document.getElementById('wrap-masivas-ia-det');
          const tbody = document.getElementById('tbl-masivas-ia-det');
-         document.getElementById('masivas-ia-det-title').textContent = `Masivas de ${causaName} a las ${horaStr} (${items.length})`;
+         document.getElementById('masivas-ia-det-title').textContent = `Simultáneas de ${causaName} a las ${horaStr} (${items.length})`;
          wrap.style.display = 'block';
          
-         let html = `<tr><th>ID Masiva</th><th>Región / Depto</th><th>Causa Original</th><th>Inicio</th><th class="num">Sitios</th><th class="num">Minutos</th></tr>`;
+         let html = `<tr><th>ID Simultánea</th><th>Región / Depto</th><th>Causa Original</th><th>Inicio</th><th class="num">Sitios</th><th class="num">Minutos</th></tr>`;
          if (!items.length) {
             html += `<tr><td colspan="6" style="text-align:center;">No hay datos para esta selección</td></tr>`;
          } else {
@@ -3608,7 +3603,7 @@ updateGeoCascade();
         const pageList = masCurrentList.slice(start, start + 5);
 
         let html = `<tr>
-          <th>ID Masiva</th>
+          <th>ID Simultánea</th>
           <th>Región / Depto</th>
           <th>Causa Raíz</th>
           <th>Fecha de inicio</th>
@@ -3654,7 +3649,7 @@ updateGeoCascade();
       window.abrirMasivaDetalle = function(mid) {
          const m = window.currentMasivasData[mid];
          if (!m) return;
-         document.getElementById("masivas-det-title").textContent = `Detalle Exclusión: ${mid} (${m.eventos.length} tickets)`;
+         document.getElementById("masivas-det-title").textContent = `Detalle Simultánea: ${mid} (${m.eventos.length} tickets)`;
          document.getElementById("wrap-masivas-det").style.display = "block";
          
          const tbody = document.getElementById("tbl-masivas-det");
@@ -4433,7 +4428,7 @@ updateGeoCascade();
         const intPeriodo = document.getElementById("int-periodo");
         if (intPeriodo) intPeriodo.onchange = () => renderIntermitentes();
 
-        // Filtros secundarios Masivas
+        // Filtros secundarios Simultáneas
         const masMes = document.getElementById("mas-mes");
         if (masMes) {
           _MA.forEach(m => { const ms = String(m); const mm = ms.slice(4); const lbl = `${mesesLbl[mm] || mm} ${ms.slice(0,4)}`; masMes.add(new Option(lbl, m)); });

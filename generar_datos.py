@@ -191,12 +191,11 @@ df['MIN_IND_DIA'] = pd.to_numeric(df['minutos_falla'], errors='coerce').fillna(0
 
 # Rangos de duración
 def get_rango(minutos):
-    if minutos > 720: return '> 12 horas'
-    if minutos > 480: return '8 a 12 Horas'
-    if minutos > 240: return '4 a 8 horas'
-    if minutos > 30: return '30 Min a 4 horas'
-    if minutos > 10: return 'Flapping'
-    return '< 10 Minutos'
+    if minutos > 2880: return '> 48 horas'
+    if minutos > 1440: return '24 horas a 48 horas'
+    if minutos > 240: return '4 horas a 24 horas'
+    if minutos > 30: return '30 min a 4 horas'
+    return '0 a 30 min'
 df['Rangos'] = df['MIN_IND_DIA'].apply(get_rango)
 
 # Fecha
@@ -216,7 +215,7 @@ df['is_active'] = df['faultresolvingtime'].isna()
 eventos = df[df['MIN_IND_DIA'] > 0].copy()
 print(f"  Eventos con falla > 0 min: {len(eventos)}")
 
-print("Calculando fallas masivas...")
+print("Calculando fallas simultáneas...")
 eventos['SITE_PREFIX'] = eventos['SITE_CD'].astype(str).str[:3].str.upper()
 eventos['fi_date'] = eventos['fi'].dt.date
 eventos['ff_date'] = eventos['ff'].dt.date
@@ -255,7 +254,7 @@ for name, group in grouped:
 eventos['MASIVA_ID'] = 'No'
 for i, cluster_indices in enumerate(masiva_clusters):
     eventos.loc[cluster_indices, 'MASIVA_ID'] = f"MASIVA-{i+1}"
-print(f"  Total fallas masivas detectadas: {len(masiva_clusters)}")
+print(f"  Total fallas simultáneas detectadas: {len(masiva_clusters)}")
 
 for col in ['CAUSA_GLOBAL','CAUSA_RAIZ','TICKET','SOLUCION_TICKET','DETALLE_FALLA',
             'SITE_CD','SITE_NAME','CITY_DS','DEPARTMENT_DS','TECNOLOGIA','REGION_OP',
