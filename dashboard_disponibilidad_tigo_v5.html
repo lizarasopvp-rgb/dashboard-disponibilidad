@@ -1382,9 +1382,46 @@
     </section>
 
     
-    <!-- 5 · CAUSA SUSPENSIÓN -->
+    
+    <!-- 5 · MAPA DE CALOR POR CAUSA SUSPENSIÓN -->
+    <section id="heatmap-suspension">
+      <div class="story-step"><span class="n">5</span> CONCENTRACIÓN POR CAUSA SUSPENSIÓN</div>
+      <div class="sec-head">
+        <h2>Mapa calor - Causa suspensión</h2><span class="pregunta">% de minutos por causa suspensión × regional</span>
+      </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Rango</span><select class="fl-rng"><option value="">Todos</option><option value="> 48 horas">&gt; 48 horas</option><option value="24 horas a 48 horas">24 horas a 48 horas</option><option value="4 horas a 24 horas">4 horas a 24 horas</option><option value="30 min a 4 horas">30 min a 4 horas</option><option value="0 a 30 min">0 a 30 min</option></select>
+      </div>
+      <div class="narrativa" id="narr-heatmap-suspension">Tabla de concentración de causas de suspensión por regional. Las celdas con mayor
+        porcentaje se resaltan en naranja. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
+        macro.</div>
+      <div class="filtros" style="background:transparent;border:none;padding:0 0 10px">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; color:var(--azul-marino); font-weight:600;">
+          <input type="checkbox" id="chk-hide-sindato-hs" onchange="renderHeatmapSuspension()" checked>
+          Ocultar "Sin dato"
+        </label>
+      </div>
+      <div class="card">
+        <div class="scrollx">
+          <table class="datos" id="tbl-heatmap-suspension"></table>
+        </div>
+        <div class="scrollx" id="wrap-hs-tbl" style="margin-top:14px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
+          <div style="padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="hs-tbl-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle de fallas</h3>
+            <button class="btn-fant" onclick="document.getElementById('wrap-hs-tbl').style.display='none'">✕ Cerrar</button>
+          </div>
+          <table class="datos" id="tbl-hs"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · CAUSA SUSPENSIÓN -->
     <section id="suspension">
-      <div class="story-step"><span class="n">5</span> CAUSA SUSPENSIÓN · EXTERNA</div>
+      <div class="story-step"><span class="n">6</span> CAUSA SUSPENSIÓN · EXTERNA</div>
       <div class="sec-head">
         <h2>Causa suspensión macro</h2><span class="pregunta">Factores logísticos o externos · macro → específica</span>
       </div>
@@ -1420,9 +1457,9 @@
       </div>
     </section>
 
-    <!-- 6 · MAPA DE CALOR POR CAUSA RAÍZ -->
+    <!-- 7 · MAPA DE CALOR POR CAUSA RAÍZ -->
     <section id="heatmap">
-      <div class="story-step"><span class="n">6</span> CONCENTRACIÓN POR CAUSA</div>
+      <div class="story-step"><span class="n">7</span> CONCENTRACIÓN POR CAUSA</div>
       <div class="sec-head">
         <h2>Mapa calor - Causa raíz</h2><span class="pregunta">% de minutos por causa raíz × regional</span>
       </div>
@@ -1443,9 +1480,9 @@
       </div>
     </section>
 
-    <!-- 7 · CAUSA RAÍZ -->
+    <!-- 8 · CAUSA RAÍZ -->
     <section id="causaraiz">
-      <div class="story-step"><span class="n">7</span> CAUSA RAÍZ · RED</div>
+      <div class="story-step"><span class="n">8</span> CAUSA RAÍZ · RED</div>
       <div class="sec-head">
         <h2>Causa raíz macro</h2><span class="pregunta">Asociada a componentes de red → macro → específica</span>
       </div>
@@ -1482,9 +1519,9 @@
       </div>
     </section>
 
-    <!-- 8 · GEOGRAFÍA -->
+    <!-- 9 · GEOGRAFÍA -->
     <section id="geografico">
-      <div class="story-step"><span class="n">8</span> ¿DÓNDE?</div>
+      <div class="story-step"><span class="n">9</span> ¿DÓNDE?</div>
       <div class="sec-head">
         <h2>Análisis geográfico - Fallas</h2><span class="pregunta">Departamento → Ciudad → Sitio</span>
       </div>
@@ -1570,9 +1607,9 @@
       </div>
     </section>
 
-    <!-- 9 · WORST OFFENDERS -->
+    <!-- 10 · WORST OFFENDERS -->
     <section id="worst">
-      <div class="story-step"><span class="n">9</span> ¿DÓNDE INTERVENIR?</div>
+      <div class="story-step"><span class="n">10</span> ¿DÓNDE INTERVENIR?</div>
       <div class="sec-head">
         <h2>Worst offenders</h2><span class="pregunta">¿Qué sitios maximizan la eficiencia de la
           intervención?</span>
@@ -1604,9 +1641,9 @@
     </section>
 
     
-    <!-- 10 · INTERMITENTES -->
+    <!-- 11 · INTERMITENTES -->
     <section id="intermitentes">
-      <div class="story-step"><span class="n">10</span> EL DEFECTO CRÓNICO</div>
+      <div class="story-step"><span class="n">11</span> EL DEFECTO CRÓNICO</div>
       <div class="sec-head">
         <h2>Sitios intermitentes</h2><span class="pregunta">¿Qué sitios caen una y otra vez? · ranking por
           frecuencia</span>
@@ -1637,9 +1674,9 @@
       </div>
     </section>
 
-    <!-- 11 · FALLAS SIMULTÁNEAS -->
+    <!-- 12 · FALLAS SIMULTÁNEAS -->
     <section id="masivas">
-      <div class="story-step"><span class="n">11</span> FALLAS RELEVANTES</div>
+      <div class="story-step"><span class="n">12</span> FALLAS RELEVANTES</div>
       <div class="sec-head">
         <h2>Fallas relevantes</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
       </div>
@@ -1716,9 +1753,9 @@
       </div>
     </section>
 
-    <!-- 12 · PLAN 500 -->
+    <!-- 13 · PLAN 500 -->
     <section id="plan500">
-      <div class="story-step"><span class="n">12</span> PLAN 500</div>
+      <div class="story-step"><span class="n">13</span> PLAN 500</div>
       <div class="sec-head">
         <h2>Evolución plan 500</h2><span class="pregunta">Minutograma y evolución de sitios finalizados (Causa: Energía)</span>
       </div>
