@@ -1925,7 +1925,8 @@
         mes_ano: e[16],
         masiva_id: S[e[21]],
         causa_ia: S[e[22]] || 'Otra',
-        is_active: e[23] === 1
+        is_active: e[23] === 1,
+        semana: S[e[24]] || ''
       }));
       const fmtDT = ts => ts ? new Date(ts).toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
       const fmtISO = ts => ts ? new Date(ts).toISOString() : '';
@@ -2337,7 +2338,7 @@
           options: {
             responsive: true, plugins: { legend: { position: "top" } },
             scales: {
-              x: { ticks: { maxRotation: 45, minRotation: 45 } },
+              x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 11, weight: 'bold' }, color: '#000000' } },
               y: { beginAtZero: true, position: "left", title: { display: true, text: "# Eventos" } },
               y2: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Minutos Acumulados" } }
             }
@@ -2860,7 +2861,7 @@
               { type: "line", label: "Cantidad de eventos", data: top.map(s => s.nEv), borderColor: "#1A2238", borderWidth: 2.5, pointRadius: 4, yAxisID: "y2", order: 1 }
             ]
           },
-          options: { responsive: true, scales: { x: { ticks: { maxRotation: 90, minRotation: 60, font: { size: 9 } } }, y: { position: "left", title: { display: true, text: "Minutos", color: "#6b7280" } }, y2: { position: "right", min: 0, grid: { drawOnChartArea: false }, title: { display: true, text: "Eventos", color: "#6b7280" } } } }
+          options: { responsive: true, scales: { x: { ticks: { maxRotation: 90, minRotation: 60, font: { size: 11, weight: 'bold' }, color: '#000000' } }, y: { position: "left", title: { display: true, text: "Minutos", color: "#6b7280" } }, y2: { position: "right", min: 0, grid: { drawOnChartArea: false }, title: { display: true, text: "Eventos", color: "#6b7280" } } } }
         });
         const pctTop = (100 * top.reduce((a, s) => a + s.min, 0) / (tot || 1)).toFixed(0);
         document.getElementById("narr-worst").innerHTML =
