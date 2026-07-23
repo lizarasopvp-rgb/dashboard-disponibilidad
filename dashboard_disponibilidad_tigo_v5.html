@@ -1727,7 +1727,7 @@
       <div class="card" style="margin-top:16px">
         <div class="card-head">
           <div>
-            <h3 id="masivas-ia-title">Fallas masivas por Causa</h3>
+            <h3 id="masivas-ia-title">Fallas simultáneas por Causa Global</h3>
             <p class="sub">Drill-down: Mes → Día → Hora</p>
           </div>
           <div class="toolbar" style="display:flex; align-items:center; gap:10px;">
@@ -3455,15 +3455,21 @@ updateGeoCascade();
          const canvas = document.getElementById('ch-masivas-ia');
          if (!canvas) return;
          
-         const base = list.filter(m => m.causa_ia_final && m.causa_ia_final !== 'Otra');
+         const isMin = iaMetrica === 'minutos';
+         
+         const base = list.filter(m => {
+            m.causa_global_final = Array.from(m.causas_macro)[0] || 'Desconocida';
+            return m.causa_global_final !== 'Desconocida';
+         });
          
          let agg = {};
          let labels = [];
+         let totalByCausa = {};
          
          base.forEach(m => {
             if (!m.eventos || !m.eventos.length) return;
             const d = new Date(m.eventos[0].ts);
-            const causa = m.causa_ia_final;
+            const causa = m.causa_global_final;
             
             let key = "";
             let match = true;
@@ -3483,64 +3489,52 @@ updateGeoCascade();
             }
             
             if (match) {
-               if (!agg[key]) agg[key] = { 
-                  'TX': { c: 0, m: 0 }, 
-                  'Tormenta eléctrica / Vendaval': { c: 0, m: 0 }, 
-                  'VM electrificadora': { c: 0, m: 0 }, 
-                  'Línea Media tensión': { c: 0, m: 0 }, 
-                  _items: [] 
-               };
-               if (agg[key][causa] !== undefined) {
-                  agg[key][causa].c++;
-                  agg[key][causa].m += m.minutos;
-                  agg[key]._items.push(m);
-               }
+               totalByCausa[causa] = (totalByCausa[causa] || 0) + (isMin ? m.minutos : 1);
+               if (!agg[key]) agg[key] = { _items: [] };
+               if (!agg[key][causa]) agg[key][causa] = { c: 0, m: 0 };
+               agg[key][causa].c++;
+               agg[key][causa].m += m.minutos;
+               agg[key]._items.push(m);
             }
          });
          
-         const isMin = iaMetrica === 'minutos';
-         const yTitle = isMin ? "Minutos Totales" : "Cant. Simultáneas";
-
          labels = Object.keys(agg).sort();
-         const datasets = [
-            { label: 'TX', data: labels.map(k => isMin ? agg[k]['TX'].m : agg[k]['TX'].c), backgroundColor: '#1A2238' },
-            { label: 'Tormenta eléctrica / Vendaval', data: labels.map(k => isMin ? agg[k]['Tormenta eléctrica / Vendaval'].m : agg[k]['Tormenta eléctrica / Vendaval'].c), backgroundColor: '#00A3E0' },
-            { label: 'VM electrificadora', data: labels.map(k => isMin ? agg[k]['VM electrificadora'].m : agg[k]['VM electrificadora'].c), backgroundColor: '#FF9900' },
-            { label: 'Línea Media tensión', data: labels.map(k => isMin ? agg[k]['Línea Media tensión'].m : agg[k]['Línea Media tensión'].c), backgroundColor: '#94a3b8' }
-         ];
-
-         let insTX = 0, insClima = 0, insVM = 0, insMT = 0;
-         datasets[0].data.forEach(v => insTX += v);
-         datasets[1].data.forEach(v => insClima += v);
-         datasets[2].data.forEach(v => insVM += v);
-         datasets[3].data.forEach(v => insMT += v);
-         let insTotal = insTX + insClima + insVM + insMT;
-
+         const todasCausas = Object.keys(totalByCausa).sort((a,b) => totalByCausa[b] - totalByCausa[a]);
+         const colors = ['#1A2238', '#00A3E0', '#FF9900', '#94a3b8', '#E03131', '#1E9E5A', '#F2C12E', '#5B21B6', '#10B981', '#3B82F6'];
+         
+         const datasets = todasCausas.map((c, i) => {
+             return {
+                 label: c,
+                 data: labels.map(k => {
+                     const item = agg[k][c];
+                     if (!item) return 0;
+                     return isMin ? item.m : item.c;
+                 }),
+                 backgroundColor: colors[i % colors.length]
+             };
+         });
+         
+         const yTitle = isMin ? "Minutos Totales" : "Cant. Simultáneas";
          const formatNum = n => isMin ? Math.round(n).toLocaleString() : n.toLocaleString();
          const metricLabel = isMin ? "Minutos" : "Fallas";
+         let insTotal = Object.values(totalByCausa).reduce((a,b)=>a+b, 0);
 
-         const insightsHtml = `
+         let insightsHtml = `
             <span style="border-left:5px solid var(--rojo); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
               <div style="font-size:24px; color:var(--rojo); line-height:1;">${formatNum(insTotal)}</div>
               <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Total ${metricLabel}</div>
             </span>
-            <span style="border-left:5px solid #1A2238; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
-              <div style="font-size:20px; color:#1A2238; line-height:1;">${formatNum(insTX)}</div>
-              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">TX</div>
-            </span>
-            <span style="border-left:5px solid #00A3E0; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
-              <div style="font-size:20px; color:#00A3E0; line-height:1;">${formatNum(insClima)}</div>
-              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Tormenta eléctrica / Vendaval</div>
-            </span>
-            <span style="border-left:5px solid #FF9900; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
-              <div style="font-size:20px; color:#FF9900; line-height:1;">${formatNum(insVM)}</div>
-              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">VM Electrificadora</div>
-            </span>
-            <span style="border-left:5px solid #94a3b8; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
-              <div style="font-size:20px; color:#94a3b8; line-height:1;">${formatNum(insMT)}</div>
-              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Línea Media tensión</div>
-            </span>
          `;
+         todasCausas.slice(0, 4).forEach((c, i) => {
+             let color = colors[i % colors.length];
+             insightsHtml += `
+            <span style="border-left:5px solid ${color}; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:${color}; line-height:1;">${formatNum(totalByCausa[c])}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">${c}</div>
+            </span>
+             `;
+         });
+
          const insContainer = document.getElementById('masivas-ia-insights');
          if (insContainer) {
              insContainer.innerHTML = insightsHtml;
@@ -3592,7 +3586,7 @@ updateGeoCascade();
                      renderMasivasIA(list);
                   } else if (iaNivel.tipo === "hora") {
                      const causaName = datasets[datasetIdx].label;
-                     const items = agg[key]._items.filter(m => m.causa_ia_final === causaName);
+                     const items = agg[key]._items.filter(m => m.causa_global_final === causaName);
                      mostrarDetalleMasivasIA(items, causaName, key);
                   }
                }
