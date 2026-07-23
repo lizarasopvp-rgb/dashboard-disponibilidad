@@ -1615,22 +1615,12 @@
           intervención?</span>
       </div>
       <div class="narrativa" id="narr-worst"></div>
-      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px; display:flex; flex-direction:column; gap:10px;">
-        <div>
-          <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
-          <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
-          <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
-          <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
-          <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
-        </div>
-        <div style="display:flex; gap:12px; font-size:12px; align-items:center; flex-wrap:wrap;">
-          <span style="font-weight:600; color:var(--azul-marino);">Rango de duración:</span>
-          <label style="cursor:pointer; display:flex; align-items:center; gap:4px;"><input type="checkbox" class="fl-rng" value="> 48 horas" checked> &gt; 48h</label>
-          <label style="cursor:pointer; display:flex; align-items:center; gap:4px;"><input type="checkbox" class="fl-rng" value="24 horas a 48 horas" checked> 24h - 48h</label>
-          <label style="cursor:pointer; display:flex; align-items:center; gap:4px;"><input type="checkbox" class="fl-rng" value="4 horas a 24 horas" checked> 4h - 24h</label>
-          <label style="cursor:pointer; display:flex; align-items:center; gap:4px;"><input type="checkbox" class="fl-rng" value="30 min a 4 horas" checked> 30m - 4h</label>
-          <label style="cursor:pointer; display:flex; align-items:center; gap:4px;"><input type="checkbox" class="fl-rng" value="0 a 30 min" checked> &lt; 30m</label>
-        </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes"><option value="">Todos</option></select>
+        <span class="lbl">Regional</span><select class="fl-reg"><option value="">Todas</option></select>
+        <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
+        <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
+        <span class="lbl">Causa Raíz</span><select class="fl-cr"><option value="">Todas</option></select>
       </div>
       <div class="insights-container" id="worst-insights" style="display:flex; margin-bottom:15px; border-radius:6px; overflow:hidden; gap:10px;"></div>
       <div class="card">
@@ -2928,7 +2918,8 @@
       
         const topIds = top.map(s => s.sitio_id);
         const topEvts = base.filter(e => topIds.includes(e.sitio_id));
-        const causasHM = [...new Set(topEvts.map(e => e.causa_suspension_macro))].filter(c => c && c !== 'Sin dato').sort();
+        const ignoredCauses = ['Sin dato', 'Sin especificar', 'Sin causa de suspensión', 'Otra'];
+        const causasHM = [...new Set(topEvts.map(e => e.causa_suspension_macro))].filter(c => c && !ignoredCauses.includes(c)).sort();
         
         const fReg = document.querySelector('#worst .fl-reg').value;
         const fDep = document.querySelector('#worst .fl-dep').value;
@@ -2951,7 +2942,7 @@
               
               const groups = {};
               let grandTotal = 0;
-              topEvts.filter(e => e.causa_suspension_macro !== 'Sin dato').forEach(e => {
+              topEvts.filter(e => !ignoredCauses.includes(e.causa_suspension_macro)).forEach(e => {
                   const k = e[aggKey] || 'N/A';
                   if (!groups[k]) groups[k] = { name: k, totalMin: 0, causes: {} };
                   groups[k].totalMin += e.minutos_caidos;
