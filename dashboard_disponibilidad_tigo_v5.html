@@ -3006,6 +3006,14 @@
           const localMes = document.querySelector('#heatmap .fl-mes');
           if (geoMes && localMes && localMes.value) geoMes.value = localMes.value;
           else if (geoMes && document.getElementById('f-mes')) geoMes.value = document.getElementById('f-mes').value;
+
+          const geoRango = document.getElementById("geo-rango");
+          const localRngo = document.querySelector('#heatmap .fl-rng');
+          if (geoRango && localRngo && localRngo.value) {
+            geoRango.value = localRngo.value;
+          } else if (geoRango) {
+            geoRango.value = "";
+          }
 updateGeoCascade();
         
 const geoReg = document.getElementById("geo-reg");
@@ -3640,11 +3648,12 @@ updateGeoCascade();
             
             if (match) {
                totalByCausa[causa] = (totalByCausa[causa] || 0) + (isMin ? m.minutos : 1);
-               if (!agg[key]) agg[key] = { _items: [] };
+               if (!agg[key]) agg[key] = { _items: [], total_sitios: 0 };
                if (!agg[key][causa]) agg[key][causa] = { c: 0, m: 0 };
                agg[key][causa].c++;
                agg[key][causa].m += m.minutos;
                agg[key]._items.push(m);
+               agg[key].total_sitios += (m.sitios ? m.sitios.size : 0);
             }
          });
          
@@ -3663,19 +3672,45 @@ updateGeoCascade();
                  backgroundColor: colors[i % colors.length]
              };
          });
+         datasets.push({
+             type: 'line',
+             label: 'Sitios Afectados',
+             data: labels.map(k => agg[k].total_sitios),
+             borderColor: '#8B5CF6',
+             backgroundColor: '#8B5CF6',
+             borderWidth: 2,
+             fill: false,
+             yAxisID: 'ySitios',
+             order: -1
+         });
          
          const yTitle = isMin ? "Minutos Totales" : "Cant. Simultáneas";
          const formatNum = n => isMin ? Math.round(n).toLocaleString() : n.toLocaleString();
          const metricLabel = isMin ? "Minutos" : "Fallas";
          let insTotal = Object.values(totalByCausa).reduce((a,b)=>a+b, 0);
 
+         const totalSimultaneas = base.length;
+         const totalSitiosSim = base.reduce((acc, m) => acc + (m.sitios ? m.sitios.size : 0), 0);
+         const totalMinSim = base.reduce((acc, m) => acc + m.minutos, 0);
+
+         const promSitios = totalSimultaneas > 0 ? (totalSitiosSim / totalSimultaneas).toFixed(1) : 0;
+         const promMin = totalSimultaneas > 0 ? (totalMinSim / totalSimultaneas).toFixed(1) : 0;
+
          let insightsHtml = `
             <span style="border-left:5px solid var(--rojo); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
               <div style="font-size:24px; color:var(--rojo); line-height:1;">${formatNum(insTotal)}</div>
               <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Total ${metricLabel}</div>
             </span>
+            <span style="border-left:5px solid #8B5CF6; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#8B5CF6; line-height:1;">${promSitios}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Sitios / Falla</div>
+            </span>
+            <span style="border-left:5px solid #3B82F6; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#3B82F6; line-height:1;">${promMin}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Falla</div>
+            </span>
          `;
-         todasCausas.slice(0, 4).forEach((c, i) => {
+         todasCausas.slice(0, 2).forEach((c, i) => {
              let color = colors[i % colors.length];
              insightsHtml += `
             <span style="border-left:5px solid ${color}; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
@@ -3720,7 +3755,8 @@ updateGeoCascade();
                plugins: { legend: { position: 'bottom' } },
                scales: {
                   x: { stacked: true },
-                  y: { stacked: true, beginAtZero: true, title: { display: true, text: yTitle } }
+                  y: { stacked: true, beginAtZero: true, title: { display: true, text: yTitle }, position: 'left' },
+                  ySitios: { type: 'linear', position: 'right', display: true, beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Sitios Afectados' } }
                },
                onClick: (e, els) => {
                   if (!els.length) return;
@@ -3736,6 +3772,7 @@ updateGeoCascade();
                      renderMasivasIA(list);
                   } else if (iaNivel.tipo === "hora") {
                      const causaName = datasets[datasetIdx].label;
+                     if (causaName === 'Sitios Afectados') return;
                      const items = agg[key]._items.filter(m => m.causa_ia_mapped === causaName);
                      mostrarDetalleMasivasIA(items, causaName, key);
                   }
