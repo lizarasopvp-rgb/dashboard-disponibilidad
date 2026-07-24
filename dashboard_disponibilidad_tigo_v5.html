@@ -1732,7 +1732,7 @@
           <table class="datos" id="tbl-masivas-det"></table>
         </div>
       </div>
-      <div class="card" style="margin-top:16px">
+          <div class="card" style="margin-top:16px">
         <div class="card-head">
           <div>
             <h3>Tendencia diaria de fallas simultáneas</h3>
@@ -1745,7 +1745,7 @@
       <div class="card" style="margin-top:16px">
         <div class="card-head">
           <div>
-            <h3 id="masivas-ia-title">Fallas simultáneas por Causa Global</h3>
+            <h3 id="masivas-ia-title">Fallas simultáneas por causa recategorizada</h3>
             <p class="sub">Drill-down: Mes → Día → Hora</p>
           </div>
           <div class="toolbar" style="display:flex; align-items:center; gap:10px;">
@@ -3596,10 +3596,20 @@ updateGeoCascade();
          if (!canvas) return;
          
          const isMin = iaMetrica === 'minutos';
-         
+         const mappingIA = {
+             'VM electrificadora': 'VM electrificadora',
+             'Línea Media tensión': 'Red Media Tensión',
+             'TX': 'Transmisión',
+             'Tormenta eléctrica / Vendaval': 'Tormenta eléctrica/Vendaval'
+         };
+
          const base = list.filter(m => {
-            m.causa_global_final = Array.from(m.causas_macro)[0] || 'Desconocida';
-            return m.causa_global_final !== 'Desconocida';
+            const mapped = mappingIA[m.causa_ia_final];
+            if (mapped) {
+                m.causa_ia_mapped = mapped;
+                return true;
+            }
+            return false;
          });
          
          let agg = {};
@@ -3609,7 +3619,7 @@ updateGeoCascade();
          base.forEach(m => {
             if (!m.eventos || !m.eventos.length) return;
             const d = new Date(m.eventos[0].ts);
-            const causa = m.causa_global_final;
+            const causa = m.causa_ia_mapped;
             
             let key = "";
             let match = true;
@@ -3726,7 +3736,7 @@ updateGeoCascade();
                      renderMasivasIA(list);
                   } else if (iaNivel.tipo === "hora") {
                      const causaName = datasets[datasetIdx].label;
-                     const items = agg[key]._items.filter(m => m.causa_global_final === causaName);
+                     const items = agg[key]._items.filter(m => m.causa_ia_mapped === causaName);
                      mostrarDetalleMasivasIA(items, causaName, key);
                   }
                }
