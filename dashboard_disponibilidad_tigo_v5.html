@@ -3018,10 +3018,16 @@ updateGeoCascade();
         
 const geoReg = document.getElementById("geo-reg");
         if (geoReg) geoReg.value = region || "";
+          
+          const localDep = document.querySelector('#heatmap .fl-dep');
           const gD = document.getElementById("geo-depto");
-          if (gD) gD.value = "";
+          if (gD && localDep && localDep.value) gD.value = localDep.value;
+          else if (gD) gD.value = "";
+          
+          const localMun = document.querySelector('#heatmap .fl-mun');
           const gM = document.getElementById("geo-muni");
-          if (gM) gM.value = "";
+          if (gM && localMun && localMun.value) gM.value = localMun.value;
+          else if (gM) gM.value = "";
 
         
         updateGeoCascade();
@@ -3337,10 +3343,16 @@ const geoReg = document.getElementById("geo-reg");
 updateGeoCascade();
           const geoReg = document.getElementById("geo-reg");
           if (geoReg) geoReg.value = region || "";
+          
+          const localDep = document.querySelector('#heatmap-suspension .fl-dep');
           const gD = document.getElementById("geo-depto");
-          if (gD) gD.value = "";
+          if (gD && localDep && localDep.value) gD.value = localDep.value;
+          else if (gD) gD.value = "";
+          
+          const localMun = document.querySelector('#heatmap-suspension .fl-mun');
           const gM = document.getElementById("geo-muni");
-          if (gM) gM.value = "";
+          if (gM && localMun && localMun.value) gM.value = localMun.value;
+          else if (gM) gM.value = "";
 
           
           updateGeoCascade();
