@@ -3001,48 +3001,40 @@
         if(event) event.stopPropagation();
         geoNivel = { tipo: "depto", depto: null, ciudad: null };
         
-        
-          const geoMes = document.getElementById("geo-mes");
-          const localMes = document.querySelector('#heatmap .fl-mes');
-          if (geoMes && localMes && localMes.value) geoMes.value = localMes.value;
-          else if (geoMes && document.getElementById('f-mes')) geoMes.value = document.getElementById('f-mes').value;
+        ['geo-mes', 'geo-reg', 'geo-depto', 'geo-muni', 'geo-cr', 'geo-cr-esp', 'geo-cs', 'geo-cs-esp', 'geo-rango'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
+        updateGeoCascade();
 
-          const geoRango = document.getElementById("geo-rango");
-          const localRngo = document.querySelector('#heatmap .fl-rng');
-          if (geoRango && localRngo && localRngo.value) {
-            geoRango.value = localRngo.value;
-          } else if (geoRango) {
-            geoRango.value = "";
-          }
-updateGeoCascade();
-        
-const geoReg = document.getElementById("geo-reg");
+        const geoMes = document.getElementById("geo-mes");
+        const localMes = document.querySelector('#heatmap .fl-mes');
+        if (geoMes && localMes && localMes.value) geoMes.value = localMes.value;
+        else if (geoMes && document.getElementById('f-mes')) geoMes.value = document.getElementById('f-mes').value;
+
+        const geoRango = document.getElementById("geo-rango");
+        const localRngo = document.querySelector('#heatmap .fl-rng');
+        if (geoRango && localRngo && localRngo.value) geoRango.value = localRngo.value;
+        updateGeoCascade();
+
+        const geoReg = document.getElementById("geo-reg");
         if (geoReg) geoReg.value = region || "";
-          
-          const localDep = document.querySelector('#heatmap .fl-dep');
-          const gD = document.getElementById("geo-depto");
-          if (gD && localDep && localDep.value) gD.value = localDep.value;
-          else if (gD) gD.value = "";
-          
-          const localMun = document.querySelector('#heatmap .fl-mun');
-          const gM = document.getElementById("geo-muni");
-          if (gM && localMun && localMun.value) gM.value = localMun.value;
-          else if (gM) gM.value = "";
+        updateGeoCascade();
 
-        
+        const localDep = document.querySelector('#heatmap .fl-dep');
+        const gD = document.getElementById("geo-depto");
+        if (gD && localDep && localDep.value) gD.value = localDep.value;
         updateGeoCascade();
-        const geoCs = document.getElementById("geo-cs");
-        if (geoCs) geoCs.value = "";
-        
-        updateGeoCascade();
-        const geoCsEsp = document.getElementById("geo-cs-esp");
-        if (geoCsEsp) geoCsEsp.value = "";
 
+        const localMun = document.querySelector('#heatmap .fl-mun');
+        const gM = document.getElementById("geo-muni");
+        if (gM && localMun && localMun.value) gM.value = localMun.value;
         updateGeoCascade();
+
         const geoCr = document.getElementById("geo-cr");
         if (geoCr) geoCr.value = macro || "";
-        
         updateGeoCascade();
+        
         if (esp) {
           const geoCrEsp = document.getElementById("geo-cr-esp");
           if (geoCrEsp) geoCrEsp.value = esp;
@@ -3334,51 +3326,44 @@ const geoReg = document.getElementById("geo-reg");
         window.goToMapSuspension = function(macro, region, event, esp) {
           if(event) event.stopPropagation();
           geoNivel = { tipo: "depto", depto: null, ciudad: null };
-          
-          
+
+          ['geo-mes', 'geo-reg', 'geo-depto', 'geo-muni', 'geo-cr', 'geo-cr-esp', 'geo-cs', 'geo-cs-esp', 'geo-rango'].forEach(id => {
+              const el = document.getElementById(id);
+              if (el) el.value = "";
+          });
+          updateGeoCascade();
+
           const geoMes = document.getElementById("geo-mes");
           const localMes = document.querySelector('#heatmap-suspension .fl-mes');
           if (geoMes && localMes && localMes.value) geoMes.value = localMes.value;
           else if (geoMes && document.getElementById('f-mes')) geoMes.value = document.getElementById('f-mes').value;
-updateGeoCascade();
+
+          const geoRango = document.getElementById("geo-rango");
+          const localRngo = document.querySelector('#heatmap-suspension .fl-rng');
+          if (geoRango && localRngo && localRngo.value) geoRango.value = localRngo.value;
+          updateGeoCascade();
+
           const geoReg = document.getElementById("geo-reg");
           if (geoReg) geoReg.value = region || "";
-          
+          updateGeoCascade();
+
           const localDep = document.querySelector('#heatmap-suspension .fl-dep');
           const gD = document.getElementById("geo-depto");
           if (gD && localDep && localDep.value) gD.value = localDep.value;
-          else if (gD) gD.value = "";
-          
+          updateGeoCascade();
+
           const localMun = document.querySelector('#heatmap-suspension .fl-mun');
           const gM = document.getElementById("geo-muni");
           if (gM && localMun && localMun.value) gM.value = localMun.value;
-          else if (gM) gM.value = "";
+          updateGeoCascade();
 
-          
-          updateGeoCascade();
-          const geoCr = document.getElementById("geo-cr");
-          if (geoCr) geoCr.value = "";
-          
-          updateGeoCascade();
-          const geoCrEsp = document.getElementById("geo-cr-esp");
-          if (geoCrEsp) geoCrEsp.value = "";
-
-          updateGeoCascade();
           const geoCs = document.getElementById("geo-cs");
           if (geoCs) geoCs.value = macro || "";
-          
           updateGeoCascade();
+          
           if (esp) {
             const geoCsEsp = document.getElementById("geo-cs-esp");
             if (geoCsEsp) geoCsEsp.value = esp;
-          }
-          
-          const geoRango = document.getElementById("geo-rango");
-          const localRngo = document.querySelector('#heatmap-suspension .fl-rng');
-          if (geoRango && localRngo && localRngo.value) {
-            geoRango.value = localRngo.value;
-          } else if (geoRango) {
-            geoRango.value = "";
           }
           
           renderGeo();
