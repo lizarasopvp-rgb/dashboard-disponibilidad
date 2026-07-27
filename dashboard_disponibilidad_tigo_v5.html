@@ -1907,6 +1907,7 @@
     </div>
 
     <script>
+      const getAud = (e) => e.etiqueta_padre === 'AUDITORIA' ? '<span style="font-size:9px;color:#888;border:1px solid #ddd;border-radius:3px;padding:1px 3px;margin-left:4px;vertical-align:middle" title="AUDITORIA">AUD</span>' : '';
       /* ============================================================
          DATASET REAL (desde datos.js)
       ============================================================ */
@@ -2197,7 +2198,7 @@
            pageEvs.forEach(e => {
              const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:200px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
              const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:200px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
-             html += `<tr><td>${e.ticket}</td><td><b>${e.sitio_id}</b><br><span style="font-size:10px">${e.nombre}</span></td><td style="font-size:11px">${fmtDT(e.ts)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td></tr>`;
+             html += `<tr><td>${e.ticket}${getAud(e)}</td><td><b>${e.sitio_id}</b><br><span style="font-size:10px">${e.nombre}</span></td><td style="font-size:11px">${fmtDT(e.ts)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td></tr>`;
            });
         }
         html += `</tbody>`;
@@ -2703,7 +2704,7 @@
               const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
               const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
               const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
-              detHtml += `<tr><td>${e.ticket}</td><td style="font-size:11px">${fmtDT(e.ts)}</td><td style="font-size:11px">${fmtDT(e.ts_fin)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-tipo="falla" data-ticket="${e.ticket}" data-inicio="${fmtISO(e.ts)}" data-fin="${fmtISO(e.ts_fin)}" data-duracion="${e.minutos_caidos}" data-causa="${e.causa_raiz_especifica}" data-solucion="${(e.solucion || '').substring(0, 100).replace(/"/g, '&quot;')}" data-codigo="${e.sitio_id}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
+              detHtml += `<tr><td>${e.ticket}${getAud(e)}</td><td style="font-size:11px">${fmtDT(e.ts)}</td><td style="font-size:11px">${fmtDT(e.ts_fin)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-tipo="falla" data-ticket="${e.ticket}" data-inicio="${fmtISO(e.ts)}" data-fin="${fmtISO(e.ts_fin)}" data-duracion="${e.minutos_caidos}" data-causa="${e.causa_raiz_especifica}" data-solucion="${(e.solucion || '').substring(0, 100).replace(/"/g, '&quot;')}" data-codigo="${e.sitio_id}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">💬</button></td></tr>`;
             });
             detHtml += `</tbody></table></td>`;
             detTr.innerHTML = detHtml;
@@ -3195,7 +3196,7 @@
            pageEvs.forEach(e => {
              const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);max-width:200px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
              const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);max-width:200px"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
-             html += `<tr><td>${e.ticket}</td><td><b>${e.sitio_id}</b><br><span style="font-size:10px">${e.nombre}</span></td><td style="font-size:11px">${fmtDT(e.ts)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td></tr>`;
+             html += `<tr><td>${e.ticket}${getAud(e)}</td><td><b>${e.sitio_id}</b><br><span style="font-size:10px">${e.nombre}</span></td><td style="font-size:11px">${fmtDT(e.ts)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td></tr>`;
            });
         }
         html += `</tbody>`;
