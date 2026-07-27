@@ -4334,6 +4334,13 @@
         });
         window.scrollTo({ top: 0, behavior: 'auto' });
         renderAll();
+
+        // Fix para Leaflet: recálculo de tamaño al volverse visible
+        if (viewKey === 'analisis-fallas' && typeof mapa !== 'undefined' && mapa) {
+          setTimeout(() => {
+            mapa.invalidateSize();
+          }, 100);
+        }
       }
 
       function renderAll() {
