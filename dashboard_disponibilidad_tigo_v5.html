@@ -4687,7 +4687,7 @@
           const months2026 = months.filter(m => m.startsWith('2026'));
           const slaRegions = ['CARIBE', 'ANDINA', 'SUR', 'CENTRO'];
           
-          let htmlSla = '<thead><tr><th rowspan="2" class="th-penalty">SLA</th>';
+          let htmlSla = '<thead><tr><th rowspan="3" class="th-penalty" style="vertical-align:middle;">SLA</th>';
           months2026.forEach(m => {
              const mName = new Date(m + '-02').toLocaleString('es-ES', {month:'long'});
              htmlSla += `<th colspan="4" class="th-group" style="text-transform:capitalize">${mName}</th>`;
@@ -4697,6 +4697,18 @@
             slaRegions.forEach(r => {
               const rName = r === 'CARIBE' ? 'COSTA' : r;
               htmlSla += `<th>${rName}</th>`;
+            });
+          });
+          htmlSla += '</tr><tr>';
+          months2026.forEach(m => {
+            slaRegions.forEach(r => {
+              const d = byMonthRegion[m + '|' + r];
+              const val = d ? d.nar_pct : null;
+              if (val != null) {
+                htmlSla += `<th style="font-weight:600; font-size:11px; background:#e0f2fe; color:#0369a1;">${val.toFixed(2)}%</th>`;
+              } else {
+                htmlSla += `<th style="font-weight:normal; font-size:11px; background:#f1f5f9; color:#94a3b8;">-</th>`;
+              }
             });
           });
           htmlSla += '</tr></thead><tbody>';
@@ -4729,7 +4741,7 @@
                 const info = getSlaInfo(val, r);
                 
                 if (info.pct === pen + '%') {
-                   htmlSla += `<td class="${info.cls}">${val.toFixed(2)}%</td>`;
+                   htmlSla += `<td class="${info.cls}">${pen}%</td>`;
                 } else {
                    htmlSla += `<td style="color:#cbd5e1; font-size:10px;">-</td>`;
                 }
