@@ -1204,36 +1204,115 @@
       max-width: 90vw; max-height: 90vh; border-radius: 8px;
       box-shadow: 0 8px 30px rgba(0,0,0,.5);
     }
+
+    /* ===== SIDEBAR NAV LAYOUT ===== */
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 60px; height: 100vh;
+      background: linear-gradient(180deg, #1A2238 0%, #141C2F 100%);
+      z-index: 70; display: flex; flex-direction: column;
+      overflow-y: auto; overflow-x: hidden;
+      box-shadow: 3px 0 18px rgba(0,0,0,.18);
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+    }
+    .sidebar:hover { width: 220px; }
+    .sidebar::-webkit-scrollbar { width: 3px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
+    .sb-brand {
+      padding: 14px 14px 12px; border-bottom: 1px solid rgba(255,255,255,.07);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .sb-brand .logo-mark { width: 32px; height: 32px; font-size: 14px; border-radius: 7px; flex-shrink: 0; }
+    .sb-brand-text { display: flex; flex-direction: column; opacity: 0; transition: opacity 0.2s; }
+    .sidebar:hover .sb-brand-text { opacity: 1; transition-delay: 0.1s; }
+    .sb-brand h1 { font-family: var(--f-disp); font-size: 13.5px; font-weight: 700; color: #fff; line-height: 1.15; }
+    .sb-brand p { font-size: 9.5px; color: #6B7FA0; margin-top: 1px; }
+    .sb-sep { height: 1px; background: rgba(255,255,255,.06); margin: 4px 16px; }
+    .sb-menu { flex: 1; padding: 6px 0; }
+    .sb-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 14px; color: #7B8DA6;
+      font-family: var(--f-disp); font-size: 12.5px; font-weight: 600;
+      cursor: pointer; transition: all .12s ease;
+      border-left: 3px solid transparent; user-select: none;
+    }
+    .sb-item:hover { color: #C8D6E5; background: rgba(255,255,255,.04); }
+    .sb-item.active { color: #fff; background: rgba(255,153,0,.1); border-left-color: var(--rojo); }
+    .sb-item .sb-icon { width: 32px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sb-item svg { width: 18px; height: 18px; opacity: 0.8; }
+    .sb-item.active svg { opacity: 1; }
+    .sb-item .sb-label { opacity: 0; transition: opacity 0.2s; }
+    .sidebar:hover .sb-item .sb-label { opacity: 1; transition-delay: 0.1s; }
+    .sb-footer {
+      padding: 12px 14px 14px; border-top: 1px solid rgba(255,255,255,.07);
+      text-align: center; opacity: 0; transition: opacity 0.2s;
+    }
+    .sidebar:hover .sb-footer { opacity: 1; transition-delay: 0.1s; }
+    .sb-footer span { font-family: var(--f-mono); font-size: 9.5px; color: #5A6B83; }
+
+    /* Offset all content for sidebar width */
+    header { margin-left: 60px; transition: margin 0.25s; }
+    .filtros { margin-left: 60px; position: sticky; top: 0; z-index: 59; transition: margin 0.25s; }
+    main { margin-left: 60px; transition: margin 0.25s; }
+    footer { margin-left: 60px; transition: margin 0.25s; }
+
+    /* View switching */
+    main > section { display: none; }
+    main > section.view-visible { display: block; }
+
+    @media(max-width: 900px) {
+      .sidebar:hover { width: 60px; }
+      .sb-brand-text, .sb-item span.sb-label, .sb-footer { display: none !important; }
+      .sb-item { padding: 10px 0; justify-content: center; gap: 0; }
+      .sb-brand { justify-content: center; padding: 10px 8px; }
+      .sb-brand .logo-mark { width: 28px; height: 28px; font-size: 12px; }
+      header, .filtros, main, footer { margin-left: 52px; }
+    }
   </style>
 </head>
 
 <body>
 
   <header>
-    <div class="header-top">
-      <div class="logo-mark">T</div>
+    <div class="header-top" style="padding: 8px 26px;">
       <div class="titulo">
-        <h1>Disponibilidad Operativa de Red · TIGO Colombia</h1>
+        <h1 style="font-size:17px">Disponibilidad Operativa de Red</h1>
         <p>Huawei MSP — Análisis causa raíz 4G · Periodo 2026-01 → 2026-07</p>
       </div>
-      <span class="badge-mock">v4.0</span>
     </div>
-    <nav id="navmenu">
-      <a href="#resumen" data-go="resumen" class="activo">1 · Resumen</a>
-      <a href="#disponibilidad-nar" data-go="disponibilidad-nar">2 · Gráfica disponibilidad</a>
-      <a href="#tendencias" data-go="tendencias">3 · Tendencias</a>
-      <a href="#pareto" data-go="pareto">4 · Distribución por rangos de tiempo</a>
-      <a href="#heatmap-suspension" data-go="heatmap-suspension">5 · Mapa calor - Causa suspensión</a>
-      <a href="#suspension" data-go="suspension">6 · Causa suspensión macro</a>
-      <a href="#heatmap" data-go="heatmap">7 · Mapa calor - Causa raíz</a>
-      <a href="#causaraiz" data-go="causaraiz">8 · Causa raíz macro</a>
-      <a href="#geografico" data-go="geografico">9 · Análisis geográfico - Fallas</a>
-      <a href="#worst" data-go="worst">10 · Worst offenders</a>
-      <a href="#intermitentes" data-go="intermitentes">11 · Sitios intermitentes</a>
-      <a href="#masivas" data-go="masivas">12 · Fallas relevantes</a>
-      <a href="#plan500" data-go="plan500">13 · Evolución plan 500</a>
-    </nav>
   </header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="logo-mark">T</div>
+      <div class="sb-brand-text"><h1>TIGO Colombia</h1><p>Disponibilidad Red</p></div>
+    </div>
+    <div class="sb-sep"></div>
+    <div class="sb-menu">
+      <div class="sb-item active" data-view="resumen"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg></span><span class="sb-label">Resumen</span></div>
+      
+      <div class="sb-item" data-view="disponibilidad"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></span><span class="sb-label">Disponibilidad</span></div>
+      
+      <div class="sb-item" data-view="tendencias"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg></span><span class="sb-label">Tendencias</span></div>
+      
+      <div class="sb-item" data-view="rangos"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span><span class="sb-label">Rangos de tiempo</span></div>
+      
+      <div class="sb-item" data-view="causa-suspension"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg></span><span class="sb-label">Causa suspensión</span></div>
+      
+      <div class="sb-item" data-view="causa-raiz"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span><span class="sb-label">Causa raíz</span></div>
+      
+      <div class="sb-item" data-view="analisis-fallas"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg></span><span class="sb-label">Análisis fallas</span></div>
+      
+      <div class="sb-item" data-view="worst"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span><span class="sb-label">Worst offenders</span></div>
+      
+      <div class="sb-item" data-view="intermitentes"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></span><span class="sb-label">Sitios intermitentes</span></div>
+      
+      <div class="sb-item" data-view="simultaneas"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span><span class="sb-label">Fallas simultáneas</span></div>
+      
+      <div class="sb-item" data-view="plan500"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></span><span class="sb-label">Plan 500</span></div>
+    </div>
+    <div class="sb-footer"><span>v4.0 · Huawei MSP</span></div>
+  </aside>
 
     <div class="filtros" id="filtros">
     <span class="lbl">Modo</span>
@@ -1691,9 +1770,9 @@
 
     <!-- 12 · FALLAS SIMULTÁNEAS -->
     <section id="masivas">
-      <div class="story-step"><span class="n">12</span> FALLAS RELEVANTES</div>
+      <div class="story-step"><span class="n">12</span> FALLAS SIMULTÁNEAS</div>
       <div class="sec-head">
-        <h2>Fallas relevantes</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
+        <h2>Fallas simultáneas</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
       </div>
       <div class="narrativa" id="narr-masivas">Agrupación automática de clústeres de fallas ocurridas en el mismo día y hora (aprox), con la misma causa raíz y cercanía geográfica (prefijo de sitio). Ideal para solicitar exclusiones.</div>
             <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
@@ -1710,7 +1789,7 @@
         <div class="card-head">
           <div style="display:flex; justify-content: space-between; align-items:center; width: 100%;">
             <div>
-              <h3>Listado de Fallas simultáneas</h3>
+              <h3>Listado de fallas simultáneas</h3>
               <p class="sub">Haz clic en una falla simultánea para ver los tickets agrupados</p>
             </div>
             <div style="display:flex; gap: 8px; align-items: center; background: #f9fafb; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--linea);">
@@ -3041,9 +3120,7 @@
           if (geoCrEsp) geoCrEsp.value = esp;
         }
         
-        renderGeo();
-        const secGeo = document.getElementById("geografico");
-        if(secGeo) secGeo.scrollIntoView({ behavior: "smooth" });
+        showView('analisis-fallas');
       };
 
       function renderHeatmap() { const VIEW = getLocalView('heatmap');
@@ -3367,10 +3444,7 @@
             if (geoCsEsp) geoCsEsp.value = esp;
           }
           
-          renderGeo();
-          
-          const secGeo = document.getElementById("geografico");
-          if(secGeo) secGeo.scrollIntoView({ behavior: "smooth" });
+          showView('analisis-fallas');
         };
 
         const tbody = document.getElementById("tb-heatmap-suspension");
@@ -4230,12 +4304,57 @@
         });
       }
 
+      /* ============================================================
+         VIEW GROUPS & NAVIGATION
+      ============================================================ */
+      const VIEW_GROUPS = {
+        'resumen': ['resumen'],
+        'disponibilidad': ['disponibilidad-nar'],
+        'tendencias': ['tendencias'],
+        'rangos': ['pareto'],
+        'causa-suspension': ['heatmap-suspension', 'suspension'],
+        'causa-raiz': ['heatmap', 'causaraiz'],
+        'analisis-fallas': ['geografico'],
+        'worst': ['worst'],
+        'intermitentes': ['intermitentes'],
+        'simultaneas': ['masivas'],
+        'plan500': ['plan500']
+      };
+      let activeView = 'resumen';
+
+      function showView(viewKey) {
+        activeView = viewKey;
+        document.querySelectorAll('main > section').forEach(s => s.classList.remove('view-visible'));
+        (VIEW_GROUPS[viewKey] || []).forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add('view-visible');
+        });
+        document.querySelectorAll('.sb-item').forEach(item => {
+          item.classList.toggle('active', item.dataset.view === viewKey);
+        });
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        renderAll();
+      }
+
       function renderAll() {
         VIEW = aplicaFiltro(filtro);
         VIEW_TEND = aplicaFiltro({ ...filtro, mes: "" });
         const nSit = new Set(VIEW.map(s => s.sitio_id)).size;
         document.getElementById("filtro-count").textContent = `${VIEW.length} eventos · ${nSit} sitios`;
-        renderResumen(); renderTendencias(); renderPareto(); renderHeatmap(); renderHeatmapSuspension(); renderCausaRaiz(); renderSusp(); renderGeo(); renderWorst(); renderIntermitentes(); updateGeoCascade(); renderMasivas(); renderPlan500(); renderDisponibilidadNAR();
+        const secs = VIEW_GROUPS[activeView] || [];
+        if (secs.includes('resumen')) renderResumen();
+        if (secs.includes('disponibilidad-nar')) renderDisponibilidadNAR();
+        if (secs.includes('tendencias')) renderTendencias();
+        if (secs.includes('pareto')) renderPareto();
+        if (secs.includes('heatmap-suspension')) renderHeatmapSuspension();
+        if (secs.includes('suspension')) renderSusp();
+        if (secs.includes('heatmap')) renderHeatmap();
+        if (secs.includes('causaraiz')) renderCausaRaiz();
+        if (secs.includes('geografico')) { renderGeo(); updateGeoCascade(); }
+        if (secs.includes('worst')) renderWorst();
+        if (secs.includes('intermitentes')) renderIntermitentes();
+        if (secs.includes('masivas')) renderMasivas();
+        if (secs.includes('plan500')) renderPlan500();
       }
 
       /* ============================================================
@@ -4675,20 +4794,10 @@
         }
       }
       function initNav() {
-        document.querySelectorAll("#navmenu a").forEach(a => {
-          a.onclick = e => {
-            e.preventDefault(); document.getElementById(a.dataset.go).scrollIntoView({ behavior: "smooth" });
-            document.querySelectorAll("#navmenu a").forEach(x => x.classList.remove("activo")); a.classList.add("activo");
-          };
+        document.querySelectorAll('.sb-item').forEach(item => {
+          item.addEventListener('click', () => showView(item.dataset.view));
         });
-        const obs = new IntersectionObserver(es => {
-          es.forEach(en => {
-            if (en.isIntersecting) {
-              document.querySelectorAll("#navmenu a").forEach(x => x.classList.toggle("activo", x.dataset.go === en.target.id));
-            }
-          })
-        }, { rootMargin: "-40% 0px -55% 0px" });
-        document.querySelectorAll("main section").forEach(s => obs.observe(s));
+        showView('resumen');
       }
 
       /* ============================================================
@@ -5075,7 +5184,7 @@
         }
         window.scrollTo(0, 0);
         fetchResumenNotas().then(() => {
-          initMapa(); initFiltros(); initNav(); initChat(); initHistorial(); initAnalisis(); renderAll();
+          initMapa(); initFiltros(); initNav(); initChat(); initHistorial(); initAnalisis();
           
           document.querySelectorAll('.story-step').forEach(btn => {
             btn.title = "Haz clic para ocultar/mostrar esta sección";
