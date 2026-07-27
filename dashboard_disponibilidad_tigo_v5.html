@@ -266,10 +266,10 @@
     .kpis .k:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,.08); }
 
     /* ===== SLA MATRIX ===== */
-    .sla-0 { background: rgba(46, 204, 113, 0.1) !important; color: #27ae60 !important; font-weight: 700; }
-    .sla-10 { background: rgba(241, 196, 15, 0.1) !important; color: #f39c12 !important; font-weight: 700; }
-    .sla-20 { background: rgba(230, 126, 34, 0.1) !important; color: #d35400 !important; font-weight: 700; }
-    .sla-30 { background: rgba(231, 76, 60, 0.1) !important; color: #c0392b !important; font-weight: 700; }
+    .sla-30 { background: rgba(46, 204, 113, 0.1) !important; color: #27ae60 !important; font-weight: 700; }
+    .sla-20 { background: rgba(241, 196, 15, 0.1) !important; color: #f39c12 !important; font-weight: 700; }
+    .sla-10 { background: rgba(230, 126, 34, 0.1) !important; color: #d35400 !important; font-weight: 700; }
+    .sla-0 { background: rgba(231, 76, 60, 0.1) !important; color: #c0392b !important; font-weight: 700; }
     .sla-none { color: #888 !important; }
     .th-group { background: #f8fafc !important; border-bottom: 2px solid #cbd5e1 !important; text-align: center; font-weight: bold; }
     .th-penalty { width: 60px; text-align: center; font-weight: bold; border-right: 2px solid #e2e8f0 !important; }
@@ -4701,12 +4701,22 @@
           });
           htmlSla += '</tr></thead><tbody>';
 
-          const getSlaInfo = (val) => {
+          const getSlaInfo = (val, region) => {
             if (val == null) return { pct: '-', cls: 'sla-none' };
-            if (val >= 99.2) return { pct: '0%', cls: 'sla-0' };
-            if (val >= 99.0) return { pct: '10%', cls: 'sla-10' };
-            if (val >= 98.5) return { pct: '20%', cls: 'sla-20' };
-            return { pct: '30%', cls: 'sla-30' };
+            
+            const thresholds = {
+              'CARIBE': { t30: 99.3, t20: 99.1, t10: 98.9 }, // Costa
+              'ANDINA': { t30: 99.5, t20: 99.3, t10: 99.1 },
+              'SUR':    { t30: 99.4, t20: 99.2, t10: 99.0 },
+              'CENTRO': { t30: 99.5, t20: 99.3, t10: 99.1 }
+            };
+            
+            const t = thresholds[region] || thresholds['ANDINA'];
+
+            if (val >= t.t30) return { pct: '30%', cls: 'sla-30' };
+            if (val >= t.t20) return { pct: '20%', cls: 'sla-20' };
+            if (val >= t.t10) return { pct: '10%', cls: 'sla-10' };
+            return { pct: '0%', cls: 'sla-0' };
           };
 
           const penalties = [30, 20, 10, 0];
@@ -4716,7 +4726,7 @@
               slaRegions.forEach(r => {
                 const d = byMonthRegion[m + '|' + r];
                 const val = d ? d.nar_pct : null;
-                const info = getSlaInfo(val);
+                const info = getSlaInfo(val, r);
                 
                 if (info.pct === pen + '%') {
                    htmlSla += `<td class="${info.cls}">${val.toFixed(2)}%</td>`;
