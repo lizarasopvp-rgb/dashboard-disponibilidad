@@ -263,6 +263,18 @@
       opacity: 0.9;
       transform: translateY(-1px);
     }
+    .kpis .k:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,.08); }
+
+    /* ===== SLA MATRIX ===== */
+    .sla-0 { background: rgba(46, 204, 113, 0.1) !important; color: #27ae60 !important; font-weight: 700; }
+    .sla-10 { background: rgba(241, 196, 15, 0.1) !important; color: #f39c12 !important; font-weight: 700; }
+    .sla-20 { background: rgba(230, 126, 34, 0.1) !important; color: #d35400 !important; font-weight: 700; }
+    .sla-30 { background: rgba(231, 76, 60, 0.1) !important; color: #c0392b !important; font-weight: 700; }
+    .sla-none { color: #888 !important; }
+    .th-group { background: #f8fafc !important; border-bottom: 2px solid #cbd5e1 !important; text-align: center; font-weight: bold; }
+    .th-penalty { width: 60px; text-align: center; font-weight: bold; border-right: 2px solid #e2e8f0 !important; }
+    #tbl-sla-matrix th, #tbl-sla-matrix td { text-align: center; border: 1px solid #e2e8f0; }
+    #tbl-sla-matrix tbody tr td:first-child { font-family: var(--f-disp); font-weight: bold; background: #f8fafc; }
 
     .story-step::after {
       content: "▼";
@@ -1361,9 +1373,24 @@
           <canvas id="ch-disp-nar"></canvas>
         </div>
 
+        <!-- SLA Matrix -->
+        <div class="card" style="margin-top:14px; border: 1px solid var(--naranja); border-top: 3px solid var(--naranja);">
+          <div class="card-head" style="padding-bottom: 0;">
+            <div>
+              <h3>Matriz de Cumplimiento (SLA)</h3>
+              <p class="sub">Disponibilidad regional vs. penalidades (Enero - Julio 2026)</p>
+            </div>
+          </div>
+          <div class="scrollx" style="padding: 14px;">
+            <table class="datos" id="tbl-sla-matrix" style="width: 100%; border-collapse: collapse;">
+               <!-- Llenado vía JS -->
+            </table>
+          </div>
+        </div>
+
         <!-- Data table -->
         <details style="margin-top:14px; background: #f9fafb; border: 1px solid var(--linea); border-radius: 6px; padding: 10px;">
-          <summary style="cursor:pointer; color:var(--azul-marino); font-weight:600; font-size: 13px; outline: none;">Desplegar tabla de datos</summary>
+          <summary style="cursor:pointer; color:var(--azul-marino); font-weight:600; font-size: 13px; outline: none;">Desplegar histórico general</summary>
           <div class="scrollx" style="margin-top:10px">
             <table class="datos" id="tbl-disp-nar"></table>
           </div>
@@ -4652,6 +4679,56 @@
           });
           html += '</tbody>';
           tbl.innerHTML = html;
+        }
+
+        // SLA Matrix
+        const tblSla = document.getElementById('tbl-sla-matrix');
+        if (tblSla) {
+          const months2026 = months.filter(m => m.startsWith('2026'));
+          const slaRegions = ['CARIBE', 'ANDINA', 'SUR', 'CENTRO'];
+          
+          let htmlSla = '<thead><tr><th rowspan="2" class="th-penalty">SLA</th>';
+          months2026.forEach(m => {
+             const mName = new Date(m + '-02').toLocaleString('es-ES', {month:'long'});
+             htmlSla += `<th colspan="4" class="th-group" style="text-transform:capitalize">${mName}</th>`;
+          });
+          htmlSla += '</tr><tr>';
+          months2026.forEach(m => {
+            slaRegions.forEach(r => {
+              const rName = r === 'CARIBE' ? 'COSTA' : r;
+              htmlSla += `<th>${rName}</th>`;
+            });
+          });
+          htmlSla += '</tr></thead><tbody>';
+
+          const getSlaInfo = (val) => {
+            if (val == null) return { pct: '-', cls: 'sla-none' };
+            if (val >= 99.2) return { pct: '0%', cls: 'sla-0' };
+            if (val >= 99.0) return { pct: '10%', cls: 'sla-10' };
+            if (val >= 98.5) return { pct: '20%', cls: 'sla-20' };
+            return { pct: '30%', cls: 'sla-30' };
+          };
+
+          const penalties = [30, 20, 10, 0];
+          penalties.forEach(pen => {
+            htmlSla += `<tr><td class="th-penalty">${pen}%</td>`;
+            months2026.forEach(m => {
+              slaRegions.forEach(r => {
+                const d = byMonthRegion[m + '|' + r];
+                const val = d ? d.nar_pct : null;
+                const info = getSlaInfo(val);
+                
+                if (info.pct === pen + '%') {
+                   htmlSla += `<td class="${info.cls}">${val.toFixed(2)}%</td>`;
+                } else {
+                   htmlSla += `<td style="color:#cbd5e1; font-size:10px;">-</td>`;
+                }
+              });
+            });
+            htmlSla += '</tr>';
+          });
+          htmlSla += '</tbody>';
+          tblSla.innerHTML = htmlSla;
         }
       }
 
