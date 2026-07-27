@@ -4695,7 +4695,7 @@
           htmlSla += '</tr><tr>';
           months2026.forEach(m => {
             slaRegions.forEach(r => {
-              const rName = r === 'CARIBE' ? 'COSTA' : r;
+              const rName = r;
               const rightBorder = r === 'CENTRO' ? 'border-right: 2px solid #94a3b8 !important;' : '';
               htmlSla += `<th style="${rightBorder}">${rName}</th>`;
             });
