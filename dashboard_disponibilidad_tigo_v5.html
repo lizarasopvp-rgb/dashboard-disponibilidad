@@ -1327,7 +1327,6 @@
 
     <!-- 1 · RESUMEN -->
     <section id="resumen">
-      <div class="story-step"><span class="n">1</span> VISIÓN EJECUTIVA</div>
       <div class="sec-head">
         <h2>Resumen</h2><span class="pregunta">¿Cómo está la red y qué la está frenando?</span>
       </div>
@@ -1338,7 +1337,6 @@
 
     <!-- 2 · GRÁFICA DE DISPONIBILIDAD -->
     <section id="disponibilidad-nar">
-      <div class="story-step"><span class="n">2</span> INDICADORES</div>
       <div class="sec-head">
         <h2>Gráfica disponibilidad</h2><span class="pregunta">Evolución mensual del indicador NAR para 4G</span>
       </div>
@@ -1374,7 +1372,6 @@
     </section>
     <!-- 3 · TENDENCIAS (drill temporal) -->
     <section id="tendencias">
-      <div class="story-step"><span class="n">3</span> ¿CÓMO EVOLUCIONA?</div>
       <div class="sec-head">
         <h2>Tendencias</h2><span class="pregunta">Año → Mes → Día → Hora · ¿mejora o empeora?</span>
       </div>
@@ -1436,7 +1433,6 @@
 
     <!-- 4 · DISTRIBUCIÓN -->
     <section id="pareto">
-      <div class="story-step"><span class="n">4</span> DISTRIBUCIÓN POR RANGOS DE TIEMPO</div>
       <div class="sec-head">
         <h2>Distribución por rangos de tiempo</h2><span class="pregunta">% de minutos y % de eventos por categoría de duración</span>
       </div>
@@ -1464,7 +1460,6 @@
     
     <!-- 5 · MAPA DE CALOR POR CAUSA SUSPENSIÓN -->
     <section id="heatmap-suspension">
-      <div class="story-step"><span class="n">5</span> CONCENTRACIÓN POR CAUSA SUSPENSIÓN</div>
       <div class="sec-head">
         <h2>Mapa calor - Causa suspensión</h2><span class="pregunta">% de minutos por causa suspensión × regional</span>
       </div>
@@ -1500,7 +1495,6 @@
 
     <!-- 6 · CAUSA SUSPENSIÓN -->
     <section id="suspension">
-      <div class="story-step"><span class="n">6</span> CAUSA SUSPENSIÓN · EXTERNA</div>
       <div class="sec-head">
         <h2>Causa suspensión macro</h2><span class="pregunta">Factores logísticos o externos · macro → específica</span>
       </div>
@@ -1538,7 +1532,6 @@
 
     <!-- 7 · MAPA DE CALOR POR CAUSA RAÍZ -->
     <section id="heatmap">
-      <div class="story-step"><span class="n">7</span> CONCENTRACIÓN POR CAUSA</div>
       <div class="sec-head">
         <h2>Mapa calor - Causa raíz</h2><span class="pregunta">% de minutos por causa raíz × regional</span>
       </div>
@@ -1561,7 +1554,6 @@
 
     <!-- 8 · CAUSA RAÍZ -->
     <section id="causaraiz">
-      <div class="story-step"><span class="n">8</span> CAUSA RAÍZ · RED</div>
       <div class="sec-head">
         <h2>Causa raíz macro</h2><span class="pregunta">Asociada a componentes de red → macro → específica</span>
       </div>
@@ -1600,7 +1592,6 @@
 
     <!-- 9 · GEOGRAFÍA -->
     <section id="geografico">
-      <div class="story-step"><span class="n">9</span> ¿DÓNDE?</div>
       <div class="sec-head">
         <h2>Análisis geográfico - Fallas</h2><span class="pregunta">Departamento → Ciudad → Sitio</span>
       </div>
@@ -1688,7 +1679,6 @@
 
     <!-- 10 · WORST OFFENDERS -->
     <section id="worst">
-      <div class="story-step"><span class="n">10</span> ¿DÓNDE INTERVENIR?</div>
       <div class="sec-head">
         <h2>Worst offenders</h2><span class="pregunta">¿Qué sitios maximizan la eficiencia de la
           intervención?</span>
@@ -1737,7 +1727,6 @@
     
     <!-- 11 · INTERMITENTES -->
     <section id="intermitentes">
-      <div class="story-step"><span class="n">11</span> EL DEFECTO CRÓNICO</div>
       <div class="sec-head">
         <h2>Sitios intermitentes</h2><span class="pregunta">¿Qué sitios caen una y otra vez? · ranking por
           frecuencia</span>
@@ -1770,7 +1759,6 @@
 
     <!-- 12 · FALLAS SIMULTÁNEAS -->
     <section id="masivas">
-      <div class="story-step"><span class="n">12</span> FALLAS SIMULTÁNEAS</div>
       <div class="sec-head">
         <h2>Fallas simultáneas</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de sitio</span>
       </div>
@@ -1849,7 +1837,6 @@
 
     <!-- 13 · PLAN 500 -->
     <section id="plan500">
-      <div class="story-step"><span class="n">13</span> PLAN 500</div>
       <div class="sec-head">
         <h2>Evolución plan 500</h2><span class="pregunta">Minutograma y evolución de sitios finalizados (Causa: Energía)</span>
       </div>
@@ -5192,14 +5179,6 @@
         window.scrollTo(0, 0);
         fetchResumenNotas().then(() => {
           initMapa(); initFiltros(); initNav(); initChat(); initHistorial(); initAnalisis();
-          
-          document.querySelectorAll('.story-step').forEach(btn => {
-            btn.title = "Haz clic para ocultar/mostrar esta sección";
-            btn.addEventListener('click', function() {
-              const sec = this.closest('section');
-              if (sec) sec.classList.toggle('collapsed');
-            });
-          });
         });
       });
     </script>
