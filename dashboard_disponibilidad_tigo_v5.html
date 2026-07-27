@@ -271,7 +271,7 @@
     .sla-10 { background: rgba(230, 126, 34, 0.1) !important; color: #d35400 !important; font-weight: 700; }
     .sla-0 { background: rgba(231, 76, 60, 0.1) !important; color: #c0392b !important; font-weight: 700; }
     .sla-none { color: #888 !important; }
-    .th-group { background: #f8fafc !important; border-bottom: 2px solid #cbd5e1 !important; text-align: center; font-weight: bold; }
+    .th-group { background: #f8fafc !important; border-bottom: 2px solid #cbd5e1 !important; border-right: 2px solid #94a3b8 !important; text-align: center; font-weight: bold; }
     .th-penalty { width: 60px; text-align: center; font-weight: bold; border-right: 2px solid #e2e8f0 !important; }
     #tbl-sla-matrix th, #tbl-sla-matrix td { text-align: center; border: 1px solid #e2e8f0; }
     #tbl-sla-matrix tbody tr td:first-child { font-family: var(--f-disp); font-weight: bold; background: #f8fafc; }
@@ -4696,7 +4696,8 @@
           months2026.forEach(m => {
             slaRegions.forEach(r => {
               const rName = r === 'CARIBE' ? 'COSTA' : r;
-              htmlSla += `<th>${rName}</th>`;
+              const rightBorder = r === 'CENTRO' ? 'border-right: 2px solid #94a3b8 !important;' : '';
+              htmlSla += `<th style="${rightBorder}">${rName}</th>`;
             });
           });
           htmlSla += '</tr><tr>';
@@ -4704,10 +4705,11 @@
             slaRegions.forEach(r => {
               const d = byMonthRegion[m + '|' + r];
               const val = d ? d.nar_pct : null;
+              const rightBorder = r === 'CENTRO' ? 'border-right: 2px solid #94a3b8 !important;' : '';
               if (val != null) {
-                htmlSla += `<th style="font-weight:600; font-size:11px; background:#e0f2fe; color:#0369a1;">${val.toFixed(2)}%</th>`;
+                htmlSla += `<th style="font-weight:600; font-size:11px; background:#e0f2fe; color:#0369a1; ${rightBorder}">${val.toFixed(2)}%</th>`;
               } else {
-                htmlSla += `<th style="font-weight:normal; font-size:11px; background:#f1f5f9; color:#94a3b8;">-</th>`;
+                htmlSla += `<th style="font-weight:normal; font-size:11px; background:#f1f5f9; color:#94a3b8; ${rightBorder}">-</th>`;
               }
             });
           });
@@ -4739,11 +4741,12 @@
                 const d = byMonthRegion[m + '|' + r];
                 const val = d ? d.nar_pct : null;
                 const info = getSlaInfo(val, r);
+                const rightBorder = r === 'CENTRO' ? 'border-right: 2px solid #94a3b8 !important;' : '';
                 
                 if (info.pct === pen + '%') {
-                   htmlSla += `<td class="${info.cls}">${pen}%</td>`;
+                   htmlSla += `<td class="${info.cls}" style="${rightBorder}">${pen}%</td>`;
                 } else {
-                   htmlSla += `<td style="color:#cbd5e1; font-size:10px;">-</td>`;
+                   htmlSla += `<td style="color:#cbd5e1; font-size:10px; ${rightBorder}">-</td>`;
                 }
               });
             });
