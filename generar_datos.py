@@ -239,7 +239,7 @@ for name, group in grouped:
         else:
             diff_fi = abs((row['fi'] - base_fi).total_seconds()) / 60
             diff_ff = abs((row['ff'] - base_ff).total_seconds()) / 60
-            if diff_fi <= 60 and diff_ff <= 60:
+            if diff_fi <= 15 and diff_ff <= 15:
                 current_cluster.append(idx)
             else:
                 if len(current_cluster) >= 3:
