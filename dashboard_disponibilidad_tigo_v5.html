@@ -1829,11 +1829,26 @@
           <div class="card" style="margin-top:16px">
         <div class="card-head">
           <div>
-            <h3>Tendencia diaria de fallas simultáneas</h3>
-            <p class="sub">Cantidad de fallas simultáneas por día, apiladas por regional</p>
+            <h3 id="masivas-gl-title">Fallas simultáneas por causa global real</h3>
+            <p class="sub">Drill-down: Mes → Día → Hora</p>
+          </div>
+          <div class="toolbar" style="display:flex; align-items:center; gap:10px;">
+            <div class="bread" id="masivas-gl-bread" style="margin:0"></div>
+            <select id="masivas-gl-metrica" onchange="glMetrica=this.value; renderMasivasGL()" style="padding:2px 8px; font-size:12px; border-radius:4px; border:1px solid var(--linea); color:var(--azul-marino); outline:none; cursor:pointer;">
+              <option value="cantidad">Cantidad</option>
+              <option value="minutos">Minutos</option>
+            </select>
           </div>
         </div>
-        <canvas id="ch-masivas-trend" style="max-height:280px"></canvas>
+        <div id="masivas-gl-insights" style="display:flex; flex-wrap:wrap; gap:15px; margin: 15px 0; align-items:center;"></div>
+        <canvas id="ch-masivas-gl" style="max-height:350px"></canvas>
+        <div class="scrollx" id="wrap-masivas-gl-det" style="margin-top:20px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
+          <div style="padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="masivas-gl-det-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle Fallas por Causa Global</h3>
+            <button class="btn-fant" onclick="document.getElementById('wrap-masivas-gl-det').style.display='none'">✕ Cerrar</button>
+          </div>
+          <table class="datos" id="tbl-masivas-gl-det"></table>
+        </div>
       </div>
 
       <div class="card" style="margin-top:16px">
@@ -3620,53 +3635,154 @@
         }
 
         updateMasivasTable();
-        renderMasivasTrend(list);
+        renderMasivasGL(list);
         
         list.forEach(m => {
            let maxCa = 'Otra', maxVal = 0;
            for (const [c, v] of Object.entries(m.causas_ia)) {
               if (v > maxVal) { maxVal = v; maxCa = c; }
            }
-           m.causa_ia_final = maxCa;
+           m.causa_ia_final = maxCa;\n           m.causa_global_final = Array.from(m.causas_macro)[0] || "Desconocida";
         });
         renderMasivasIA(list);
         window.currentMasivasData = masivasData;
       }
 
-      function renderMasivasTrend(list) {
-         const byDayReg = {};
-         const regionesSet = new Set();
-         
-         list.forEach(m => {
-            if (!m.eventos || m.eventos.length === 0) return;
-            const d = new Date(m.eventos[0].ts);
-            const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-            
-            if (!byDayReg[dateStr]) byDayReg[dateStr] = {};
-            byDayReg[dateStr][m.region] = (byDayReg[dateStr][m.region] || 0) + 1;
-            regionesSet.add(m.region);
-         });
-         
-         const dates = Object.keys(byDayReg).sort();
-         const labels = dates.map(dStr => {
-            const parts = dStr.split('-');
-            return parts[2] + '/' + parts[1];
-         });
-         
-         const regiones = Array.from(regionesSet).sort();
-         const datasets = regiones.map((reg, i) => {
-            const data = dates.map(dStr => byDayReg[dStr][reg] || 0);
-            return {
-               label: reg,
-               data: data,
-               backgroundColor: PAL[i % PAL.length]
-            };
-         });
-         
-         destroy('masivastrend');
-         const canvas = document.getElementById('ch-masivas-trend');
+      function renderMasivasGL(list) {
+         if (!list) list = masCurrentList;
+         const canvas = document.getElementById('ch-masivas-gl');
          if (!canvas) return;
-         charts.masivastrend = new Chart(canvas, {
+         
+         const isMin = glMetrica === 'minutos';
+         const base = list.map(m => ({...m, causa_gl_mapped: m.causa_global_final}));
+         
+         let agg = {};
+         let labels = [];
+         let totalByCausa = {};
+         
+         base.forEach(m => {
+            if (!m.eventos || !m.eventos.length) return;
+            const d = new Date(m.eventos[0].ts);
+            const causa = m.causa_gl_mapped;
+            
+            let key = "";
+            let match = true;
+            
+            const mStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0');
+            const dStr = mStr + "-" + String(d.getDate()).padStart(2,'0');
+            const hStr = dStr + " " + String(d.getHours()).padStart(2,'0') + ":00";
+
+            if (glNivel.tipo === "mes") {
+               key = mStr;
+            } else if (glNivel.tipo === "dia") {
+               if (mStr !== glNivel.mes) match = false;
+               key = dStr;
+            } else if (glNivel.tipo === "hora") {
+               if (dStr !== glNivel.dia) match = false;
+               key = hStr;
+            }
+            
+            if (match) {
+               totalByCausa[causa] = (totalByCausa[causa] || 0) + (isMin ? m.minutos : 1);
+               if (!agg[key]) agg[key] = { _items: [], total_sitios: 0 };
+               if (!agg[key][causa]) agg[key][causa] = { c: 0, m: 0 };
+               agg[key][causa].c++;
+               agg[key][causa].m += m.minutos;
+               agg[key]._items.push(m);
+               agg[key].total_sitios += (m.sitios ? m.sitios.size : 0);
+            }
+         });
+         
+         labels = Object.keys(agg).sort();
+         const todasCausas = Object.keys(totalByCausa).sort((a,b) => totalByCausa[b] - totalByCausa[a]);
+         const colors = ['#1A2238', '#00A3E0', '#FF9900', '#94a3b8', '#E03131', '#1E9E5A', '#F2C12E', '#5B21B6', '#10B981', '#3B82F6'];
+         
+         const datasets = todasCausas.map((c, i) => {
+             return {
+                 label: c,
+                 data: labels.map(k => {
+                     const item = agg[k][c];
+                     if (!item) return 0;
+                     return isMin ? item.m : item.c;
+                 }),
+                 backgroundColor: colors[i % colors.length]
+             };
+         });
+         datasets.push({
+             type: 'line',
+             label: 'Sitios Afectados',
+             data: labels.map(k => agg[k].total_sitios),
+             borderColor: '#8B5CF6',
+             backgroundColor: '#8B5CF6',
+             borderWidth: 2,
+             fill: false,
+             yAxisID: 'ySitios',
+             order: -1
+         });
+         
+         const yTitle = isMin ? "Minutos Totales" : "Cant. Simultáneas";
+         const formatNum = n => isMin ? Math.round(n).toLocaleString() : n.toLocaleString();
+         const metricLabel = isMin ? "Minutos" : "Fallas";
+         let insTotal = Object.values(totalByCausa).reduce((a,b)=>a+b, 0);
+
+         const totalSimultaneas = base.length;
+         const totalSitiosSim = base.reduce((acc, m) => acc + (m.sitios ? m.sitios.size : 0), 0);
+         const totalMinSim = base.reduce((acc, m) => acc + m.minutos, 0);
+
+         const promSitios = totalSimultaneas > 0 ? (totalSitiosSim / totalSimultaneas).toFixed(1) : 0;
+         const promMin = totalSimultaneas > 0 ? (totalMinSim / totalSimultaneas).toFixed(1) : 0;
+
+         let insightsHtml = `
+            <span style="border-left:5px solid var(--rojo); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:24px; color:var(--rojo); line-height:1;">${formatNum(insTotal)}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Total ${metricLabel}</div>
+            </span>
+            <span style="border-left:5px solid #8B5CF6; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#8B5CF6; line-height:1;">${promSitios}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Sitios / Falla</div>
+            </span>
+            <span style="border-left:5px solid #3B82F6; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#3B82F6; line-height:1;">${promMin}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Falla</div>
+            </span>
+         `;
+         todasCausas.slice(0, 2).forEach((c, i) => {
+             let color = colors[i % colors.length];
+             insightsHtml += `
+            <span style="border-left:5px solid ${color}; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:${color}; line-height:1;">${formatNum(totalByCausa[c])}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">${c}</div>
+            </span>
+             `;
+         });
+
+         const insContainer = document.getElementById('masivas-gl-insights');
+         if (insContainer) {
+             insContainer.innerHTML = insightsHtml;
+         }
+         
+         let breadHtml = `<button data-t="mes">Por Mes</button>`;
+         if (glNivel.tipo === 'dia' || glNivel.tipo === 'hora') {
+             breadHtml += `<span class="sep">›</span><button data-t="dia">${glNivel.mes}</button>`;
+         }
+         if (glNivel.tipo === 'hora') {
+             breadHtml += `<span class="sep">›</span><span class="actual">${glNivel.dia}</span>`;
+         }
+         const breadWrap = document.getElementById('masivas-gl-bread');
+         if (breadWrap) {
+             breadWrap.innerHTML = breadHtml;
+             breadWrap.querySelectorAll('button').forEach(b => {
+                 b.onclick = () => {
+                     const t = b.dataset.t;
+                     if (t === 'mes') glNivel = { tipo: "mes" };
+                     else if (t === 'dia') glNivel = { tipo: "dia", mes: glNivel.mes };
+                     renderMasivasGL(list);
+                 };
+             });
+         }
+         
+         destroy('masivasgl');
+         charts.masivasgl = new Chart(canvas, {
             type: 'bar',
             data: { labels, datasets },
             options: {
@@ -3675,13 +3791,1452 @@
                plugins: { legend: { position: 'bottom' } },
                scales: {
                   x: { stacked: true },
-                  y: { stacked: true, beginAtZero: true, title: { display: true, text: "Fallas simultáneas" } }
+                  y: { stacked: true, beginAtZero: true, title: { display: true, text: yTitle }, position: 'left' },
+                  ySitios: { type: 'linear', position: 'right', display: true, beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Sitios Afectados' } }
+               },
+               onClick: (e, els) => {
+                  if (!els.length) return;
+                  const idx = els[0].index;
+                  const datasetIdx = els[0].datasetIndex;
+                  const key = labels[idx];
+                  
+                  if (glNivel.tipo === "mes") {
+                     glNivel = { tipo: "dia", mes: key };
+                     renderMasivasGL(list);
+                  } else if (glNivel.tipo === "dia") {
+                     glNivel = { tipo: "hora", dia: key, mes: glNivel.mes };
+                     renderMasivasGL(list);
+                  } else if (glNivel.tipo === "hora") {
+                     const causaName = datasets[datasetIdx].label;
+                     if (causaName === 'Sitios Afectados') return;
+                     const items = agg[key]._items.filter(m => m.causa_gl_mapped === causaName);
+                     mostrarDetalleMasivasIA(items, causaName, key);
+                  }
                }
             }
          });
       }
       
-      let iaNivel = { tipo: "mes", mes: null, dia: null };
+      function mostrarDetalleMasivasIA(items, causaName, horaStr) {
+         const wrap = document.getElementById('wrap-masivas-gl-det');
+         const tbody = document.getElementById('tbl-masivas-gl-det');
+         document.getElementById('masivas-gl-det-title').textContent = `Simultáneas de ${causaName} a las ${horaStr} (${items.length})`;
+         wrap.style.display = 'block';
+         
+         let html = `<tr><th>ID Simultánea</th><th>Región / Depto</th><th>Causa Original</th><th>Inicio</th><th class="num">Sitios</th><th class="num">Minutos</th></tr>`;
+         if (!items.length) {
+            html += `<tr><td colspan="6" style="text-align:center;">No hay datos para esta selección</td></tr>`;
+         } else {
+            items.sort((a,b)=>b.minutos - a.minutos).forEach(m => {
+               const cMacro = Array.from(m.causas_macro).join(' / ');
+               const cRaiz = Array.from(m.causas_raiz).join(' / ');
+               let fecha = "";
+               if (m.eventos && m.eventos.length) {
+                  const d = new Date(m.eventos[0].ts);
+                  fecha = d.toLocaleString('es-CO', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+               }
+               html += `<tr class="clickable" onclick='abrirMasivaDetalle(${JSON.stringify(m.id)})'>
+                 <td><span class="tdpill" style="background:var(--azul-marino)">${m.id}</span></td>
+                 <td><b>${m.region}</b><br><span style="font-size:10.5px;color:var(--gris)">${m.depto}</span></td>
+                 <td><b>${cMacro}</b><br><span style="font-size:10.5px;color:var(--gris)">${cRaiz}</span></td>
+                 <td style="font-family:var(--f-mono); font-size:11px;">${fecha}</td>
+                 <td class="num" style="font-weight:600">${m.sitios.size}</td>
+                 <td class="num" style="font-weight:600">${Math.round(m.minutos)}</td>
+               </tr>`;
+            });
+         }
+         tbody.innerHTML = html;
+         wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      let masCurrentPage = 1;
+      let masCurrentList = [];
+      
+      window.masPage = function(dir) {
+        const totalPages = Math.ceil(masCurrentList.length / 5) || 1;
+        masCurrentPage += dir;
+        if (masCurrentPage < 1) masCurrentPage = 1;
+        if (masCurrentPage > totalPages) masCurrentPage = totalPages;
+        updateMasivasTable();
+      };
+      
+      function updateMasivasTable() {
+        const tbody = document.getElementById("tbl-masivas");
+        const totalPages = Math.ceil(masCurrentList.length / 5) || 1;
+        
+        const pageInfo = document.getElementById("mas-page-info");
+        if(pageInfo) pageInfo.textContent = `${masCurrentPage} / ${totalPages}`;
+        
+        const start = (masCurrentPage - 1) * 5;
+        const pageList = masCurrentList.slice(start, start + 5);
+
+        let html = `<tr>
+          <th>ID Simultánea</th>
+          <th>Región / Depto</th>
+          <th>Causa Raíz</th>
+          <th>Fecha de inicio</th>
+          <th class="num">Sitios</th>
+          <th class="num">Minutos</th>
+          <th style="text-align:center">Criticidad</th>
+        </tr>`;
+
+        if (masCurrentList.length === 0) {
+           html += `<tr><td colspan="7" style="text-align:center; color:var(--gris); padding:15px;">No hay fallas simultáneas con los filtros actuales.</td></tr>`;
+        } else {
+           pageList.forEach(m => {
+             let crit = "Media";
+             let color = "var(--alerta)";
+             if (m.minutos > 2000 || m.sitios.size > 20) { crit = "Crítica"; color = "var(--critico)"; }
+             else if (m.minutos > 500 || m.sitios.size > 10) { crit = "Alta"; color = "var(--critico-medio)"; }
+
+             let cMacro = Array.from(m.causas_macro).join(' / ');
+             let cRaiz = Array.from(m.causas_raiz).join(' / ');
+             if(cMacro.length > 30) cMacro = cMacro.substring(0, 30) + '...';
+             if(cRaiz.length > 40) cRaiz = cRaiz.substring(0, 40) + '...';
+
+             let fechaInicio = "";
+             if (m.eventos && m.eventos.length > 0) {
+                 const d = new Date(m.eventos[0].ts);
+                 fechaInicio = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+             }
+
+             html += `<tr class="clickable" onclick='abrirMasivaDetalle(${JSON.stringify(m.id)})'>
+               <td><span class="tdpill" style="background:var(--azul-marino)">${m.id}</span></td>
+               <td><b>${m.region}</b><br><span style="font-size:10.5px;color:var(--gris)">${m.depto}</span></td>
+               <td><b>${cMacro}</b><br><span style="font-size:10.5px;color:var(--gris)">${cRaiz}</span></td>
+               <td style="font-family: var(--f-mono); font-size: 11px; text-align: center;">${fechaInicio}</td>
+               <td class="num" style="font-weight:600">${m.sitios.size}</td>
+               <td class="num" style="font-weight:600">${Math.round(m.minutos)}</td>
+               <td style="text-align:center"><span style="color: ${color}; font-weight:600; font-family:var(--f-disp); font-size:11.5px; border: 1px solid ${color}; border-radius: 4px; padding: 2px 6px;">${crit}</span></td>
+             </tr>`;
+           });
+        }
+        if(tbody) tbody.innerHTML = html;
+      }
+      
+      window.abrirMasivaDetalle = function(mid) {
+         const m = window.currentMasivasData[mid];
+         if (!m) return;
+         document.getElementById("masivas-det-title").textContent = `Detalle Simultánea: ${mid} (${m.eventos.length} tickets)`;
+         document.getElementById("wrap-masivas-det").style.display = "block";
+         
+         const tbody = document.getElementById("tbl-masivas-det");
+         const events = m.eventos.sort((a, b) => b.minutos_caidos - a.minutos_caidos);
+         let html = `<tr>
+            <th>Sitio</th>
+            <th>Ticket</th>
+            <th>Causa Raíz</th>
+            <th>Solución</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Fin</th>
+            <th class="num">Minutos</th>
+         </tr>`;
+         events.forEach(r => {
+             const solTxt = r.solucion && r.solucion.trim() && r.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${r.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+             html += `<tr>
+               <td><b>${r.sitio_id}</b><br><span style="font-size:10.5px;color:var(--gris)">${r.nombre}</span></td>
+               <td><span class="tdpill" style="background:var(--rojo)">${r.ticket}</span></td>
+               <td style="font-size:10.5px;color:var(--gris);max-width:180px;">${r.causa_raiz_especifica}</td>
+               <td>${solTxt}</td>
+               <td style="font-family: var(--f-mono); font-size: 11px;">${fmtDT(r.ts)}</td>
+               <td style="font-family: var(--f-mono); font-size: 11px;">${fmtDT(r.ts_fin)}</td>
+               <td class="num" style="font-weight:600">${r.minutos_caidos.toFixed(1)}</td>
+             </tr>`;
+         });
+         tbody.innerHTML = html;
+         
+         document.getElementById("wrap-masivas-det").scrollIntoView({behavior: "smooth", block: "nearest"});
+      };
+
+      /* ============================================================
+         PLAN 500
+      ============================================================ */
+      function renderPlan500() {
+        const planDates = typeof _PLAN500 !== 'undefined' ? _PLAN500 : {};
+        const planCounts = typeof _PLAN500_COUNTS !== 'undefined' ? _PLAN500_COUNTS : {};
+        const byMonth = {};
+        
+        // 1. Agrupar por sitio para deduplicación
+        const eventsBySite = {};
+        _E.forEach(r => {
+          const site_cd = _S[r[0]]; 
+          if (!planDates[site_cd]) return;
+          const causaGlobal = _S[r[7]].toLowerCase();
+          if (!causaGlobal.includes('energ')) return;
+          if (!eventsBySite[site_cd]) eventsBySite[site_cd] = [];
+          eventsBySite[site_cd].push(r);
+        });
+
+        // 2. No deduplicar, tomar todos los eventos individuales
+        const dedupedEvents = [];
+        for (const site in eventsBySite) {
+           eventsBySite[site].forEach(r => {
+              const ts = new Date(r[12].replace(' ', 'T')).getTime();
+              const mins = r[6];
+              dedupedEvents.push({ r, ts, mins, tickets: [_S[r[10]]] });
+           });
+        }
+
+        // 3. Agregar a byMonth
+        dedupedEvents.forEach(ev => {
+           const d = new Date(ev.ts);
+           const mesAno = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0');
+           if (!byMonth[mesAno]) byMonth[mesAno] = { mins: 0, events: [] };
+           byMonth[mesAno].mins += ev.mins;
+           
+           const mergedR = [...ev.r];
+           mergedR[6] = ev.mins; // Minutos reales sin duplicar
+           if (ev.tickets.length > 1) {
+              mergedR.customTicket = Array.from(new Set(ev.tickets)).join(' | ');
+           }
+           byMonth[mesAno].events.push(mergedR);
+        });
+
+        if (typeof _MA !== 'undefined') {
+          _MA.forEach(m => {
+            const mStr = String(m);
+            if (!byMonth[mStr]) byMonth[mStr] = { mins: 0, events: [] };
+          });
+        }
+        
+        const labels = Object.keys(byMonth).sort();
+        const dataMins = labels.map(l => Math.round(byMonth[l].mins));
+        
+        let totalPlan500Minutos = 0;
+        let totalPlan500Eventos = 0;
+        let setSitiosAfectados = new Set();
+        
+        labels.forEach(l => {
+          totalPlan500Minutos += byMonth[l].mins;
+          totalPlan500Eventos += byMonth[l].events.length;
+          byMonth[l].events.forEach(r => setSitiosAfectados.add(_S[r[0]]));
+        });
+
+        let eficaciaTxt = "N/A";
+        if (dataMins.length >= 2) {
+          const lastMins = dataMins[dataMins.length - 1];
+          const prevMins = dataMins[dataMins.length - 2];
+          if (prevMins > 0) {
+            const reduccion = ((prevMins - lastMins) / prevMins) * 100;
+            eficaciaTxt = (reduccion >= 0 ? "+" : "") + reduccion.toFixed(1) + "%";
+          }
+        }
+
+        const elMin = document.getElementById("p5-insight-min");
+        const elEv = document.getElementById("p5-insight-ev");
+        const elSit = document.getElementById("p5-insight-sit");
+        const elEfic = document.getElementById("p5-insight-efic");
+
+        if (elMin) elMin.textContent = fmt(Math.round(totalPlan500Minutos));
+        if (elEv) elEv.textContent = fmt(totalPlan500Eventos);
+        if (elSit) elSit.textContent = fmt(setSitiosAfectados.size);
+        if (elEfic) {
+          elEfic.textContent = eficaciaTxt;
+          elEfic.style.color = eficaciaTxt.startsWith("+") ? "#006eb6" : "var(--rojo)";
+          elEfic.parentElement.style.borderLeftColor = eficaciaTxt.startsWith("+") ? "#006eb6" : "var(--rojo)";
+        }
+        
+        const dataSites = labels.map(l => {
+           const m = parseInt(l, 10);
+           return planCounts[m] || 0;
+        });
+
+        const formattedLabels = labels.map(l => l.substring(0,4) + '-' + l.substring(4));
+
+        if (charts.plan500) charts.plan500.destroy();
+        
+        const plan500LabelsPlugin = {
+          id: 'plan500Labels',
+          afterDatasetsDraw: (chart) => {
+            const ctx = chart.ctx;
+            chart.data.datasets.forEach((dataset, i) => {
+              const meta = chart.getDatasetMeta(i);
+              if (meta.hidden) return;
+              meta.data.forEach((element, index) => {
+                const isLine = dataset.type === 'line';
+                ctx.fillStyle = isLine ? '#1A2238' : '#FF9900';
+                ctx.font = '600 12px "IBM Plex Mono", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const val = dataset.data[index];
+                if (val > 0) {
+                  const pos = element.tooltipPosition();
+                  ctx.fillText(val.toString(), pos.x, pos.y - (isLine ? 15 : 12));
+                }
+              });
+            });
+          }
+        };
+
+        charts.plan500 = new Chart(document.getElementById("ch-plan500"), {
+          type: "bar",
+          data: {
+            labels: formattedLabels,
+            datasets: [
+              { type: "line", label: "Planes Finalizados (en el mes)", data: dataSites, borderColor: "#1A2238", backgroundColor: "#1A2238", yAxisID: "y1", tension: 0.3, borderWidth: 3, pointRadius: 4 },
+              { type: "bar", label: "Minutos de Energía (Total Sitios Finalizados)", data: dataMins, backgroundColor: "#FF9900", yAxisID: "y", borderRadius: 4, order: 2 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 25 } },
+            scales: {
+              x: { grid: { display: false }, ticks: { font: { family: "IBM Plex Mono", size: 11 } } },
+              y: { type: "linear", position: "left", title: { display: true, text: "Minutos", font: { size: 11, weight: "bold" } }, grid: { color: "#E4E8EE", borderDash: [4, 4] }, suggestedMax: Math.max(...dataMins, 10) * 1.15 },
+              y1: { type: "linear", position: "right", title: { display: true, text: "Total Planes", font: { size: 11, weight: "bold" } }, grid: { display: false }, suggestedMax: Math.max(...dataSites, 5) * 1.3 }
+            },
+            plugins: {
+              legend: { position: "top", labels: { font: { family: "IBM Plex Sans", size: 12 }, usePointStyle: true, boxWidth: 8 } },
+              tooltip: { mode: "index", intersect: false }
+            },
+            onClick: (e, elements) => {
+              if (!elements.length) return;
+              const idx = elements[0].index;
+              const mesStr = labels[idx];
+              renderPlan500Table(mesStr, byMonth[mesStr].events || []);
+            }
+          },
+          plugins: [plan500LabelsPlugin]
+        });
+      }
+      var p5CurrentPage = 1;
+      var p5CurrentEvents = [];
+      
+      function renderPlan500Table(mes, events) {
+        p5CurrentEvents = events.sort((a, b) => b[6] - a[6]);
+        p5CurrentPage = 1;
+        
+        const mStr = mes.substring(0,4) + '-' + mes.substring(4);
+        document.getElementById("plan500-tbl-title").textContent = `Fallas de Energía en ${mStr} (${events.length})`;
+        document.getElementById("wrap-plan500-tbl").style.display = "block";
+        
+        updatePlan500Table();
+      }
+
+      function updatePlan500Table() {
+        const tbody = document.getElementById("tbl-plan500");
+        const totalPages = Math.ceil(p5CurrentEvents.length / 5) || 1;
+        
+        document.getElementById("p5-page-info").textContent = `${p5CurrentPage} / ${totalPages}`;
+        
+        const start = (p5CurrentPage - 1) * 5;
+        const pageEvents = p5CurrentEvents.slice(start, start + 5);
+        
+        let html = `<tr>
+          <th>Sitio</th>
+          <th>Ticket</th>
+          <th>Causa Específica</th>
+          <th>Fecha</th>
+          <th class="num">Minutos</th>
+        </tr>`;
+        
+        if (pageEvents.length === 0) {
+           html += `<tr><td colspan="5" style="text-align:center; color:var(--gris); padding: 15px;">No hay fallas para mostrar en este mes</td></tr>`;
+        } else {
+           pageEvents.forEach(r => {
+             const ticketStr = r.customTicket || _S[r[10]];
+             html += `<tr>
+               <td><b>${_S[r[0]]}</b><br><span style="font-size:10.5px;color:var(--gris)">${_S[r[1]]}</span></td>
+               <td style="max-width: 150px; word-break: break-all;"><span class="tdpill" style="background:var(--azul-marino); white-space: normal;">${ticketStr}</span></td>
+               <td>${_S[r[8]]}</td>
+               <td style="font-family: var(--f-mono); font-size: 11px;">${r[12]}</td>
+               <td class="num" style="font-weight:600; color:var(--rojo)">${r[6].toFixed(1)}</td>
+             </tr>`;
+           });
+        }
+        tbody.innerHTML = html;
+      }
+
+      /* ============================================================
+         RENDER GLOBAL
+      ============================================================ */
+      function getLocalView(secId, ignoreMes = false) {
+        const sec = document.getElementById(secId);
+        if (!sec) return window.VIEW || DATA;
+        
+        const fMes = sec.querySelector('.fl-mes') ? sec.querySelector('.fl-mes').value : "";
+        const fReg = sec.querySelector('.fl-reg') ? sec.querySelector('.fl-reg').value : "";
+        const fDep = sec.querySelector('.fl-dep') ? sec.querySelector('.fl-dep').value : "";
+        const fMun = sec.querySelector('.fl-mun') ? sec.querySelector('.fl-mun').value : "";
+        const fCR = sec.querySelector('.fl-cr') ? sec.querySelector('.fl-cr').value : "";
+        const fCS = sec.querySelector('.fl-cs') ? sec.querySelector('.fl-cs').value : "";
+        const fFechaIni = sec.querySelector('.fl-fecha-ini') ? sec.querySelector('.fl-fecha-ini').value : "";
+        const rngEl = sec.querySelector('.fl-rng');
+        let fRngs = [];
+        if (rngEl && rngEl.tagName === 'SELECT') {
+           if (rngEl.value) fRngs = [rngEl.value];
+        } else {
+           fRngs = Array.from(sec.querySelectorAll('input.fl-rng:checked')).map(cb => cb.value);
+        }        let v = DATA.filter(s => {
+          let cumpleModo = true;
+          if (filtro.modo === "UNIRED") {
+             cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
+          } else if (filtro.modo === "HUAWEI") {
+             cumpleModo = s.etiqueta_padre === 'NAR';
+          }
+          return cumpleModo;
+        });
+
+        if (!ignoreMes && fMes) v = v.filter(e => e.mes_ano === +fMes);
+        if (fReg) v = v.filter(e => e.region === fReg);
+        if (fDep) v = v.filter(e => e.departamento === fDep);
+        if (fMun) v = v.filter(e => e.ciudad === fMun);
+        if (fCR) v = v.filter(e => e.causa_raiz_macro === fCR);
+        if (fCS) v = v.filter(e => e.causa_suspension_macro === fCS);
+        if (fFechaIni) {
+           v = v.filter(e => {
+              if(!e.ts) return false;
+              const d = new Date(e.ts);
+              const fStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+              return fStr === fFechaIni;
+           });
+        }
+        if (fRngs.length > 0) v = v.filter(e => fRngs.includes(e.rango));
+        
+        return v;
+      }
+
+      function initLocalFilters() {
+        const gm = document.getElementById("geo-mes");
+        if (gm) {
+            _MA.forEach(m => gm.add(new Option(m, m)));
+            gm.onchange = () => { updateGeoCascade(); renderGeo(); };
+        }
+
+        const mesesLbl2 = {"01":"Enero","02":"Febrero","03":"Marzo","04":"Abril","05":"Mayo","06":"Junio","07":"Julio","08":"Agosto","09":"Septiembre","10":"Octubre","11":"Noviembre","12":"Diciembre"};
+        const validReg = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+        const validCs = [...new Set(DATA.map(d => d.causa_suspension_macro))].filter(Boolean).sort();
+
+        document.querySelectorAll('.filtros-local').forEach(fl => {
+          const mes = fl.querySelector('.fl-mes');
+          const reg = fl.querySelector('.fl-reg');
+          const dep = fl.querySelector('.fl-dep');
+          const mun = fl.querySelector('.fl-mun');
+          const cr  = fl.querySelector('.fl-cr');
+          const rng = fl.querySelector('.fl-rng');
+          const cs  = fl.querySelector('.fl-cs');
+          if (mes) {
+            _MA.forEach(m => { const ms = String(m); const mm = ms.slice(4); const lbl = (mesesLbl2[mm] || mm) + " " + ms.slice(0,4); mes.add(new Option(lbl, m)); });
+            if (_MA.length > 0) mes.value = _MA[_MA.length - 1];
+          }
+          if (reg) {
+            validReg.forEach(r => reg.add(new Option(r, r)));
+            reg.onchange = () => {
+              if (dep) {
+                dep.innerHTML = '<option value="">Todos</option>';
+                const depsForReg = reg.value ? DATA.filter(d => d.region === reg.value) : DATA;
+                const validDeps = [...new Set(depsForReg.map(d => d.departamento))].filter(Boolean).sort();
+                validDeps.forEach(d => dep.add(new Option(d, d)));
+              }
+              if (mun) mun.innerHTML = '<option value="">Todos</option>';
+              fl.dispatchEvent(new Event('change'));
+            };
+          }
+          if (dep) {
+            const validDeps = [...new Set(DATA.map(d => d.departamento))].filter(Boolean).sort();
+            validDeps.forEach(d => dep.add(new Option(d, d)));
+            dep.onchange = () => {
+              if (mun) {
+                mun.innerHTML = '<option value="">Todos</option>';
+                if (dep.value) {
+                   const munsForDep = DATA.filter(d => d.departamento === dep.value);
+                   const validMuns = [...new Set(munsForDep.map(d => d.ciudad))].filter(Boolean).sort();
+                   validMuns.forEach(m => mun.add(new Option(m, m)));
+                }
+              }
+              fl.dispatchEvent(new Event('change'));
+            };
+          }
+          if (cr)  Object.keys(CAUSA_RAIZ).forEach(c => cr.add(new Option(c, c)));
+          if (cs)  validCs.forEach(c => cs.add(new Option(c, c)));
+          fl.addEventListener('change', (e) => {
+            if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') {
+               const secId = fl.closest('section').id;
+               if (secId === 'resumen') renderResumen();
+               else if (secId === 'tendencias') renderTendencias();
+               else if (secId === 'pareto') renderPareto();
+               else if (secId === 'heatmap') renderHeatmap();
+               else if (secId === 'heatmap-suspension') renderHeatmapSuspension();
+               else if (secId === 'causaraiz') renderCausaRaiz();
+               else if (secId === 'suspension') renderSusp();
+               else if (secId === 'worst') renderWorst();
+               else if (secId === 'intermitentes') renderIntermitentes();
+               else if (secId === 'masivas') renderMasivas();
+            }
+          });
+        });
+      }
+
+      /* ============================================================
+         VIEW GROUPS & NAVIGATION
+      ============================================================ */
+      const VIEW_GROUPS = {
+        'resumen': ['resumen'],
+        'disponibilidad': ['disponibilidad-nar'],
+        'tendencias': ['tendencias'],
+        'rangos': ['pareto'],
+        'causa-suspension': ['heatmap-suspension', 'suspension'],
+        'causa-raiz': ['heatmap', 'causaraiz'],
+        'analisis-fallas': ['geografico'],
+        'worst': ['worst'],
+        'intermitentes': ['intermitentes'],
+        'simultaneas': ['masivas'],
+        'plan500': ['plan500']
+      };
+      let activeView = 'resumen';
+
+      function showView(viewKey) {
+        activeView = viewKey;
+        document.querySelectorAll('main > section').forEach(s => s.classList.remove('view-visible'));
+        (VIEW_GROUPS[viewKey] || []).forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add('view-visible');
+        });
+        document.querySelectorAll('.sb-item').forEach(item => {
+          item.classList.toggle('active', item.dataset.view === viewKey);
+        });
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        renderAll();
+
+        // Fix para Leaflet: recálculo de tamaño al volverse visible
+        if (viewKey === 'analisis-fallas' && typeof mapa !== 'undefined' && mapa) {
+          setTimeout(() => {
+            mapa.invalidateSize();
+          }, 100);
+        }
+      }
+
+      function renderAll() {
+        VIEW = aplicaFiltro(filtro);
+        VIEW_TEND = aplicaFiltro({ ...filtro, mes: "" });
+        const nSit = new Set(VIEW.map(s => s.sitio_id)).size;
+        document.getElementById("filtro-count").textContent = `${VIEW.length} eventos · ${nSit} sitios`;
+        const secs = VIEW_GROUPS[activeView] || [];
+        if (secs.includes('resumen')) renderResumen();
+        if (secs.includes('disponibilidad-nar')) renderDisponibilidadNAR();
+        if (secs.includes('tendencias')) renderTendencias();
+        if (secs.includes('pareto')) renderPareto();
+        if (secs.includes('heatmap-suspension')) renderHeatmapSuspension();
+        if (secs.includes('suspension')) renderSusp();
+        if (secs.includes('heatmap')) renderHeatmap();
+        if (secs.includes('causaraiz')) renderCausaRaiz();
+        if (secs.includes('geografico')) { renderGeo(); updateGeoCascade(); }
+        if (secs.includes('worst')) renderWorst();
+        if (secs.includes('intermitentes')) renderIntermitentes();
+        if (secs.includes('masivas')) renderMasivas();
+        if (secs.includes('plan500')) renderPlan500();
+      }
+
+      /* ============================================================
+         APLICAR GEOGRAFÍA (BOTÓN ACTUALIZAR)
+      ============================================================ */
+      window.aplicarGeografia = function () {
+        const gD = document.getElementById("geo-depto");
+        const gM = document.getElementById("geo-muni");
+        const dVal = gD ? gD.value : "";
+        const mVal = gM ? gM.value : "";
+
+        if (mVal) {
+          geoNivel = { tipo: "sitio", depto: dVal, ciudad: mVal };
+        } else if (dVal) {
+          geoNivel = { tipo: "ciudad", depto: dVal };
+        } else {
+          geoNivel = { tipo: "depto", depto: null, ciudad: null };
+        }
+        renderGeo();
+      };
+
+      /* ============================================================
+         UPDATE GEO CASCADE LOGIC
+      ============================================================ */
+      function getGeoBase() {
+    const geoMes = document.getElementById("geo-mes") ? document.getElementById("geo-mes").value : "";
+    return DATA.filter(s => {
+        let cumpleModo = true;
+        if (filtro.modo === "UNIRED") {
+            cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
+        } else if (filtro.modo === "HUAWEI") {
+            cumpleModo = s.etiqueta_padre === 'NAR';
+        }
+        return cumpleModo && (!geoMes || s.mes_ano === +geoMes);
+    });
+}
+
+      function updateGeoCascade() {
+        const gReg = document.getElementById("geo-reg");
+        const gDepto = document.getElementById("geo-depto");
+        const gMuni = document.getElementById("geo-muni");
+        const gCr = document.getElementById("geo-cr");
+        const gCrEsp = document.getElementById("geo-cr-esp");
+        const gCs = document.getElementById("geo-cs");
+        const gCsEsp = document.getElementById("geo-cs-esp");
+        const gRango = document.getElementById("geo-rango");
+
+        const rVal = gReg ? gReg.value : "";
+        const dVal = gDepto ? gDepto.value : "";
+        const mVal = gMuni ? gMuni.value : "";
+        const crVal = gCr ? gCr.value : "";
+        const espVal = gCrEsp ? gCrEsp.value : "";
+
+        // Update Reg
+        if (gReg) {
+          const validReg = [...new Set(getGeoBase().map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+          gReg.innerHTML = '<option value="">Todas</option>';
+          validReg.forEach(r => gReg.add(new Option(r, r)));
+          gReg.value = validReg.includes(rVal) ? rVal : "";
+        }
+        const rValNew = gReg ? gReg.value : "";
+
+        // Update Depto
+        if (gDepto) {
+          let d_data = getGeoBase();
+          if (rValNew) d_data = d_data.filter(e => e.region === rValNew);
+          const validD = [...new Set(d_data.map(e => e.departamento))].filter(Boolean).sort();
+          gDepto.innerHTML = '<option value="">Todos</option>';
+          validD.forEach(d => gDepto.add(new Option(d, d)));
+          gDepto.value = validD.includes(dVal) ? dVal : "";
+        }
+        
+        const dValNew = gDepto ? gDepto.value : "";
+
+        // Update Muni
+        if (gMuni) {
+          let m_data = getGeoBase();
+          if (rValNew) m_data = m_data.filter(e => e.region === rValNew);
+          if (dValNew) m_data = m_data.filter(e => e.departamento === dValNew);
+          const validC = [...new Set(m_data.map(e => e.ciudad))].filter(Boolean).sort();
+          gMuni.innerHTML = '<option value="">Todos</option>';
+          validC.forEach(c => gMuni.add(new Option(c, c)));
+          gMuni.value = validC.includes(mVal) ? mVal : "";
+        }
+
+        // Update Causa Global
+        if (gCr) {
+          let c_data = getGeoBase();
+          if (rValNew) c_data = c_data.filter(e => e.region === rValNew);
+          if (dValNew) c_data = c_data.filter(e => e.departamento === dValNew);
+          if (gMuni && gMuni.value) c_data = c_data.filter(e => e.ciudad === gMuni.value);
+          const validCr = [...new Set(c_data.map(e => e.causa_raiz_macro))].filter(Boolean).sort();
+          gCr.innerHTML = '<option value="">Todas</option>';
+          validCr.forEach(m => gCr.add(new Option(m, m)));
+          gCr.value = validCr.includes(crVal) ? crVal : "";
+        }
+
+        // Update Causa Especifica
+        if (gCrEsp) {
+          let e_data = getGeoBase();
+          if (gCr && gCr.value) e_data = e_data.filter(e => e.causa_raiz_macro === gCr.value);
+          if (rValNew) e_data = e_data.filter(e => e.region === rValNew);
+          if (dValNew) e_data = e_data.filter(e => e.departamento === dValNew);
+          if (gMuni && gMuni.value) e_data = e_data.filter(e => e.ciudad === gMuni.value);
+          const validE = [...new Set(e_data.map(e => e.causa_raiz_especifica))].filter(Boolean).sort();
+          gCrEsp.innerHTML = '<option value="">Todas</option>';
+          validE.forEach(e => gCrEsp.add(new Option(e, e)));
+          gCrEsp.value = validE.includes(espVal) ? espVal : "";
+        }
+
+        const csVal = gCs ? gCs.value : "";
+        if (gCs) {
+          let cs_data = getGeoBase();
+          if (rValNew) cs_data = cs_data.filter(e => e.region === rValNew);
+          if (dValNew) cs_data = cs_data.filter(e => e.departamento === dValNew);
+          if (gMuni && gMuni.value) cs_data = cs_data.filter(e => e.ciudad === gMuni.value);
+          const validCs = [...new Set(cs_data.map(e => e.causa_suspension_macro))].filter(Boolean).sort();
+          gCs.innerHTML = '<option value="">Todas</option>';
+          validCs.forEach(m => gCs.add(new Option(m, m)));
+          gCs.value = validCs.includes(csVal) ? csVal : "";
+        }
+
+        const csEspVal = gCsEsp ? gCsEsp.value : "";
+        if (gCsEsp) {
+          let cse_data = getGeoBase();
+          if (gCs && gCs.value) cse_data = cse_data.filter(e => e.causa_suspension_macro === gCs.value);
+          if (rValNew) cse_data = cse_data.filter(e => e.region === rValNew);
+          if (dValNew) cse_data = cse_data.filter(e => e.departamento === dValNew);
+          if (gMuni && gMuni.value) cse_data = cse_data.filter(e => e.ciudad === gMuni.value);
+          const validCsE = [...new Set(cse_data.map(e => e.causa_suspension_especifica))].filter(Boolean).sort();
+          gCsEsp.innerHTML = '<option value="">Todas</option>';
+          validCsE.forEach(e => gCsEsp.add(new Option(e, e)));
+          gCsEsp.value = validCsE.includes(csEspVal) ? csEspVal : "";
+        }
+      }
+
+      /* ============================================================
+         MÓDULO 13: GRÁFICA DE DISPONIBILIDAD NAR 4G
+      ============================================================ */
+      let dispNarData = [];
+      const DISP_COLORS = {
+        'GLOBAL':  { line: '#3B82F6', bg: 'rgba(59,130,246,0.08)' },
+        'ANDINA':  { line: '#10B981', bg: 'rgba(16,185,129,0.06)' },
+        'CARIBE':  { line: '#F59E0B', bg: 'rgba(245,158,11,0.06)' },
+        'CENTRO':  { line: '#EF4444', bg: 'rgba(239,68,68,0.06)' },
+        'SUR':     { line: '#5B21B6', bg: 'rgba(91,33,182,0.06)' },
+      };
+
+      function getApiBaseUrl() {
+        // Si se abre como archivo local, apuntar al localhost. Si está en web (Render), usar ruta relativa.
+        return window.location.protocol === 'file:' ? 'http://127.0.0.1:5000' : '';
+      }
+
+      async function fetchDispNAR(fuente) {
+        let url = `${getApiBaseUrl()}/api/disponibilidad/${fuente}`;
+        try {
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          return await resp.json();
+        } catch (e) {
+          console.error('Error fetching disponibilidad:', e);
+          return [];
+        }
+      }
+
+      async function renderDisponibilidadNAR() {
+        const canvas = document.getElementById('ch-disp-nar');
+        if (!canvas) return;
+
+        const fuente = filtro.modo === 'HUAWEI' ? 'Huawei' : 'UNIRED';
+        const fuenteLabel = filtro.modo === 'HUAWEI' ? 'Excluye parada reloj' : 'Sin exclusiones';
+        const subEl = document.getElementById('disp-nar-subtitle');
+        if (subEl) subEl.textContent = `Fuente: ${fuente} (${fuenteLabel})`;
+
+        let rows = await fetchDispNAR(fuente);
+        // Filtrar solo desde Octubre 2025
+        rows = rows.filter(r => r.mes && r.mes.slice(0, 7) >= '2025-10');
+        dispNarData = rows;
+
+        // Group by month
+        const months = [...new Set(rows.map(r => r.mes.slice(0, 7)))].sort();
+        const regions = ['GLOBAL', 'ANDINA', 'CARIBE', 'CENTRO', 'SUR'];
+        const byMonthRegion = {};
+        rows.forEach(r => {
+          const key = r.mes.slice(0, 7) + '|' + r.region;
+          byMonthRegion[key] = r;
+        });
+
+        // KPIs - last month values
+        const lastMonth = months[months.length - 1];
+        const kpiDiv = document.getElementById('disp-nar-kpis');
+        if (kpiDiv && lastMonth) {
+          let kpiHtml = '';
+          regions.forEach(reg => {
+            const r = byMonthRegion[lastMonth + '|' + reg];
+            const pct = r ? r.nar_pct.toFixed(2) : '--';
+            const col = DISP_COLORS[reg]?.line || '#333';
+            kpiHtml += `<span style="border-left:5px solid ${col}; padding:10px 15px; background:#f9fafb; flex:1; min-width:120px; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:${reg === 'GLOBAL' ? '24' : '20'}px; color:${col}; line-height:1;">${pct}%</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">${reg}</div>
+              <div style="color:var(--gris); font-size:10px;">${lastMonth}</div>
+            </span>`;
+          });
+          kpiDiv.innerHTML = kpiHtml;
+        }
+
+        // Chart datasets
+        const datasets = regions.map(reg => ({
+          label: reg,
+          data: months.map(m => {
+            const r = byMonthRegion[m + '|' + reg];
+            return r ? r.nar_pct : null;
+          }),
+          borderColor: DISP_COLORS[reg]?.line || '#333',
+          backgroundColor: DISP_COLORS[reg]?.bg || 'rgba(0,0,0,0.05)',
+          borderWidth: reg === 'GLOBAL' ? 3 : 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.3,
+          fill: false,
+        }));
+
+        const labels = months.map(m => {
+          const [y, mo] = m.split('-');
+          const mNames = { '01':'Ene','02':'Feb','03':'Mar','04':'Abr','05':'May','06':'Jun','07':'Jul','08':'Ago','09':'Sep','10':'Oct','11':'Nov','12':'Dic' };
+          return (mNames[mo] || mo) + ' ' + y;
+        });
+
+        destroy('dispnar');
+        
+        const localPlugins = [];
+        if (typeof ChartDataLabels !== 'undefined') {
+          localPlugins.push(ChartDataLabels);
+        }
+
+        charts.dispnar = new Chart(canvas, {
+          type: 'line',
+          plugins: localPlugins,
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 12 } } },
+              tooltip: {
+                backgroundColor: 'rgba(26,34,56,0.92)',
+                titleFont: { size: 13 },
+                bodyFont: { size: 12 },
+                callbacks: {
+                  label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(2) + '%' : 'N/A'}`
+                }
+              },
+              datalabels: {
+                backgroundColor: function(context) {
+                  return context.dataset.borderColor;
+                },
+                borderRadius: 4,
+                color: 'white',
+                font: {
+                  weight: 'bold',
+                  size: 11
+                },
+                padding: { top: 2, bottom: 2, left: 4, right: 4 },
+                formatter: function(value) {
+                  return value != null ? value.toFixed(2) : '';
+                },
+                display: function(context) {
+                  return context.dataset.data[context.dataIndex] !== null;
+                },
+                align: 'end',
+                anchor: 'end'
+              },
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              y: {
+                beginAtZero: false,
+                suggestedMin: 98.5,
+                suggestedMax: 100,
+                title: { display: true, text: 'NAR %', font: { size: 12 } },
+                ticks: { callback: v => v.toFixed(1) + '%', font: { size: 11 } },
+              }
+            }
+          }
+        });
+
+        // Table
+        const tbl = document.getElementById('tbl-disp-nar');
+        if (tbl) {
+          let html = '<thead><tr><th>Mes</th>';
+          regions.forEach(r => html += `<th>${r}</th>`);
+          html += '</tr></thead><tbody>';
+          months.forEach(m => {
+            html += `<tr><td>${m}</td>`;
+            regions.forEach(r => {
+              const d = byMonthRegion[m + '|' + r];
+              html += `<td>${d ? d.nar_pct.toFixed(2) + '%' : '-'}</td>`;
+            });
+            html += '</tr>';
+          });
+          html += '</tbody>';
+          tbl.innerHTML = html;
+        }
+
+        // SLA Matrix
+        const tblSla = document.getElementById('tbl-sla-matrix');
+        if (tblSla) {
+          const months2026 = months.filter(m => m.startsWith('2026'));
+          const slaRegions = ['CARIBE', 'ANDINA', 'SUR', 'CENTRO'];
+          
+          let htmlSla = '<thead><tr><th rowspan="3" class="th-penalty" style="vertical-align:middle;">SLA</th>';
+          months2026.forEach(m => {
+             const mName = new Date(m + '-02').toLocaleString('es-ES', {month:'long'});
+             htmlSla += `<th colspan="4" class="th-group" style="text-transform:capitalize">${mName}</th>`;
+          });
+          htmlSla += '</tr><tr>';
+          months2026.forEach(m => {
+            slaRegions.forEach(r => {
+              const rName = r;
+              const rightBorder = r === 'CENTRO' ? 'border-right: 2px solid #94a3b8 !important;' : '';
+              htmlSla += `<th style="${rightBorder}">${rName}</th>`;
+            });
+          });
+          htmlSla += '</tr><tr>';
+          months2026.forEach(m => {
+            slaRegions.forEach(r => {
+              const d = byMonthRegion[m + '|' + r];
+              const val = d ? d.nar_pct : null;
+              const rightBorder = r === 'CENTRO' ? 'border-right: 2px solid #94a3b8 !important;' : '';
+              if (val != null) {
+                htmlSla += `<th style="font-weight:600; font-size:11px; background:#e0f2fe; color:#0369a1; ${rightBorder}">${val.toFixed(2)}%</th>`;
+              } else {
+                htmlSla += `<th style="font-weight:normal; font-size:11px; background:#f1f5f9; color:#94a3b8; ${rightBorder}">-</th>`;
+              }
+            });
+          });
+          htmlSla += '</tr></thead><tbody>';
+
+          const getSlaInfo = (val, region) => {
+            if (val == null) return { pct: '-', cls: 'sla-none' };
+            
+            const thresholds = {
+              'CARIBE': { t30: 99.3, t20: 99.1, t10: 98.9 }, // Costa
+              'ANDINA': { t30: 99.5, t20: 99.3, t10: 99.1 },
+              'SUR':    { t30: 99.4, t20: 99.2, t10: 99.0 },
+              'CENTRO': { t30: 99.5, t20: 99.3, t10: 99.1 }
+            };
+            
+            const t = thresholds[region] || thresholds['ANDINA'];
+
+            if (val >= t.t30) return { pct: '30%', cls: 'sla-30' };
+            if (val >= t.t20) return { pct: '20%', cls: 'sla-20' };
+            if (val >= t.t10) return { pct: '10%', cls: 'sla-10' };
+            return { pct: '0%', cls: 'sla-0' };
+          };
+
+          const penalties = [30, 20, 10, 0];
+          penalties.forEach(pen => {
+            htmlSla += `<tr><td class="th-penalty">${pen}%</td>`;
+            months2026.forEach(m => {
+              slaRegions.forEach(r => {
+                const d = byMonthRegion[m + '|' + r];
+                const val = d ? d.nar_pct : null;
+                const info = getSlaInfo(val, r);
+                const rightBorder = r === 'CENTRO' ? 'border-right: 2px solid #94a3b8 !important;' : '';
+                
+                if (info.pct === pen + '%') {
+                   htmlSla += `<td class="${info.cls}" style="${rightBorder}">${pen}%</td>`;
+                } else {
+                   htmlSla += `<td style="color:#cbd5e1; font-size:10px; ${rightBorder}">-</td>`;
+                }
+              });
+            });
+            htmlSla += '</tr>';
+          });
+          htmlSla += '</tbody>';
+          tblSla.innerHTML = htmlSla;
+        }
+      }
+
+      // Notificacion tipo Toast
+      function showToast(message, isError = false) {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.padding = '12px 24px';
+        toast.style.backgroundColor = isError ? '#e74c3c' : '#2ecc71';
+        toast.style.color = '#fff';
+        toast.style.borderRadius = '8px';
+        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+        toast.style.fontFamily = 'inherit';
+        toast.style.fontSize = '0.9rem';
+        toast.style.fontWeight = '500';
+        toast.style.zIndex = '9999';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        toast.style.transition = 'all 0.3s ease';
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.style.opacity = '1';
+          toast.style.transform = 'translateY(0)';
+        }, 10);
+        
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(20px)';
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Refrescar grafica con datos de Supabase
+      async function syncDisponibilidad() {
+        const btn = document.getElementById('btn-sync-disp');
+        if (btn) { btn.disabled = true; btn.textContent = 'Actualizando...'; }
+        try {
+          await renderDisponibilidadNAR();
+          showToast('✅ Gráfica actualizada con los datos más recientes.');
+        } catch (e) {
+          showToast('❌ Error de conexión: ' + e.message, true);
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDD04 Actualizar información'; }
+        }
+      }
+
+      /* ============================================================
+         INIT UI
+      ============================================================ */
+      function initFiltros() {
+        const fmodo = document.getElementById("f-modo");
+        if (fmodo) {
+           filtro.modo = fmodo.value;
+           fmodo.onchange = () => {
+             filtro.modo = fmodo.value;
+             renderAll();
+           };
+        }
+        document.getElementById("f-modo").onchange = (e) => { filtro.modo = e.target.value; renderAll(); };
+        initLocalFilters();
+
+        document.getElementById("cr-comp").onchange = e => { crComp = e.target.value; crSel = null; renderCausaRaiz() };
+        const tendMetric = document.getElementById("tend-metric"); if (tendMetric) tendMetric.onchange = () => renderTendencias();
+
+        // Filtros secundarios Geografía
+        const geoMes = document.getElementById("geo-mes");
+        if (geoMes) geoMes.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
+        const geoCr = document.getElementById("geo-cr");
+        if (geoCr) geoCr.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
+        const geoCrEsp = document.getElementById("geo-cr-esp");
+        if (geoCrEsp) geoCrEsp.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
+
+        const geoCs = document.getElementById("geo-cs");
+        if (geoCs) geoCs.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
+        const geoCsEsp = document.getElementById("geo-cs-esp");
+        if (geoCsEsp) geoCsEsp.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
+
+        const geoRango = document.getElementById("geo-rango");
+        if (geoRango) {
+          const rangos = [...new Set(DATA.map(d => d.rango))];
+          rangos.forEach(r => geoRango.add(new Option(r, r)));
+          geoRango.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
+        }
+
+        const geoReg = document.getElementById("geo-reg");
+        if (geoReg) geoReg.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
+        const geoDepto = document.getElementById("geo-depto");
+        if (geoDepto) geoDepto.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
+        const geoMuni = document.getElementById("geo-muni");
+        if (geoMuni) geoMuni.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
+
+        // Filtros secundarios Worst Offenders
+        const woR = document.getElementById("wo-reg");
+        if (woR) {
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+          regiones.forEach(d => woR.add(new Option(d, d)));
+          woR.onchange = () => renderWorst();
+        }
+        const woCr = document.getElementById("wo-cr");
+        if (woCr) {
+          Object.keys(CAUSA_RAIZ).forEach(c => woCr.add(new Option(c, c)));
+          woCr.onchange = () => renderWorst();
+        }
+        const woCs = document.getElementById("wo-cs");
+        if (woCs) {
+          Object.keys(CAUSA_SUSP).forEach(c => woCs.add(new Option(c, c)));
+          woCs.onchange = () => renderWorst();
+        }
+
+        const intPeriodo = document.getElementById("int-periodo");
+        if (intPeriodo) intPeriodo.onchange = () => renderIntermitentes();
+
+        // Filtros secundarios Simultáneas
+        const masMes = document.getElementById("mas-mes");
+        if (masMes) {
+          _MA.forEach(m => { const ms = String(m); const mm = ms.slice(4); const lbl = `${mesesLbl[mm] || mm} ${ms.slice(0,4)}`; masMes.add(new Option(lbl, m)); });
+          masMes.onchange = () => renderMasivas();
+        }
+        const masReg = document.getElementById("mas-reg");
+        if (masReg) {
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+          regiones.forEach(d => masReg.add(new Option(d, d)));
+          masReg.onchange = () => renderMasivas();
+        }
+        const masCr = document.getElementById("mas-cr");
+        if (masCr) {
+          Object.keys(CAUSA_RAIZ).forEach(c => masCr.add(new Option(c, c)));
+          masCr.onchange = () => renderMasivas();
+        }
+      }
+      function initNav() {
+        document.querySelectorAll('.sb-item').forEach(item => {
+          item.addEventListener('click', () => showView(item.dataset.view));
+        });
+        showView('resumen');
+      }
+
+      /* ============================================================
+         CHATBOT
+      ============================================================ */
+      const SUGERENCIAS = [
+        "Top 5 sitios por minutos en Antioquia",
+        "¿Qué sitios son más intermitentes (más eventos)?",
+        "¿En qué mes creció más la indisponibilidad?",
+        "Sitios crónicos con causa raíz de Energía"
+      ];
+      let chatHist = [];
+      function dataResumenParaIA() {
+        const porDepto = {}, porCR = {}, porCS = {}, porMes = {};
+        DATA.forEach(e => {
+          porDepto[e.departamento] = (porDepto[e.departamento] || 0) + e.minutos_caidos;
+          porCR[e.causa_raiz_especifica] = (porCR[e.causa_raiz_especifica] || 0) + e.minutos_caidos;
+          porCS[e.causa_suspension_especifica] = (porCS[e.causa_suspension_especifica] || 0) + e.minutos_caidos;
+          const mo = String(e.mes_ano).slice(0, 4) + "-" + String(e.mes_ano).slice(4).padStart(2, "0");
+          porMes[mo] = (porMes[mo] || 0) + e.minutos_caidos;
+        });
+        
+        const sm = metricasSitio(DATA).map(s => ({
+          id: s.sitio_id, dep: s.departamento, min: Math.round(s.min), nEv: s.nEv, crTop: s.crTop
+        }));
+        
+        const topMin = [...sm].sort((a,b) => b.min - a.min).slice(0, 15);
+        const topEv = [...sm].sort((a,b) => b.nEv - a.nEv).slice(0, 15);
+
+        const sortDict = (dict, limit) => Object.entries(dict).sort((a,b)=>b[1]-a[1]).slice(0, limit).map(x=>({[x[0]]: Math.round(x[1])}));
+
+        return {
+          totalEventos: DATA.length, 
+          totalMinutos: Math.round(DATA.reduce((s, e) => s + e.minutos_caidos, 0)),
+          resumen_meses: sortDict(porMes, 12),
+          top_causas_raiz: sortDict(porCR, 10),
+          top_causas_suspension: sortDict(porCS, 10),
+          top_deptos_minutos: sortDict(porDepto, 33),
+          top15_nacionales_minutos: topMin,
+          top15_nacionales_eventos: topEv
+        };
+      }
+      function addMsg(role, html) {
+        const b = document.getElementById("chat-body");
+        const d = document.createElement("div"); d.className = "msg " + role; d.innerHTML = html; b.appendChild(d); b.scrollTop = b.scrollHeight; return d;
+      }
+      function mdToHtml(t) {
+        // mini-markdown: negritas, tablas simples, saltos
+        t = t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        t = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        // tablas markdown
+        if (/\|.+\|/.test(t)) {
+          const lines = t.split("\n"); let out = [], intbl = false, buf = [];
+          const flush = () => {
+            if (buf.length) {
+              let rows = buf.filter(l => !/^\s*\|[-:\s|]+\|\s*$/.test(l));
+              let html = "<div class='table-wrapper' style='overflow-x: auto; margin: 6px 0;'><table style='margin:0;'>"; rows.forEach((r, i) => {
+                const cells = r.split("|").slice(1, -1).map(c => c.trim());
+                html += "<tr>" + cells.map(c => i === 0 ? `<th>${c}</th>` : `<td>${c}</td>`).join("") + "</tr>";
+              });
+              html += "</table></div>"; out.push(html); buf = [];
+            }
+          };
+          lines.forEach(l => { if (/^\s*\|.+\|\s*$/.test(l)) { buf.push(l); intbl = true; } else { if (intbl) { flush(); intbl = false; } out.push(l); } });
+          flush(); t = out.join("\n");
+        }
+        return t.replace(/\n/g, "<br>");
+      }
+      async function preguntar(q) {
+        addMsg("user", q.replace(/</g, "&lt;"));
+        chatHist.push({ role: "user", content: q });
+        const typing = addMsg("bot typing", "Analizando el dataset…");
+        const ctx = dataResumenParaIA();
+        const sys = `Eres el Asistente de Red de TIGO. Tienes un resumen muy estricto: resumen_meses, top_causas, top_deptos_minutos, top15_nacionales_minutos, top15_nacionales_eventos. Reglas: NUNCA inventes información. Si te preguntan algo que no está en el top 15, dí que no tienes datos para ese nivel de detalle. Usa markdown para tablas simples. DATASET:\n${JSON.stringify(ctx)}`;
+        try {
+          const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST", 
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": "Bearer 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"
+            },
+            body: JSON.stringify({ 
+              model: "llama-3.1-8b-instant", 
+              messages: [{ role: "system", content: sys }, ...chatHist] 
+            })
+          });
+          const data = await resp.json();
+          if (data.error) {
+              throw new Error(data.error.message || JSON.stringify(data.error));
+          }
+          const txt = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : "No pude generar respuesta.";
+          typing.remove();
+          addMsg("bot", mdToHtml(txt));
+          chatHist.push({ role: "assistant", content: txt });
+        } catch (err) {
+          typing.remove();
+          addMsg("bot", "⚠️ No pude conectar con el asistente. " + (err.message || ""));
+        }
+      }
+      function initChat() {
+        const panel = document.getElementById("chatpanel");
+        document.getElementById("fab").onclick = () => panel.classList.add("open");
+        document.getElementById("chat-close").onclick = () => panel.classList.remove("open");
+        const sugs = document.getElementById("chat-sugs");
+        SUGERENCIAS.forEach(s => { const b = document.createElement("button"); b.className = "sug"; b.textContent = s; b.onclick = () => { if (!sending) preguntar(s) }; sugs.appendChild(b) });
+        const ta = document.getElementById("chat-text"), send = document.getElementById("chat-send");
+        let sending = false;
+        const go = async () => { const q = ta.value.trim(); if (!q || sending) return; sending = true; send.disabled = true; ta.value = ""; await preguntar(q); sending = false; send.disabled = false; };
+        send.onclick = go;
+        ta.onkeydown = e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); go(); } };
+        addMsg("bot", "Hola 👋 Soy tu asistente de red. Puedo investigar el dataset de " + DATA.length + " sitios: rankings, causas raíz, suspensiones, departamentos. Prueba una sugerencia o escríbeme.");
+      }
+
+      /* ============================================================
+         HISTORIAL DE SITIOS
+      ============================================================ */
+      const API = window.location.origin;
+      let historialData = {};
+      try { historialData = JSON.parse(localStorage.getItem('historialSitios')) || {} } catch (e) { historialData = {} }
+      let histCtx = null;
+      let dbNotasSitios = new Set();
+      let dbNotasFallas = new Set();
+
+      function fetchResumenNotas() {
+        return fetch(`${API}/resumen_notas`).then(r => r.json()).then(data => {
+          dbNotasSitios = new Set(data.sitios || []);
+          dbNotasFallas = new Set(data.fallas || []);
+        }).catch(err => console.error("Error cargando resumen API", err));
+      }
+ // Contexto actual del modal: {tipo, codigo, nombre, depto, muni, ticket, inicio, fin, duracion, causa, solucion}
+
+      function saveHistorial() { localStorage.setItem('historialSitios', JSON.stringify(historialData)) }
+
+      function openHistorial(dataset) {
+        histCtx = { ...dataset }; // Copia todos los data-* attributes del botón
+        const nombre = dataset.nombre || dataset.codigo || dataset.ticket || 'Elemento';
+        const esFalla = dataset.tipo === 'falla';
+        document.getElementById('hist-title').textContent = (esFalla ? 'Nota Falla' : 'Nota Sitio') + ' \u2014 ' + nombre;
+        renderHistList();
+        document.getElementById('modal-hist').classList.add('open');
+      }
+
+      function renderHistList() {
+        const list = document.getElementById('hist-list');
+        if (!histCtx) { list.innerHTML = '<li class="hist-empty">Sin contexto.</li>'; return; }
+        const esFalla = histCtx.tipo === 'falla';
+        const key = esFalla ? histCtx.ticket : histCtx.codigo;
+        const url = esFalla ? `${API}/notas_falla/${encodeURIComponent(key)}` : `${API}/notas_sitio/${encodeURIComponent(key)}`;
+        // Cargar notas desde PostgreSQL
+        list.innerHTML = '<li class="hist-empty">Cargando notas...</li>';
+        fetch(url).then(r => r.json()).then(notas => {
+          let html = "";
+          const apiTexts = new Set(notas.map(n => n.nota.trim()));
+          if (notas.length) {
+            html += notas.map(n => `<li><span class="hist-date">${n.fecha_registro}</span>${n.nota}<button class="hist-del" data-id="${n.id}" data-tipo="${histCtx.tipo}" title="Eliminar">\u00d7</button></li>`).join('');
+          }
+          const localNotas = historialData[key] || [];
+          if (localNotas.length) {
+            html += localNotas.map((n, i) => apiTexts.has(n.texto.trim()) ? '' : `<li><span class="hist-date">${n.fecha} (Local)</span>${n.texto}<button class="hist-del hist-del-local" data-idx="${i}" title="Eliminar">\u00d7</button></li>`).join('');
+          }
+          
+          if (!html) { list.innerHTML = '<li class="hist-empty">No hay notas registradas.</li>'; return; }
+          list.innerHTML = html;
+          
+          list.querySelectorAll('.hist-del:not(.hist-del-local)').forEach(btn => btn.onclick = () => {
+            const delUrl = btn.dataset.tipo === 'falla' ? `${API}/nota_falla/${btn.dataset.id}` : `${API}/nota_sitio/${btn.dataset.id}`;
+            fetch(delUrl, { method: 'DELETE' }).then(() => renderHistList());
+          });
+          list.querySelectorAll('.hist-del-local').forEach(btn => btn.onclick = () => {
+            historialData[key].splice(btn.dataset.idx, 1);
+            saveHistorial();
+            renderHistList();
+          });
+        }).catch(() => {
+          // Fallback solo a localStorage si falla la red
+          const localNotas = historialData[key] || [];
+          if (!localNotas.length) { list.innerHTML = '<li class="hist-empty">No hay notas (API no disponible).</li>'; return; }
+          list.innerHTML = localNotas.map((n, i) => `<li><span class="hist-date">${n.fecha} (Local)</span>${n.texto}<button class="hist-del hist-del-local" data-idx="${i}" title="Eliminar">\u00d7</button></li>`).join('');
+          list.querySelectorAll('.hist-del-local').forEach(btn => btn.onclick = () => {
+            historialData[key].splice(btn.dataset.idx, 1);
+            saveHistorial();
+            renderHistList();
+          });
+        });
+      }
+
+      function initHistorial() {
+        document.getElementById('modal-hist').onclick = e => { if (e.target === e.currentTarget) e.target.classList.remove('open') };
+        document.getElementById('hist-add').onclick = () => {
+          const ta = document.getElementById('hist-text');
+          const txt = ta.value.trim();
+          if (!txt || !histCtx) return;
+          const esFalla = histCtx.tipo === 'falla';
+          const key = esFalla ? histCtx.ticket : histCtx.codigo;
+          // Guardar en localStorage como respaldo
+          if (!historialData[key]) historialData[key] = [];
+          historialData[key].push({ fecha: new Date().toLocaleString('es-CO'), texto: txt });
+          saveHistorial();
+          ta.value = '';
+          // Enviar a PostgreSQL
+          let body, endpoint;
+          if (esFalla) {
+            endpoint = `${API}/nota_falla`;
+            body = { ticket: histCtx.ticket, hora_inicio: histCtx.inicio || null, hora_fin: histCtx.fin || null, duracion_minutos: parseFloat(histCtx.duracion) || 0, causa_especifica: histCtx.causa || '', solucion: histCtx.solucion || '', codigo_sitio: histCtx.codigo || '', nota: txt };
+          } else {
+            endpoint = `${API}/nota_sitio`;
+            body = { departamento: histCtx.depto || '', municipio: histCtx.muni || '', codigo_sitio: histCtx.codigo || '', nota: txt };
+          }
+          fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+            .then(r => r.json())
+            .then(data => { if (data.ok) { renderHistList(); renderGeo(); } else console.error('Error DB:', data.error); })
+            .catch(err => console.error('Error API:', err));
+        };
+      }
+
+
+      /* ============================================================
+         NOTAS DE ANÁLISIS (gráfica apilada)
+      ============================================================ */
+      let analisisCtx = null;
+      let analisisImgBase64 = null;
+
+      function openAnalisisNota(seccion, causa, mes) {
+        analisisCtx = { seccion, causa, mes };
+        analisisImgBase64 = null;
+        document.getElementById('analisis-title').textContent = `Nota · ${causa}`;
+        document.getElementById('analisis-meta').innerHTML =
+          `<span class="meta-chip">📅 ${mes}</span>` +
+          `<span class="meta-chip">🏷️ ${causa}</span>` +
+          `<span class="meta-chip">📂 ${seccion === 'causa_raiz' ? 'Causa Raíz Macro' : seccion}</span>`;
+        document.getElementById('analisis-text').value = '';
+        document.getElementById('analisis-img-preview').style.display = 'none';
+        document.getElementById('analisis-img-label').classList.remove('has-img');
+        document.getElementById('analisis-img-label').innerHTML = '📷 Adjuntar imagen<input type="file" id="analisis-img-input" accept="image/*" style="display:none">';
+        
+        const sel = document.getElementById('analisis-reg-select');
+        if (sel) {
+          sel.innerHTML = '<option value="TODAS">Aplica a Todas (Global)</option>';
+          const regiones = [...new Set(DATA.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+          regiones.forEach(r => sel.add(new Option(r, r)));
+          const currentFReg = document.getElementById('f-reg') ? document.getElementById('f-reg').value : "";
+          sel.value = currentFReg || "TODAS";
+          sel.onchange = () => renderAnalisisNotas();
+        }
+
+        bindAnalisisImgInput();
+        renderAnalisisNotas();
+        document.getElementById('modal-analisis').classList.add('open');
+      }
+
+      function bindAnalisisImgInput() {
+        document.getElementById('analisis-img-input').onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            analisisImgBase64 = ev.target.result;
+            const preview = document.getElementById('analisis-img-preview');
+            preview.src = analisisImgBase64;
+            preview.style.display = 'inline-block';
+            const label = document.getElementById('analisis-img-label');
+            label.classList.add('has-img');
+            label.innerHTML = '✅ ' + file.name.substring(0, 20) + '<input type="file" id="analisis-img-input" accept="image/*" style="display:none">';
+            bindAnalisisImgInput();
+          };
+          reader.readAsDataURL(file);
+        };
+      }
+
+      function renderAnalisisNotas() {
+        const container = document.getElementById('analisis-list');
+        if (!analisisCtx) { container.innerHTML = ''; return; }
+        container.innerHTML = '<div class="hist-empty">Cargando notas...</div>';
+        
+        const sel = document.getElementById('analisis-reg-select');
+        const regSelected = sel ? sel.value : "TODAS";
+        const causaConRegion = regSelected === "TODAS" ? analisisCtx.causa : `${analisisCtx.causa}|${regSelected}`;
+        
+        const url = `${API}/notas_analisis/${encodeURIComponent(analisisCtx.seccion)}/${encodeURIComponent(causaConRegion)}/${encodeURIComponent(analisisCtx.mes)}`;
+        fetch(url).then(r => r.json()).then(notas => {
+          if (!notas.length) {
+            container.innerHTML = '<div class="hist-empty">No hay notas para este segmento. ¡Sé el primero en documentar!</div>';
+            return;
+          }
+          container.innerHTML = notas.map(n => {
+            let html = `<div class="analisis-nota-item">`;
+            html += `<span class="an-date">${n.fecha_registro}</span>`;
+            html += `<div class="an-text">${n.nota.replace(/\n/g, '<br>')}</div>`;
+            if (n.imagen) {
+              html += `<img class="an-img" src="${n.imagen}" alt="Adjunto" onclick="document.getElementById('lightbox-img').src=this.src; document.getElementById('lightbox').classList.add('open')">`;
+            }
+            html += `<button class="an-del" data-id="${n.id}" title="Eliminar nota">×</button>`;
+            html += `</div>`;
+            return html;
+          }).join('');
+          container.querySelectorAll('.an-del').forEach(btn => {
+            btn.onclick = () => {
+              if (!confirm('¿Eliminar esta nota?')) return;
+              fetch(`${API}/nota_analisis/${btn.dataset.id}`, { method: 'DELETE' })
+                .then(() => renderAnalisisNotas())
+                .catch(err => console.error('Error:', err));
+            };
+          });
+        }).catch(() => {
+          // Fallback localStorage
+          const sel = document.getElementById('analisis-reg-select');
+          const regSelected = sel ? sel.value : "TODAS";
+          const causaConRegion = regSelected === "TODAS" ? analisisCtx.causa : `${analisisCtx.causa}|${regSelected}`;
+          const key = `analisis_${analisisCtx.seccion}_${causaConRegion}_${analisisCtx.mes}`;
+          const notas = JSON.parse(localStorage.getItem(key) || '[]');
+          if (!notas.length) {
+            container.innerHTML = '<div class="hist-empty">No hay notas (API no disponible).</div>';
+            return;
+          }
+          container.innerHTML = notas.map((n, i) => {
+            let html = `<div class="analisis-nota-item">`;
+            html += `<span class="an-date">${n.fecha}</span>`;
+            html += `<div class="an-text">${n.texto.replace(/\n/g, '<br>')}</div>`;
+            if (n.imagen) {
+              html += `<img class="an-img" src="${n.imagen}" alt="Adjunto" onclick="document.getElementById('lightbox-img').src=this.src; document.getElementById('lightbox').classList.add('open')">`;
+            }
+            html += `</div>`;
+            return html;
+          }).join('');
+        });
+      }
+
+      function initAnalisis() {
+        document.getElementById('modal-analisis').onclick = e => {
+          if (e.target === e.currentTarget) e.target.classList.remove('open');
+        };
+        document.getElementById('analisis-add').onclick = () => {
+          const ta = document.getElementById('analisis-text');
+          const txt = ta.value.trim();
+          if (!txt || !analisisCtx) return;
+          const sel = document.getElementById('analisis-reg-select');
+          const regSelected = sel ? sel.value : "TODAS";
+          const causaConRegion = regSelected === "TODAS" ? analisisCtx.causa : `${analisisCtx.causa}|${regSelected}`;
+
+          // Save to localStorage as fallback
+          const key = `analisis_${analisisCtx.seccion}_${causaConRegion}_${analisisCtx.mes}`;
+          const local = JSON.parse(localStorage.getItem(key) || '[]');
+          local.unshift({ fecha: new Date().toLocaleString('es-CO'), texto: txt, imagen: analisisImgBase64 });
+          localStorage.setItem(key, JSON.stringify(local));
+          ta.value = '';
+          // Send to API
+          const body = {
+            seccion: analisisCtx.seccion,
+            causa: causaConRegion,
+            mes: analisisCtx.mes,
+            nota: txt,
+            imagen: analisisImgBase64
+          };
+          fetch(`${API}/nota_analisis`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          })
+            .then(r => r.json())
+            .then(data => {
+              if (data.ok) {
+                analisisImgBase64 = null;
+                document.getElementById('analisis-img-preview').style.display = 'none';
+                document.getElementById('analisis-img-label').classList.remove('has-img');
+                document.getElementById('analisis-img-label').innerHTML = '📷 Adjuntar imagen<input type="file" id="analisis-img-input" accept="image/*" style="display:none">';
+                bindAnalisisImgInput();
+                renderAnalisisNotas();
+              }
+            })
+            .catch(err => {
+              console.error('Error API:', err);
+              renderAnalisisNotas();
+            });
+        };
+        bindAnalisisImgInput();
+      }
+
+      /* ============================================================
+         ARRANQUE
+      ============================================================ */
+      document.addEventListener("DOMContentLoaded", () => {
+        if ('scrollRestoration' in history) {
+          history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+        fetchResumenNotas().then(() => {
+          initMapa(); initFiltros(); initNav(); initChat(); initHistorial(); initAnalisis();
+        });
+      });
+    </script>
+</body>
+
+</html>\n      let iaNivel = { tipo: "mes", mes: null, dia: null };
       let iaMetrica = "cantidad";
       
       function renderMasivasIA(list) {
