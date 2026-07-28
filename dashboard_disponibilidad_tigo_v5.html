@@ -3642,7 +3642,8 @@
            for (const [c, v] of Object.entries(m.causas_ia)) {
               if (v > maxVal) { maxVal = v; maxCa = c; }
            }
-           m.causa_ia_final = maxCa;\n           m.causa_global_final = Array.from(m.causas_macro)[0] || "Desconocida";
+           m.causa_ia_final = maxCa;
+           m.causa_global_final = Array.from(m.causas_macro)[0] || "Desconocida";
         });
         renderMasivasIA(list);
         window.currentMasivasData = masivasData;
