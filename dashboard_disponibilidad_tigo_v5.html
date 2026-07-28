@@ -3853,6 +3853,219 @@
          wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
       
+      let iaNivel = { tipo: "mes", mes: null, dia: null };
+      let iaMetrica = "cantidad";
+      
+      function renderMasivasIA(list) {
+         if (!list) list = masCurrentList;
+         const canvas = document.getElementById('ch-masivas-ia');
+         if (!canvas) return;
+         
+         const isMin = iaMetrica === 'minutos';
+         const mappingIA = {
+             'VM electrificadora': 'VM electrificadora',
+             'Línea Media tensión': 'Red Media Tensión',
+             'TX': 'Transmisión',
+             'Tormenta eléctrica / Vendaval': 'Tormenta eléctrica/Vendaval'
+         };
+
+         const base = list.filter(m => {
+            const mapped = mappingIA[m.causa_ia_final];
+            if (mapped) {
+                m.causa_ia_mapped = mapped;
+                return true;
+            }
+            return false;
+         });
+         
+         let agg = {};
+         let labels = [];
+         let totalByCausa = {};
+         
+         base.forEach(m => {
+            if (!m.eventos || !m.eventos.length) return;
+            const d = new Date(m.eventos[0].ts);
+            const causa = m.causa_ia_mapped;
+            
+            let key = "";
+            let match = true;
+            
+            const mStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0');
+            const dStr = mStr + "-" + String(d.getDate()).padStart(2,'0');
+            const hStr = dStr + " " + String(d.getHours()).padStart(2,'0') + ":00";
+
+            if (iaNivel.tipo === "mes") {
+               key = mStr;
+            } else if (iaNivel.tipo === "dia") {
+               if (mStr !== iaNivel.mes) match = false;
+               key = dStr;
+            } else if (iaNivel.tipo === "hora") {
+               if (dStr !== iaNivel.dia) match = false;
+               key = hStr;
+            }
+            
+            if (match) {
+               totalByCausa[causa] = (totalByCausa[causa] || 0) + (isMin ? m.minutos : 1);
+               if (!agg[key]) agg[key] = { _items: [], total_sitios: 0 };
+               if (!agg[key][causa]) agg[key][causa] = { c: 0, m: 0 };
+               agg[key][causa].c++;
+               agg[key][causa].m += m.minutos;
+               agg[key]._items.push(m);
+               agg[key].total_sitios += (m.sitios ? m.sitios.size : 0);
+            }
+         });
+         
+         labels = Object.keys(agg).sort();
+         const todasCausas = Object.keys(totalByCausa).sort((a,b) => totalByCausa[b] - totalByCausa[a]);
+         const colors = ['#1A2238', '#00A3E0', '#FF9900', '#94a3b8', '#E03131', '#1E9E5A', '#F2C12E', '#5B21B6', '#10B981', '#3B82F6'];
+         
+         const datasets = todasCausas.map((c, i) => {
+             return {
+                 label: c,
+                 data: labels.map(k => {
+                     const item = agg[k][c];
+                     if (!item) return 0;
+                     return isMin ? item.m : item.c;
+                 }),
+                 backgroundColor: colors[i % colors.length]
+             };
+         });
+         datasets.push({
+             type: 'line',
+             label: 'Sitios Afectados',
+             data: labels.map(k => agg[k].total_sitios),
+             borderColor: '#8B5CF6',
+             backgroundColor: '#8B5CF6',
+             borderWidth: 2,
+             fill: false,
+             yAxisID: 'ySitios',
+             order: -1
+         });
+         
+         const yTitle = isMin ? "Minutos Totales" : "Cant. Simultáneas";
+         const formatNum = n => isMin ? Math.round(n).toLocaleString() : n.toLocaleString();
+         const metricLabel = isMin ? "Minutos" : "Fallas";
+         let insTotal = Object.values(totalByCausa).reduce((a,b)=>a+b, 0);
+
+         const totalSimultaneas = base.length;
+         const totalSitiosSim = base.reduce((acc, m) => acc + (m.sitios ? m.sitios.size : 0), 0);
+         const totalMinSim = base.reduce((acc, m) => acc + m.minutos, 0);
+
+         const promSitios = totalSimultaneas > 0 ? (totalSitiosSim / totalSimultaneas).toFixed(1) : 0;
+         const promMin = totalSimultaneas > 0 ? (totalMinSim / totalSimultaneas).toFixed(1) : 0;
+
+         let insightsHtml = `
+            <span style="border-left:5px solid var(--rojo); padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:24px; color:var(--rojo); line-height:1;">${formatNum(insTotal)}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Total ${metricLabel}</div>
+            </span>
+            <span style="border-left:5px solid #8B5CF6; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#8B5CF6; line-height:1;">${promSitios}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Sitios / Falla</div>
+            </span>
+            <span style="border-left:5px solid #3B82F6; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:#3B82F6; line-height:1;">${promMin}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">Prom. Minutos / Falla</div>
+            </span>
+         `;
+         todasCausas.slice(0, 2).forEach((c, i) => {
+             let color = colors[i % colors.length];
+             insightsHtml += `
+            <span style="border-left:5px solid ${color}; padding:10px 15px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+              <div style="font-size:20px; color:${color}; line-height:1;">${formatNum(totalByCausa[c])}</div>
+              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">${c}</div>
+            </span>
+             `;
+         });
+
+         const insContainer = document.getElementById('masivas-ia-insights');
+         if (insContainer) {
+             insContainer.innerHTML = insightsHtml;
+         }
+         
+         let breadHtml = `<button data-t="mes">Por Mes</button>`;
+         if (iaNivel.tipo === 'dia' || iaNivel.tipo === 'hora') {
+             breadHtml += `<span class="sep">›</span><button data-t="dia">${iaNivel.mes}</button>`;
+         }
+         if (iaNivel.tipo === 'hora') {
+             breadHtml += `<span class="sep">›</span><span class="actual">${iaNivel.dia}</span>`;
+         }
+         const breadWrap = document.getElementById('masivas-ia-bread');
+         if (breadWrap) {
+             breadWrap.innerHTML = breadHtml;
+             breadWrap.querySelectorAll('button').forEach(b => {
+                 b.onclick = () => {
+                     const t = b.dataset.t;
+                     if (t === 'mes') iaNivel = { tipo: "mes" };
+                     else if (t === 'dia') iaNivel = { tipo: "dia", mes: iaNivel.mes };
+                     renderMasivasIA(list);
+                 };
+             });
+         }
+         
+         destroy('masivasia');
+         charts.masivasia = new Chart(canvas, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+               responsive: true,
+               maintainAspectRatio: false,
+               plugins: { legend: { position: 'bottom' } },
+               scales: {
+                  x: { stacked: true },
+                  y: { stacked: true, beginAtZero: true, title: { display: true, text: yTitle }, position: 'left' },
+                  ySitios: { type: 'linear', position: 'right', display: true, beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Sitios Afectados' } }
+               },
+               onClick: (e, els) => {
+                  if (!els.length) return;
+                  const idx = els[0].index;
+                  const datasetIdx = els[0].datasetIndex;
+                  const key = labels[idx];
+                  
+                  if (iaNivel.tipo === "mes") {
+                     iaNivel = { tipo: "dia", mes: key };
+                     renderMasivasIA(list);
+                  } else if (iaNivel.tipo === "dia") {
+                     iaNivel = { tipo: "hora", dia: key, mes: iaNivel.mes };
+                     renderMasivasIA(list);
+                  } else if (iaNivel.tipo === "hora") {
+                     const causaName = datasets[datasetIdx].label;
+                     if (causaName === 'Sitios Afectados') return;
+                     const items = agg[key]._items.filter(m => m.causa_ia_mapped === causaName);
+                     mostrarDetalleMasivasIAOrig(items, causaName, key);
+                  }
+               }
+            }
+         });
+      }
+      
+      function mostrarDetalleMasivasIAOrig(items, causaName, horaStr) {
+          document.getElementById('masivas-ia-det-title').textContent = `Simultáneas de ${causaName} a las ${horaStr} (${items.length})`;
+          const wrap = document.getElementById('wrap-masivas-ia-det');
+          const tbody = document.getElementById('tbl-masivas-ia-det');
+          wrap.style.display = 'block';
+          let html = `<tr><th>ID Simultánea</th><th>Región / Depto</th><th>Causa Original</th><th>Inicio</th><th class="num">Sitios</th><th class="num">Minutos</th></tr>`;
+          items.sort((a,b)=>b.minutos - a.minutos).forEach(m => {
+             let cMacro = Array.from(m.causas_macro).join(' / ');
+             let cRaiz = Array.from(m.causas_raiz).join(' / ');
+             let fecha = "";
+             if (m.eventos && m.eventos.length) {
+                const d2 = new Date(m.eventos[0].ts);
+                fecha = d2.toLocaleString('es-CO', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+             }
+             html += `<tr class="clickable" onclick='abrirMasivaDetalle(${JSON.stringify(m.id)})'>
+               <td><span class="tdpill" style="background:var(--azul-marino)">${m.id}</span></td>
+               <td><b>${m.region}</b><br><span style="font-size:10.5px;color:var(--gris)">${m.depto}</span></td>
+               <td><b>${cMacro}</b><br><span style="font-size:10.5px;color:var(--gris)">${cRaiz}</span></td>
+               <td style="font-family:var(--f-mono); font-size:11px;">${fecha}</td>
+               <td class="num" style="font-weight:600">${m.sitios.size}</td>
+               <td class="num" style="font-weight:600">${Math.round(m.minutos)}</td>
+             </tr>`;
+          });
+          tbody.innerHTML = html;
+          wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
       let masCurrentPage = 1;
       let masCurrentList = [];
       
