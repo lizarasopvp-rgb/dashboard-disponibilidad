@@ -3649,6 +3649,9 @@
         window.currentMasivasData = masivasData;
       }
 
+      
+      let glNivel = { tipo: "mes", mes: null, dia: null };
+      let glMetrica = "cantidad";
       function renderMasivasGL(list) {
          if (!list) list = masCurrentList;
          const canvas = document.getElementById('ch-masivas-gl');
