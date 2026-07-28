@@ -253,7 +253,7 @@ for name, group in grouped:
 
 eventos['MASIVA_ID'] = 'No'
 for i, cluster_indices in enumerate(masiva_clusters):
-    eventos.loc[cluster_indices, 'MASIVA_ID'] = f"MASIVA-{i+1}"
+    eventos.loc[cluster_indices, 'MASIVA_ID'] = f"SML-{i+1}"
 print(f"  Total fallas simultáneas detectadas: {len(masiva_clusters)}")
 
 for col in ['CAUSA_GLOBAL','CAUSA_RAIZ','TICKET','SOLUCION_TICKET','DETALLE_FALLA',
