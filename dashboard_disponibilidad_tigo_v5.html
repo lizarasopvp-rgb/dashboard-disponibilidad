@@ -3635,7 +3635,6 @@
         }
 
         updateMasivasTable();
-        renderMasivasGL(list);
         
         list.forEach(m => {
            let maxCa = 'Otra', maxVal = 0;
@@ -3645,6 +3644,7 @@
            m.causa_ia_final = maxCa;
            m.causa_global_final = Array.from(m.causas_macro)[0] || "Desconocida";
         });
+        renderMasivasGL(list);
         renderMasivasIA(list);
         window.currentMasivasData = masivasData;
       }
