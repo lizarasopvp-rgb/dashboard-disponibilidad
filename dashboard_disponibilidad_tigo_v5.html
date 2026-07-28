@@ -2145,7 +2145,17 @@
         "#AED4CD"  // Pale Mint
       ];
       let charts = {};
-      function destroy(k) { if (charts[k]) { charts[k].destroy(); delete charts[k] } }
+      function destroy(k) { 
+        if (charts[k]) { 
+          const canvas = charts[k].canvas;
+          charts[k].destroy(); 
+          delete charts[k];
+          if (canvas && canvas.parentNode) {
+            const newCanvas = canvas.cloneNode(true);
+            canvas.parentNode.replaceChild(newCanvas, canvas);
+          }
+        } 
+      }
 
       /* ============================================================
          1 · RESUMEN
@@ -4260,7 +4270,7 @@
 
         const formattedLabels = labels.map(l => l.substring(0,4) + '-' + l.substring(4));
 
-        if (charts.plan500) charts.plan500.destroy();
+        destroy('plan500');
         
         const plan500LabelsPlugin = {
           id: 'plan500Labels',
