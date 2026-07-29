@@ -3599,6 +3599,7 @@
       function renderMasivas() { 
         const VIEW = getLocalView('masivas');
         iaNivel = { tipo: "mes", mes: null, dia: null };
+        glNivel = { tipo: "mes", mes: null, dia: null };
         let base = VIEW;
         const masivasData = {};
         base.forEach(r => {
@@ -3668,8 +3669,18 @@
       let glMetrica = "cantidad";
       function renderMasivasGL(list) {
          if (!list) list = masCurrentList;
-         const canvas = document.getElementById('ch-masivas-gl');
+         let canvas = document.getElementById('ch-masivas-gl');
          if (!canvas) return;
+         
+         if (charts['masivasgl']) {
+            charts['masivasgl'].destroy();
+            delete charts['masivasgl'];
+            const newCanvas = document.createElement('canvas');
+            newCanvas.id = 'ch-masivas-gl';
+            canvas.parentNode.replaceChild(newCanvas, canvas);
+            canvas = newCanvas;
+         }
+
          
          const isMin = glMetrica === 'minutos';
          const base = list.map(m => ({...m, causa_gl_mapped: m.causa_global_final}));
@@ -3799,7 +3810,6 @@
              });
          }
          
-         destroy('masivasgl');
          charts.masivasgl = new Chart(canvas, {
             type: 'bar',
             data: { labels, datasets },
@@ -3872,8 +3882,17 @@
       
       function renderMasivasIA(list) {
          if (!list) list = masCurrentList;
-         const canvas = document.getElementById('ch-masivas-ia');
+         let canvas = document.getElementById('ch-masivas-ia');
          if (!canvas) return;
+         
+         if (charts['masivasia']) {
+            charts['masivasia'].destroy();
+            delete charts['masivasia'];
+            const newCanvas = document.createElement('canvas');
+            newCanvas.id = 'ch-masivas-ia';
+            canvas.parentNode.replaceChild(newCanvas, canvas);
+            canvas = newCanvas;
+         }
          
          const isMin = iaMetrica === 'minutos';
          const mappingIA = {
@@ -4017,7 +4036,6 @@
              });
          }
          
-         destroy('masivasia');
          charts.masivasia = new Chart(canvas, {
             type: 'bar',
             data: { labels, datasets },
