@@ -2966,6 +2966,7 @@
         const topSitios = topBase.map(s => s.sitio_id);
         
         const VIEW = getLocalView('worst');
+        const base = VIEW;
         const sm = metricasSitio(VIEW);
         const smMap = new Map();
         for (let s of sm) smMap.set(s.sitio_id, s);
