@@ -3627,7 +3627,7 @@
            }
         });
 
-        const list = Object.values(masivasData).filter(m => m.sitios.size >= 3).sort((a, b) => b.minutos - a.minutos);
+        const list = Object.values(masivasData).sort((a, b) => b.minutos - a.minutos);
         masCurrentList = list;
         masCurrentPage = 1;
         
