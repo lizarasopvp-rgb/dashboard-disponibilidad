@@ -1357,7 +1357,10 @@
       <div class="card">
         <div class="card-head">
           <div>
-            <h3>NAR 4G — Evolución Mensual</h3>
+            <div style="display:flex; align-items:center; gap: 10px;">
+              <h3>NAR 4G — Evolución Mensual</h3>
+              <select id="kpi-month-filter" style="padding: 2px 6px; border-radius: 4px; border: 1px solid var(--linea); font-size: 12px; outline:none; color: var(--texto); background: #fff;" onchange="renderDispNarKpis(this.value)"></select>
+            </div>
             <p class="sub" id="disp-nar-subtitle">Fuente: cargando...</p>
           </div>
           <div class="toolbar" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -4769,7 +4772,7 @@
         rows = rows.filter(r => r.mes && r.mes.slice(0, 7) >= '2025-10');
         dispNarData = rows;
 
-        // Group by month
+        // Setup KPI filter
         const months = [...new Set(rows.map(r => r.mes.slice(0, 7)))].sort();
         const regions = ['GLOBAL', 'ANDINA', 'CARIBE', 'CENTRO', 'SUR'];
         const byMonthRegion = {};
@@ -4778,23 +4781,51 @@
           byMonthRegion[key] = r;
         });
 
-        // KPIs - last month values
-        const lastMonth = months[months.length - 1];
-        const kpiDiv = document.getElementById('disp-nar-kpis');
-        if (kpiDiv && lastMonth) {
-          let kpiHtml = '';
-          regions.forEach(reg => {
-            const r = byMonthRegion[lastMonth + '|' + reg];
-            const pct = r ? r.nar_pct.toFixed(2) : '--';
-            const col = DISP_COLORS[reg]?.line || '#333';
-            kpiHtml += `<span style="border-left:5px solid ${col}; padding:10px 15px; background:#f9fafb; flex:1; min-width:120px; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
-              <div style="font-size:${reg === 'GLOBAL' ? '24' : '20'}px; color:${col}; line-height:1;">${pct}%</div>
-              <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">${reg}</div>
-              <div style="color:var(--gris); font-size:10px;">${lastMonth}</div>
-            </span>`;
-          });
-          kpiDiv.innerHTML = kpiHtml;
+        const filterEl = document.getElementById('kpi-month-filter');
+        if (filterEl) {
+            filterEl.innerHTML = '';
+            months.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                if (m === months[months.length - 1]) opt.selected = true;
+                filterEl.appendChild(opt);
+            });
         }
+
+        // Render initial KPIs
+        if (typeof window.renderDispNarKpis === 'undefined') {
+            window.renderDispNarKpis = function(selectedMonth) {
+                const kpiDiv = document.getElementById('disp-nar-kpis');
+                if (!kpiDiv || !dispNarData || dispNarData.length === 0) return;
+                
+                const regions = ['GLOBAL', 'ANDINA', 'CARIBE', 'CENTRO', 'SUR'];
+                const byMonthRegion = {};
+                dispNarData.forEach(r => {
+                    const key = r.mes.slice(0, 7) + '|' + r.region;
+                    byMonthRegion[key] = r;
+                });
+                
+                const avMonths = [...new Set(dispNarData.map(r => r.mes.slice(0, 7)))].sort();
+                if (!selectedMonth) selectedMonth = avMonths[avMonths.length - 1];
+                
+                if (selectedMonth) {
+                    let kpiHtml = '';
+                    regions.forEach(reg => {
+                        const r = byMonthRegion[selectedMonth + '|' + reg];
+                        const pct = r ? r.nar_pct.toFixed(2) : '--';
+                        const col = DISP_COLORS[reg]?.line || '#333';
+                        kpiHtml += `<span style="border-left:5px solid ${col}; padding:10px 15px; background:#f9fafb; flex:1; min-width:120px; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
+                          <div style="font-size:${reg === 'GLOBAL' ? '24' : '20'}px; color:${col}; line-height:1;">${pct}%</div>
+                          <div style="color:var(--gris); text-transform:uppercase; font-size:11px; letter-spacing:0.5px; margin-top:4px;">${reg}</div>
+                          <div style="color:var(--gris); font-size:10px;">${selectedMonth}</div>
+                        </span>`;
+                    });
+                    kpiDiv.innerHTML = kpiHtml;
+                }
+            };
+        }
+        window.renderDispNarKpis(months[months.length - 1]);
 
         // Chart datasets
         const datasets = regions.map(reg => ({
