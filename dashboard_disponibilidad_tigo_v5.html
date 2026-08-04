@@ -3241,10 +3241,12 @@
             });
           });
 
-          const validEsps = CAUSA_RAIZ[m].esp.filter(esp => {
-            const espMin = VIEW.filter(e => e.causa_raiz_macro === m && e.causa_raiz_especifica === esp).reduce((a, c) => a + c.minutos_caidos, 0);
-            return espMin > 0;
-          });
+          const validEsps = CAUSA_RAIZ[m].esp.map(esp => {
+            return {
+              esp: esp,
+              espMin: VIEW.filter(e => e.causa_raiz_macro === m && e.causa_raiz_especifica === esp).reduce((a, c) => a + c.minutos_caidos, 0)
+            };
+          }).filter(obj => obj.espMin > 0).sort((a, b) => b.espMin - a.espMin).map(obj => obj.esp);
 
           validEsps.forEach((esp, idx) => {
             const espMin = VIEW.filter(e => e.causa_raiz_macro === m && e.causa_raiz_especifica === esp).reduce((a, c) => a + c.minutos_caidos, 0);
@@ -3529,7 +3531,17 @@
 
           const subRows = [];
           let maxEspMin = 0;
-          const specificCauses = [...new Set(VIEW_MAYORES.filter(e => e.causa_suspension_macro === m).map(e => e.causa_suspension_especifica))].filter(Boolean).sort();
+          const specificCauses = [...new Set(VIEW_MAYORES.filter(e => e.causa_suspension_macro === m).map(e => e.causa_suspension_especifica))]
+            .filter(Boolean)
+            .map(esp => {
+              return {
+                esp: esp,
+                espMin: VIEW_MAYORES.filter(e => e.causa_suspension_macro === m && e.causa_suspension_especifica === esp).reduce((a, c) => a + c.minutos_caidos, 0)
+              };
+            })
+            .filter(obj => obj.espMin > 0)
+            .sort((a, b) => b.espMin - a.espMin)
+            .map(obj => obj.esp);
 
           specificCauses.forEach(esp => {
             regiones.forEach(d => {
