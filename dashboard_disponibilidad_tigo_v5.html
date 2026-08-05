@@ -4237,8 +4237,15 @@
         _E.forEach(r => {
           const site_cd = _S[r[0]]; 
           if (!planDates[site_cd]) return;
-          const causaGlobal = _S[r[7]].toLowerCase();
-          if (!causaGlobal.includes('energ')) return;
+          const causaFinal = _S[r[8]];
+          const causasPlan500 = [
+            "Mobile_Energía-Facilities_Corte energia comercial sin autonomia/bloqueadas",
+            "Mobile_Energía-Facilities_Falla Energia DC",
+            "Mobile_Energía-Facilities_Corte energia comercial con baterias descargadas",
+            "Mobile_Energía_Corte energia comercial",
+            "Mobile_Energía-Facilities_Mantenimiento Programado electrificadora"
+          ];
+          if (!causasPlan500.includes(causaFinal)) return;
           if (!eventsBySite[site_cd]) eventsBySite[site_cd] = [];
           eventsBySite[site_cd].push(r);
         });
