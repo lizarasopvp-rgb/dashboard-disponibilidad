@@ -72,7 +72,12 @@ cmdb_op = cmdb[cmdb['Site_state'].fillna('').str.upper() == 'OPERATIVO'].copy()
 # Normalizar nombre de Cartagena y Cali para que coincida con Data.xlsx
 cmdb_op['Ciudad'] = cmdb_op['Ciudad'].replace({
     'CARTAGENA DE INDIAS': 'CARTAGENA', 'Cartagena de Indias': 'Cartagena',
-    'SANTIAGO DE CALI': 'CALI', 'Santiago de Cali': 'Cali'
+    'SANTIAGO DE CALI': 'CALI', 'Santiago de Cali': 'Cali',
+    'BOGOTÁ, D.C.': 'BOGOTA', 'Bogotá, D.C.': 'Bogota',
+    'BOGOTÁ D.C.': 'BOGOTA', 'Bogotá D.C.': 'Bogota',
+    'BOGOTA, D.C.': 'BOGOTA', 'Bogota, D.C.': 'Bogota',
+    'BOGOTA D.C.': 'BOGOTA', 'Bogota D.C.': 'Bogota',
+    'BOGOTÁ': 'BOGOTA', 'Bogotá': 'Bogota'
 })
 sitios_por_ciudad = cmdb_op.groupby('Ciudad')['NodeB_Name'].nunique().to_dict()
 sitios_por_depto = cmdb_op.groupby('Departamento')['NodeB_Name'].nunique().to_dict()
@@ -95,7 +100,13 @@ for _, row in cmdb.dropna(subset=['Nombre_Site']).iterrows():
 # DERIVAR COLUMNAS SEGÚN INSTRUCCIONES DEL USUARIO
 # ============================================================
 
-# Ciudad y Departamento (nuevas columnas DataV2)
+df['Ciudad'] = df['Ciudad'].replace({
+    'BOGOTÁ, D.C.': 'BOGOTA', 'Bogotá, D.C.': 'Bogota',
+    'BOGOTÁ D.C.': 'BOGOTA', 'Bogotá D.C.': 'Bogota',
+    'BOGOTA, D.C.': 'BOGOTA', 'Bogota, D.C.': 'Bogota',
+    'BOGOTA D.C.': 'BOGOTA', 'Bogota D.C.': 'Bogota',
+    'BOGOTÁ': 'BOGOTA', 'Bogotá': 'Bogota'
+})
 df['CITY_DS'] = df['Ciudad'].fillna('Sin dato')
 
 # Departamento
