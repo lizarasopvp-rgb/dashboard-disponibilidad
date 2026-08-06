@@ -2325,89 +2325,134 @@
         const tbl = document.getElementById("tbl-tend-heatmap");
         if (!tbl) return;
         
-        const depTotals = {};
-        const regOfDep = {};
-        const moMins = {};
+        const activeMonthsCount = Math.max(...MESES_ACTIVOS) + 1;
+        const byReg = {};
         
         VIEW_TEND.forEach(e => {
-          const dep = String(e.departamento || "Sin dato").toUpperCase();
-          const reg = String(e.siteregion || "Sin dato").toUpperCase();
+          const reg = String(e.region || "").trim().toUpperCase();
+          const dep = String(e.departamento || "").trim().toUpperCase();
+          const city = String(e.ciudad || "").trim().toUpperCase();
           const mins = e.minutos_caidos || 0;
           
-          if (!depTotals[dep]) {
-            depTotals[dep] = 0;
-            regOfDep[dep] = reg;
-            moMins[dep] = {};
-          }
-          depTotals[dep] += mins;
+          if (!reg || reg === "SIN DATO" || !dep || dep === "SIN DATO" || !city || city === "SIN DATO") return;
+          
+          if (!byReg[reg]) byReg[reg] = { total: 0, mo: Array(activeMonthsCount).fill(0), deps: {} };
+          byReg[reg].total += mins;
+          
+          if (!byReg[reg].deps[dep]) byReg[reg].deps[dep] = { total: 0, mo: Array(activeMonthsCount).fill(0), cities: {} };
+          byReg[reg].deps[dep].total += mins;
+          
+          if (!byReg[reg].deps[dep].cities[city]) byReg[reg].deps[dep].cities[city] = { total: 0, mo: Array(activeMonthsCount).fill(0) };
+          byReg[reg].deps[dep].cities[city].total += mins;
           
           if(String(e.mes_ano).startsWith('2026')) {
             const mo = parseInt(String(e.mes_ano).slice(4)) - 1;
-            moMins[dep][mo] = (moMins[dep][mo] || 0) + mins;
+            if (mo < activeMonthsCount) {
+              byReg[reg].mo[mo] += mins;
+              byReg[reg].deps[dep].mo[mo] += mins;
+              byReg[reg].deps[dep].cities[city].mo[mo] += mins;
+            }
           }
         });
         
-        const sortedDeps = Object.keys(depTotals).sort((a,b) => depTotals[b] - depTotals[a]).slice(0, 20);
-        if (sortedDeps.length === 0) {
+        if (Object.keys(byReg).length === 0) {
             tbl.innerHTML = "<tr><td>No hay datos.</td></tr>";
             return;
         }
 
-        const byReg = {};
-        let minVal = Infinity, maxVal = -Infinity;
-        const activeMonthsCount = Math.max(...MESES_ACTIVOS) + 1;
-        
-        sortedDeps.forEach(dep => {
-           const reg = regOfDep[dep];
-           if (!byReg[reg]) byReg[reg] = { deps: [], totalReg: 0, moReg: {} };
-           byReg[reg].deps.push(dep);
-           byReg[reg].totalReg += depTotals[dep];
-           
-           for (let i = 0; i < activeMonthsCount; i++) {
-             const m = moMins[dep][i] || 0;
-             byReg[reg].moReg[i] = (byReg[reg].moReg[i] || 0) + m;
-             if (m > 0 && m < minVal) minVal = m;
-             if (m > maxVal) maxVal = m;
-           }
-        });
-        
-        if (minVal === Infinity) minVal = 0;
-        
-        const getHeatmapStyle = (val) => {
-           if (!val || val === 0) return 'color: var(--gris);';
-           const scale = (Math.sqrt(val) - Math.sqrt(minVal)) / (Math.sqrt(maxVal) - Math.sqrt(minVal) || 1);
+        const getHeatmapStyle = (val, localMin, localMax) => {
+           if (!val || val === 0 || localMax === localMin) return 'color: var(--gris);';
+           const scale = (Math.sqrt(val) - Math.sqrt(localMin)) / (Math.sqrt(localMax) - Math.sqrt(localMin) || 1);
            const hue = 60 * (1 - scale);
            return `color: hsl(${hue}, 90%, 45%); font-weight: bold;`;
         };
+
+        const getLocalMinMax = (moArr) => {
+           let min = Infinity, max = -Infinity;
+           for(let i=0; i<activeMonthsCount; i++) {
+             let v = moArr[i];
+             if(v > 0 && v < min) min = v;
+             if(v > max) max = v;
+           }
+           if (min === Infinity) min = 0;
+           return {min, max};
+        };
         
-        let html = `<thead><tr><th style="text-align:left">Region Operativa / Departamento</th>`;
+        let html = `<thead><tr><th style="text-align:left">Region Operativa / Departamento / Ciudad</th>`;
         for (let i=0; i<activeMonthsCount; i++) {
             html += `<th>${MESES[i]}</th>`;
         }
         html += `<th>Total</th></tr></thead><tbody>`;
         
-        const regKeys = Object.keys(byReg).sort();
-        regKeys.forEach(reg => {
-           const r = byReg[reg];
-           html += `<tr style="background: rgba(0,0,0,0.04); font-weight:bold;">
-             <td style="text-align:left">[-] ${reg}</td>`;
-           for (let i=0; i<activeMonthsCount; i++) {
-             html += `<td class="num">${fmt(r.moReg[i] || 0)}</td>`;
-           }
-           html += `<td class="num">${fmt(r.totalReg)}</td></tr>`;
+        const regKeys = Object.keys(byReg).sort((a,b) => byReg[b].total - byReg[a].total);
+        regKeys.forEach((reg, rIdx) => {
+           const rObj = byReg[reg];
+           const {min: rMin, max: rMax} = getLocalMinMax(rObj.mo);
+           const regId = `reg-${rIdx}`;
            
-           r.deps.sort((a,b) => depTotals[b] - depTotals[a]).forEach(dep => {
-             html += `<tr><td style="text-align:left; padding-left: 20px;">[+] ${dep}</td>`;
+           html += `<tr id="${regId}" style="background: rgba(0,0,0,0.04); font-weight:bold; cursor:pointer;" onclick="toggleHeatmapRow('${regId}')">
+             <td style="text-align:left"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${reg}</td>`;
+           for (let i=0; i<activeMonthsCount; i++) {
+             html += `<td class="num" style="${getHeatmapStyle(rObj.mo[i], rMin, rMax)}">${fmt(rObj.mo[i])}</td>`;
+           }
+           html += `<td class="num">${fmt(rObj.total)}</td></tr>`;
+           
+           const depKeys = Object.keys(rObj.deps).sort((a,b) => rObj.deps[b].total - rObj.deps[a].total);
+           depKeys.forEach((dep, dIdx) => {
+             const dObj = rObj.deps[dep];
+             const {min: dMin, max: dMax} = getLocalMinMax(dObj.mo);
+             const depId = `${regId}-dep-${dIdx}`;
+             
+             html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; cursor:pointer; background: rgba(0,0,0,0.015);" onclick="toggleHeatmapRow('${depId}')">
+               <td style="text-align:left; padding-left: 24px;"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${dep}</td>`;
              for (let i=0; i<activeMonthsCount; i++) {
-               const v = moMins[dep][i] || 0;
-               html += `<td class="num" style="${getHeatmapStyle(v)}">${fmt(v)}</td>`;
+               html += `<td class="num" style="${getHeatmapStyle(dObj.mo[i], dMin, dMax)}">${fmt(dObj.mo[i])}</td>`;
              }
-             html += `<td class="num" style="font-weight:bold;">${fmt(depTotals[dep])}</td></tr>`;
+             html += `<td class="num" style="font-weight:bold;">${fmt(dObj.total)}</td></tr>`;
+             
+             const cityKeys = Object.keys(dObj.cities).sort((a,b) => dObj.cities[b].total - dObj.cities[a].total).slice(0, 20);
+             cityKeys.forEach(city => {
+               const cObj = dObj.cities[city];
+               const {min: cMin, max: cMax} = getLocalMinMax(cObj.mo);
+               
+               html += `<tr class="child-of-${regId} child-of-${depId}" style="display:none;">
+                 <td style="text-align:left; padding-left: 48px; color:var(--gris)">${city}</td>`;
+               for (let i=0; i<activeMonthsCount; i++) {
+                 html += `<td class="num" style="${getHeatmapStyle(cObj.mo[i], cMin, cMax)}">${fmt(cObj.mo[i])}</td>`;
+               }
+               html += `<td class="num" style="font-weight:bold;">${fmt(cObj.total)}</td></tr>`;
+             });
            });
         });
         
         html += `</tbody>`;
         tbl.innerHTML = html;
+        
+        if (!window.toggleHeatmapRow) {
+          window.toggleHeatmapRow = function(id) {
+             const btn = document.querySelector('#' + id + ' .hm-btn');
+             const isExpanded = btn.textContent === "[-]";
+             btn.textContent = isExpanded ? "[+]" : "[-]";
+             
+             if (id.startsWith('reg-') && id.indexOf('-dep-') === -1) {
+                if (isExpanded) {
+                   document.querySelectorAll('.child-of-' + id).forEach(c => {
+                      c.style.display = "none";
+                      const cb = c.querySelector('.hm-btn');
+                      if (cb) cb.textContent = "[+]";
+                   });
+                } else {
+                   document.querySelectorAll('.child-of-' + id).forEach(c => {
+                      if (c.id) c.style.display = "table-row";
+                   });
+                }
+             } else {
+                document.querySelectorAll('.child-of-' + id).forEach(c => {
+                   c.style.display = isExpanded ? "none" : "table-row";
+                });
+             }
+          };
+        }
       }
 
       let tendEvs = [];
