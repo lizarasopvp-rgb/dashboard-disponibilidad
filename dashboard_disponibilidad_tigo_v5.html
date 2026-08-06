@@ -2362,9 +2362,10 @@
 
         const getHeatmapStyle = (val, localMin, localMax) => {
            if (!val || val === 0 || localMax === localMin) return 'color: var(--gris);';
-           const scale = (Math.sqrt(val) - Math.sqrt(localMin)) / (Math.sqrt(localMax) - Math.sqrt(localMin) || 1);
-           const hue = 60 * (1 - scale);
-           return `color: hsl(${hue}, 90%, 45%); font-weight: bold;`;
+           const scale = (val - localMin) / (localMax - localMin || 1);
+           // Hue from 120 (Green, good) to 0 (Red, bad)
+           const hue = 120 * (1 - scale);
+           return `color: hsl(${hue}, 90%, 40%); font-weight: 800;`;
         };
 
         const getLocalMinMax = (moArr) => {
