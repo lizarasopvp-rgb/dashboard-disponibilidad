@@ -2379,7 +2379,7 @@
            return {min, max};
         };
         
-        let html = `<thead><tr><th style="text-align:left">Region Operativa / Departamento / Ciudad</th>`;
+        let html = `<thead><tr><th style="text-align:left">Region Operativa / Departamento</th>`;
         for (let i=0; i<activeMonthsCount; i++) {
             html += `<th>${MESES[i]}</th>`;
         }
@@ -2398,31 +2398,23 @@
            }
            html += `<td class="num">${fmt(rObj.total)}</td></tr>`;
            
-           const depKeys = Object.keys(rObj.deps).sort((a,b) => rObj.deps[b].total - rObj.deps[a].total);
+           const depKeys = Object.keys(rObj.deps).filter(d => {
+              let nonzero = 0;
+              for(let i=0; i<activeMonthsCount; i++) if (rObj.deps[d].mo[i] > 0) nonzero++;
+              return nonzero >= 3;
+           }).sort((a,b) => rObj.deps[b].total - rObj.deps[a].total);
+           
            depKeys.forEach((dep, dIdx) => {
              const dObj = rObj.deps[dep];
              const {min: dMin, max: dMax} = getLocalMinMax(dObj.mo);
              const depId = `${regId}-dep-${dIdx}`;
              
-             html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; cursor:pointer; background: rgba(0,0,0,0.015);" onclick="toggleHeatmapRow('${depId}')">
-               <td style="text-align:left; padding-left: 24px;"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${dep}</td>`;
+             html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; background: rgba(0,0,0,0.015);">
+               <td style="text-align:left; padding-left: 24px;">${dep}</td>`;
              for (let i=0; i<activeMonthsCount; i++) {
                html += `<td class="num" style="${getHeatmapStyle(dObj.mo[i], dMin, dMax)}">${fmt(dObj.mo[i])}</td>`;
              }
              html += `<td class="num" style="font-weight:bold;">${fmt(dObj.total)}</td></tr>`;
-             
-             const cityKeys = Object.keys(dObj.cities).sort((a,b) => dObj.cities[b].total - dObj.cities[a].total).slice(0, 20);
-             cityKeys.forEach(city => {
-               const cObj = dObj.cities[city];
-               const {min: cMin, max: cMax} = getLocalMinMax(cObj.mo);
-               
-               html += `<tr class="child-of-${regId} child-of-${depId}" style="display:none;">
-                 <td style="text-align:left; padding-left: 48px; color:var(--gris)">${city}</td>`;
-               for (let i=0; i<activeMonthsCount; i++) {
-                 html += `<td class="num" style="${getHeatmapStyle(cObj.mo[i], cMin, cMax)}">${fmt(cObj.mo[i])}</td>`;
-               }
-               html += `<td class="num" style="font-weight:bold;">${fmt(cObj.total)}</td></tr>`;
-             });
            });
         });
         
@@ -2432,26 +2424,13 @@
         if (!window.toggleHeatmapRow) {
           window.toggleHeatmapRow = function(id) {
              const btn = document.querySelector('#' + id + ' .hm-btn');
+             if (!btn) return;
              const isExpanded = btn.textContent === "[-]";
              btn.textContent = isExpanded ? "[+]" : "[-]";
              
-             if (id.startsWith('reg-') && id.indexOf('-dep-') === -1) {
-                if (isExpanded) {
-                   document.querySelectorAll('.child-of-' + id).forEach(c => {
-                      c.style.display = "none";
-                      const cb = c.querySelector('.hm-btn');
-                      if (cb) cb.textContent = "[+]";
-                   });
-                } else {
-                   document.querySelectorAll('.child-of-' + id).forEach(c => {
-                      if (c.id) c.style.display = "table-row";
-                   });
-                }
-             } else {
-                document.querySelectorAll('.child-of-' + id).forEach(c => {
-                   c.style.display = isExpanded ? "none" : "table-row";
-                });
-             }
+             document.querySelectorAll('.child-of-' + id).forEach(c => {
+                c.style.display = isExpanded ? "none" : "table-row";
+             });
           };
         }
       }
