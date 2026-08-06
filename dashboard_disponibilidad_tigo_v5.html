@@ -2368,16 +2368,6 @@
            return `color: hsl(${hue}, 90%, 40%); font-weight: 800;`;
         };
 
-        const getLocalMinMax = (moArr) => {
-           let min = Infinity, max = -Infinity;
-           for(let i=0; i<activeMonthsCount; i++) {
-             let v = moArr[i];
-             if(v > 0 && v < min) min = v;
-             if(v > max) max = v;
-           }
-           if (min === Infinity) min = 0;
-           return {min, max};
-        };
         
         let html = `<thead><tr><th style="text-align:left">Region Operativa / Departamento</th>`;
         for (let i=0; i<activeMonthsCount; i++) {
@@ -2386,15 +2376,25 @@
         html += `<th>Total</th></tr></thead><tbody>`;
         
         const regKeys = Object.keys(byReg).sort((a,b) => byReg[b].total - byReg[a].total);
+        
+        let globalRegMin = Infinity, globalRegMax = -Infinity;
+        regKeys.forEach(reg => {
+           for(let i=0; i<activeMonthsCount; i++) {
+             let v = byReg[reg].mo[i];
+             if(v > 0 && v < globalRegMin) globalRegMin = v;
+             if(v > globalRegMax) globalRegMax = v;
+           }
+        });
+        if (globalRegMin === Infinity) globalRegMin = 0;
+
         regKeys.forEach((reg, rIdx) => {
            const rObj = byReg[reg];
-           const {min: rMin, max: rMax} = getLocalMinMax(rObj.mo);
            const regId = `reg-${rIdx}`;
            
            html += `<tr id="${regId}" style="background: rgba(0,0,0,0.04); font-weight:bold; cursor:pointer;" onclick="toggleHeatmapRow('${regId}')">
              <td style="text-align:left"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${reg}</td>`;
            for (let i=0; i<activeMonthsCount; i++) {
-             html += `<td class="num" style="${getHeatmapStyle(rObj.mo[i], rMin, rMax)}">${fmt(rObj.mo[i])}</td>`;
+             html += `<td class="num" style="${getHeatmapStyle(rObj.mo[i], globalRegMin, globalRegMax)}">${fmt(rObj.mo[i])}</td>`;
            }
            html += `<td class="num">${fmt(rObj.total)}</td></tr>`;
            
@@ -2404,15 +2404,24 @@
               return nonzero >= 3;
            }).sort((a,b) => rObj.deps[b].total - rObj.deps[a].total);
            
+           let localDepMin = Infinity, localDepMax = -Infinity;
+           depKeys.forEach(dep => {
+              for(let i=0; i<activeMonthsCount; i++) {
+                 let v = rObj.deps[dep].mo[i];
+                 if(v > 0 && v < localDepMin) localDepMin = v;
+                 if(v > localDepMax) localDepMax = v;
+              }
+           });
+           if (localDepMin === Infinity) localDepMin = 0;
+           
            depKeys.forEach((dep, dIdx) => {
              const dObj = rObj.deps[dep];
-             const {min: dMin, max: dMax} = getLocalMinMax(dObj.mo);
              const depId = `${regId}-dep-${dIdx}`;
              
              html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; background: rgba(0,0,0,0.015);">
                <td style="text-align:left; padding-left: 24px;">${dep}</td>`;
              for (let i=0; i<activeMonthsCount; i++) {
-               html += `<td class="num" style="${getHeatmapStyle(dObj.mo[i], dMin, dMax)}">${fmt(dObj.mo[i])}</td>`;
+               html += `<td class="num" style="${getHeatmapStyle(dObj.mo[i], localDepMin, localDepMax)}">${fmt(dObj.mo[i])}</td>`;
              }
              html += `<td class="num" style="font-weight:bold;">${fmt(dObj.total)}</td></tr>`;
            });
