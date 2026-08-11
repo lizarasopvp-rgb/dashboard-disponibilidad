@@ -1582,6 +1582,9 @@
         <span class="lbl">Departamento</span><select class="fl-dep"><option value="">Todos</option></select>
         <span class="lbl">Municipio</span><select class="fl-mun"><option value="">Todos</option></select>
         <span class="lbl">Rango</span><select class="fl-rng"><option value="">Todos</option><option value="> 48 horas">&gt; 48 horas</option><option value="24 horas a 48 horas">24 horas a 48 horas</option><option value="4 horas a 24 horas">4 horas a 24 horas</option><option value="30 min a 4 horas">30 min a 4 horas</option><option value="0 a 30 min">0 a 30 min</option></select>
+        <label style="margin-left:20px; cursor:pointer; font-weight:bold; color:var(--texto); display:inline-flex; align-items:center;">
+          <input type="checkbox" id="chk-hide-sindato-cr" onchange="renderHeatmap()" style="margin-right:5px; width:16px; height:16px; cursor:pointer;"> Ocultar "Sin dato"
+        </label>
       </div>
       <div class="narrativa" id="narr-heatmap">Tabla de concentración de causas raíz por regional. Las celdas con mayor
         porcentaje se resaltan en rojo. Haz clic en <b>⊞</b> para desplegar las causas específicas dentro de cada causa
@@ -3317,9 +3320,13 @@
         showView('analisis-fallas');
       };
 
-      function renderHeatmap() { const VIEW = getLocalView('heatmap');
+      function renderHeatmap() { 
+        let VIEW = getLocalView('heatmap');
+        const hideSinDato = document.getElementById('chk-hide-sindato-cr') && document.getElementById('chk-hide-sindato-cr').checked;
+        if (hideSinDato) VIEW = VIEW.filter(e => e.causa_raiz_macro !== 'Sin dato');
+        
         const regiones = [...new Set(VIEW.map(e => e.region))].filter(Boolean).sort();
-        const macros = Object.keys(CAUSA_RAIZ);
+        const macros = Object.keys(CAUSA_RAIZ).filter(m => !hideSinDato || m !== 'Sin dato');
         const totMin = VIEW.reduce((a, c) => a + c.minutos_caidos, 0) || 1;
 
         const agg = {};
