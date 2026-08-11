@@ -1286,10 +1286,13 @@
 <body>
 
   <header>
-    <div class="header-top" style="padding: 8px 26px;">
+    <div class="header-top" style="padding: 8px 26px; display: flex; justify-content: space-between; align-items: center;">
       <div class="titulo">
         <h1 style="font-size:17px">Disponibilidad Operativa de Red</h1>
         <p>Huawei MSP — Análisis causa raíz 4G · Periodo 2026-01 → 2026-07</p>
+      </div>
+      <div style="font-size: 11px; color: var(--gris); padding: 4px 10px; border: 1px solid var(--linea); border-radius: 4px;">
+        Datos actualizados hasta: <strong id="lbl-last-updated" style="color:var(--tinta);">--/--/----</strong>
       </div>
     </div>
   </header>
@@ -5686,6 +5689,11 @@
           history.scrollRestoration = 'manual';
         }
         window.scrollTo(0, 0);
+        
+        if (typeof _LAST_UPDATED !== 'undefined') {
+            document.getElementById('lbl-last-updated').textContent = _LAST_UPDATED;
+        }
+        
         fetchResumenNotas().then(() => {
           initMapa(); initFiltros(); initNav(); initChat(); initHistorial(); initAnalisis();
         });

@@ -353,6 +353,16 @@ inv_d = {str(k).strip(): int(v) for k,v in sitios_por_depto.items()}
 meses_disponibles = sorted(eventos['MES_ANO'].unique().tolist())
 print(f"  Meses disponibles: {meses_disponibles}")
 
+last_updated_str = "Sin dato"
+if 'faultfirstoccurtime' in df.columns:
+    try:
+        last_updated_dt = pd.to_datetime(df['faultfirstoccurtime'], errors='coerce').max()
+        if pd.notna(last_updated_dt):
+            last_updated_str = last_updated_dt.strftime('%d/%m/%Y %H:%M')
+    except:
+        pass
+
+
 js = "// Data real generada desde Data.xlsx + CMDB.xlsx\n"
 js += f"const _S={json.dumps(str_list, ensure_ascii=False)};\n"
 js += f"const _E={json.dumps(data, ensure_ascii=False)};\n"
@@ -364,6 +374,7 @@ js += f"const _CS={json.dumps(cs_map, ensure_ascii=False)};\n"
 js += f"const _MA={json.dumps(meses_disponibles)};\n"
 js += f"const _PLAN500={json.dumps(plan500_sites)};\n"
 js += f"const _PLAN500_COUNTS={json.dumps(plan500_counts)};\n"
+js += f"const _LAST_UPDATED={json.dumps(last_updated_str)};\n"
 import gzip
 with gzip.open('datos.js.gz', 'wt', encoding='utf-8') as f:
     f.write(js)
