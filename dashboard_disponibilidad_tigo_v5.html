@@ -4975,7 +4975,7 @@
                     let kpiHtml = '';
                     regions.forEach(reg => {
                         const r = byMonthRegion[selectedMonth + '|' + reg];
-                        const pct = r ? r.nar_pct.toFixed(2) : '--';
+                        const pct = r ? (Math.floor(r.nar_pct * 100) / 100).toFixed(2) : '--';
                         const col = DISP_COLORS[reg]?.line || '#333';
                         kpiHtml += `<span style="border-left:5px solid ${col}; padding:10px 15px; background:#f9fafb; flex:1; min-width:120px; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:0 6px 6px 0;">
                           <div style="font-size:${reg === 'GLOBAL' ? '24' : '20'}px; color:${col}; line-height:1;">${pct}%</div>
@@ -5033,7 +5033,7 @@
                 titleFont: { size: 13 },
                 bodyFont: { size: 12 },
                 callbacks: {
-                  label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(2) + '%' : 'N/A'}`
+                  label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y != null ? (Math.floor(ctx.parsed.y * 100) / 100).toFixed(2) + '%' : 'N/A'}`
                 }
               },
               datalabels: {
@@ -5048,7 +5048,7 @@
                 },
                 padding: { top: 2, bottom: 2, left: 4, right: 4 },
                 formatter: function(value) {
-                  return value != null ? value.toFixed(2) : '';
+                  return value != null ? (Math.floor(value * 100) / 100).toFixed(2) : '';
                 },
                 display: function(context) {
                   return context.dataset.data[context.dataIndex] !== null;
@@ -5080,7 +5080,7 @@
             html += `<tr><td>${m}</td>`;
             regions.forEach(r => {
               const d = byMonthRegion[m + '|' + r];
-              html += `<td>${d ? d.nar_pct.toFixed(2) + '%' : '-'}</td>`;
+              html += `<td>${d ? (Math.floor(d.nar_pct * 100) / 100).toFixed(2) + '%' : '-'}</td>`;
             });
             html += '</tr>';
           });
