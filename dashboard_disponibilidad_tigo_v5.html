@@ -3066,6 +3066,7 @@
       const btnCerrar = document.getElementById("btn-cerrar-tend");
       if (btnCerrar) btnCerrar.style.display = "block";
       const targetMo = tendNivel.m;
+      const VIEW_TEND = getLocalView('tendencias', true);
       tendEvs = VIEW_TEND.filter(e => {
         const mo = parseInt(String(e.mes_ano).slice(4)) - 1;
         const d = new Date(e.ts);
