@@ -1763,7 +1763,7 @@
           style="margin-top:14px; border: 1px solid var(--naranja); border-top: 3px solid var(--naranja);">
           <div class="card-head" style="padding-bottom: 0;">
             <div>
-              <h3>Matriz de Cumplimiento (SLA)</h3>
+              <h3>Matriz de Cumplimiento Huawei (SLA)</h3>
               <p class="sub">Disponibilidad regional vs. penalidades (Enero - Julio 2026)</p>
             </div>
           </div>
@@ -5677,7 +5677,21 @@
       // SLA Matrix
       const tblSla = document.getElementById('tbl-sla-matrix');
       if (tblSla) {
-        const months2026 = months.filter(m => m.startsWith('2026'));
+        // Build or fetch Huawei data specifically for the SLA Matrix so it's unaffected by filtro.modo
+        let rowsHuawei;
+        if (filtro.modo === 'HUAWEI') {
+          rowsHuawei = rows;
+        } else {
+          rowsHuawei = await fetchDispNAR('Huawei');
+          rowsHuawei = rowsHuawei.filter(r => r.mes && r.mes.slice(0, 7) >= '2025-10');
+        }
+        const byMonthRegionHuawei = {};
+        rowsHuawei.forEach(r => {
+          const key = r.mes.slice(0, 7) + '|' + r.region;
+          byMonthRegionHuawei[key] = r;
+        });
+
+        const months2026 = [...new Set(rowsHuawei.map(r => r.mes.slice(0, 7)))].filter(m => m.startsWith('2026')).sort();
         const slaRegions = ['CARIBE', 'ANDINA', 'SUR', 'CENTRO'];
 
         let htmlSla = '<thead><tr><th rowspan="3" class="th-penalty" style="vertical-align:middle;">SLA</th>';
@@ -5696,7 +5710,7 @@
         htmlSla += '</tr><tr>';
         months2026.forEach(m => {
           slaRegions.forEach(r => {
-            const d = byMonthRegion[m + '|' + r];
+            const d = byMonthRegionHuawei[m + '|' + r];
             const val = d ? d.nar_pct : null;
             const rightBorder = r === 'CENTRO' ? 'border-right: 2px solid #94a3b8 !important;' : '';
             if (val != null) {
@@ -5731,7 +5745,7 @@
           htmlSla += `<tr><td class="th-penalty">${pen}%</td>`;
           months2026.forEach(m => {
             slaRegions.forEach(r => {
-              const d = byMonthRegion[m + '|' + r];
+              const d = byMonthRegionHuawei[m + '|' + r];
               const val = d ? d.nar_pct : null;
               const info = getSlaInfo(val, r);
               const rightBorder = r === 'CENTRO' ? 'border-right: 2px solid #94a3b8 !important;' : '';
