@@ -1800,7 +1800,7 @@
         <span class="lbl">Municipio</span><select class="fl-mun">
           <option value="">Todos</option>
         </select>
-        <span class="lbl">Causa Raíz</span><select class="fl-cr">
+        <span class="lbl">Causa Raíz</span><select class="fl-cr" multiple size="1" title="Usa Ctrl+Clic para seleccionar varias" style="height: auto; min-height: 28px; padding: 2px;">
           <option value="">Todas</option>
         </select>
         <span class="lbl">Causa Suspens.</span><select class="fl-cs">
@@ -5171,7 +5171,15 @@
       const fReg = sec.querySelector('.fl-reg') ? sec.querySelector('.fl-reg').value : "";
       const fDep = sec.querySelector('.fl-dep') ? sec.querySelector('.fl-dep').value : "";
       const fMun = sec.querySelector('.fl-mun') ? sec.querySelector('.fl-mun').value : "";
-      const fCR = sec.querySelector('.fl-cr') ? sec.querySelector('.fl-cr').value : "";
+      let fCR = [];
+      const crEl = sec.querySelector('.fl-cr');
+      if (crEl) {
+        if (crEl.multiple) {
+          fCR = Array.from(crEl.selectedOptions).map(opt => opt.value).filter(v => v !== "");
+        } else {
+          if (crEl.value) fCR.push(crEl.value);
+        }
+      }
       const fCS = sec.querySelector('.fl-cs') ? sec.querySelector('.fl-cs').value : "";
       const fFechaIni = sec.querySelector('.fl-fecha-ini') ? sec.querySelector('.fl-fecha-ini').value : "";
       const rngEl = sec.querySelector('.fl-rng');
@@ -5196,7 +5204,7 @@
       if (fMun) v = v.filter(e => e.ciudad === fMun);
 
       if (!baseOnly) {
-        if (fCR) v = v.filter(e => e.causa_raiz_macro === fCR);
+        if (fCR.length > 0) v = v.filter(e => fCR.includes(e.causa_raiz_macro));
         if (fCS) v = v.filter(e => e.causa_suspension_macro === fCS);
         if (fFechaIni) {
           v = v.filter(e => {
