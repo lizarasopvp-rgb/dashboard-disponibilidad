@@ -237,9 +237,9 @@ def resumen_notas():
 # ============================================================
 @app.route('/api/disponibilidad/<fuente>', methods=['GET'])
 def obtener_disponibilidad(fuente):
-    """Retorna historico NAR 4G filtrado por fuente (Huawei o UNIRED)."""
-    if fuente not in ('Huawei', 'UNIRED'):
-        return jsonify({"error": "Fuente debe ser 'Huawei' o 'UNIRED'"}), 400
+    """Retorna historico NAR 4G filtrado por fuente (Contrato, Disputa o SinExclusiones)."""
+    if fuente not in ('Contrato', 'Disputa', 'SinExclusiones'):
+        return jsonify({"error": "Fuente debe ser 'Contrato', 'Disputa' o 'SinExclusiones'"}), 400
     try:
         desde = request.args.get('desde')  # formato: 2025-10
         hasta = request.args.get('hasta')  # formato: 2026-06
