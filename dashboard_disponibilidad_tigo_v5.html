@@ -1706,8 +1706,9 @@
   <div class="filtros" id="filtros">
     <span class="lbl">Modo</span>
     <select id="f-modo">
-      <option value="UNIRED">UNIRED</option>
-      <option value="HUAWEI">HUAWEI</option>
+      <option value="SIN_EXCLUSIONES">Sin exclusiones</option>
+      <option value="CONTRATO">Huawei-Contrato</option>
+      <option value="DISPUTA">Huawei-Disputa</option>
     </select>
     <span class="lbl" style="margin-left:auto" id="filtro-count"></span>
   </div>
@@ -1730,8 +1731,8 @@
         <h2>Gráfica disponibilidad</h2><span class="pregunta">Evolución mensual del indicador NAR para 4G</span>
       </div>
       <div class="narrativa" id="narr-disp-nar">Indicador NAR 4G histórico consultado desde la API oficial de
-        disponibilidad. La fuente se selecciona automáticamente según el filtro superior de Modo (HUAWEI = Excluye
-        parada reloj · UNIRED = Sin exclusiones).</div>
+        disponibilidad. La fuente se selecciona automáticamente según el filtro superior de Modo (Huawei-Contrato = Exclusión Huawei Contrato
+        · Huawei-Disputa = Exclusión Huawei Disputa · Sin exclusiones = Sin exclusiones).</div>
 
       <div class="card">
         <div class="card-head">
@@ -2703,13 +2704,15 @@
     /* ============================================================
        ESTADO / FILTROS
     ============================================================ */
-    let filtro = { reg: "", depto: "", muni: "", causa: "", rango: "", mes: _MA.length > 0 ? String(_MA[_MA.length - 1]) : "", modo: "UNIRED" };
+    let filtro = { reg: "", depto: "", muni: "", causa: "", rango: "", mes: _MA.length > 0 ? String(_MA[_MA.length - 1]) : "", modo: "SIN_EXCLUSIONES" };
     function aplicaFiltro(d) {
       return DATA.filter(s => {
         let cumpleModo = true;
-        if (d.modo === "UNIRED") {
+        if (d.modo === "SIN_EXCLUSIONES") {
           cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
-        } else if (d.modo === "HUAWEI") {
+        } else if (d.modo === "CONTRATO") {
+          cumpleModo = s.etiqueta_padre === 'NAR';
+        } else if (d.modo === "DISPUTA") {
           cumpleModo = s.etiqueta_padre === 'NAR';
         }
         return cumpleModo &&
@@ -5190,9 +5193,9 @@
         fRngs = Array.from(sec.querySelectorAll('input.fl-rng:checked')).map(cb => cb.value);
       } let v = DATA.filter(s => {
         let cumpleModo = true;
-        if (filtro.modo === "UNIRED") {
+        if (filtro.modo === "SIN_EXCLUSIONES") {
           cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
-        } else if (filtro.modo === "HUAWEI") {
+        } else if (filtro.modo === "CONTRATO" || filtro.modo === "DISPUTA") {
           cumpleModo = s.etiqueta_padre === 'NAR';
         }
         return cumpleModo;
@@ -5377,9 +5380,9 @@
       const geoMes = document.getElementById("geo-mes") ? document.getElementById("geo-mes").value : "";
       return DATA.filter(s => {
         let cumpleModo = true;
-        if (filtro.modo === "UNIRED") {
+        if (filtro.modo === "SIN_EXCLUSIONES") {
           cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
-        } else if (filtro.modo === "HUAWEI") {
+        } else if (filtro.modo === "CONTRATO" || filtro.modo === "DISPUTA") {
           cumpleModo = s.etiqueta_padre === 'NAR';
         }
         return cumpleModo && (!geoMes || s.mes_ano === +geoMes);
@@ -5518,10 +5521,12 @@
       const canvas = document.getElementById('ch-disp-nar');
       if (!canvas) return;
 
-      const fuente = filtro.modo === 'HUAWEI' ? 'Huawei' : 'UNIRED';
-      const fuenteLabel = filtro.modo === 'HUAWEI' ? 'Excluye parada reloj' : 'Sin exclusiones';
+      const fuenteMap = { 'CONTRATO': 'Contrato', 'DISPUTA': 'Disputa', 'SIN_EXCLUSIONES': 'SinExclusiones' };
+      const labelMap = { 'CONTRATO': 'Exclusión Huawei Contrato', 'DISPUTA': 'Exclusión Huawei Disputa', 'SIN_EXCLUSIONES': 'Sin exclusiones' };
+      const fuente = fuenteMap[filtro.modo] || 'SinExclusiones';
+      const fuenteLabel = labelMap[filtro.modo] || 'Sin exclusiones';
       const subEl = document.getElementById('disp-nar-subtitle');
-      if (subEl) subEl.textContent = `Fuente: ${fuente} (${fuenteLabel})`;
+      if (subEl) subEl.textContent = `Fuente: ${fuenteLabel}`;
 
       let rows = await fetchDispNAR(fuente);
       // Filtrar solo desde Octubre 2025
@@ -5685,12 +5690,12 @@
       // SLA Matrix
       const tblSla = document.getElementById('tbl-sla-matrix');
       if (tblSla) {
-        // Build or fetch Huawei data specifically for the SLA Matrix so it's unaffected by filtro.modo
+        // Build or fetch Contrato data specifically for the SLA Matrix so it's unaffected by filtro.modo
         let rowsHuawei;
-        if (filtro.modo === 'HUAWEI') {
+        if (filtro.modo === 'CONTRATO') {
           rowsHuawei = rows;
         } else {
-          rowsHuawei = await fetchDispNAR('Huawei');
+          rowsHuawei = await fetchDispNAR('Contrato');
           rowsHuawei = rowsHuawei.filter(r => r.mes && r.mes.slice(0, 7) >= '2025-10');
         }
         const byMonthRegionHuawei = {};
