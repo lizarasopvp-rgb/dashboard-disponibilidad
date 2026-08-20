@@ -20,10 +20,39 @@ import json
 print("Leyendo DataV2.xlsx...")
 xls = pd.ExcelFile('DataV2.xlsx')
 sheet_to_parse = 'Data' if 'Data' in xls.sheet_names else xls.sheet_names[0]
-df = xls.parse(sheet_to_parse)
-print(f"  {len(df)} filas, {len(df.columns)} columnas leídas")
-if 'etiqueta_padre' not in df.columns:
-    df['etiqueta_padre'] = 'Sin dato'
+df_v2 = xls.parse(sheet_to_parse)
+print(f"  DataV2: {len(df_v2)} filas, {len(df_v2.columns)} columnas leídas")
+if 'etiqueta_padre' not in df_v2.columns:
+    df_v2['etiqueta_padre'] = 'Sin dato'
+df_v2['origen_archivo'] = 'V2'
+
+print("Leyendo Data_Contrato.xlsx...")
+try:
+    xls_c = pd.ExcelFile('Data_Contrato.xlsx')
+    sheet_c = 'Data' if 'Data' in xls_c.sheet_names else xls_c.sheet_names[0]
+    df_c = xls_c.parse(sheet_c)
+    print(f"  Contrato: {len(df_c)} filas, {len(df_c.columns)} columnas leídas")
+    if 'etiqueta_padre' not in df_c.columns:
+        df_c['etiqueta_padre'] = 'Sin dato'
+    
+    # Normalizar columnas de Contrato
+    rename_map = {
+        'latitude_y': 'Latitud',
+        'longitude_y': 'Longitud',
+        'city_name_y': 'Ciudad',
+        'department_name_y': 'Departamento',
+        'city_name_x': 'Ciudad',
+        'department_name_x': 'Departamento'
+    }
+    df_c = df_c.rename(columns=rename_map)
+    df_c['origen_archivo'] = 'Contrato'
+    
+    df = pd.concat([df_v2, df_c], ignore_index=True)
+except Exception as e:
+    print(f"Error leyendo Data_Contrato.xlsx: {e}")
+    df = df_v2
+
+print(f"Total unificado: {len(df)} filas")
 
 print("Leyendo PLAN 500_UNIRED.xlsx...")
 try:
@@ -269,7 +298,7 @@ print(f"  Total fallas simultáneas detectadas: {len(masiva_clusters)}")
 
 for col in ['CAUSA_GLOBAL','CAUSA_RAIZ','TICKET','SOLUCION_TICKET','DETALLE_FALLA',
             'SITE_CD','SITE_NAME','CITY_DS','DEPARTMENT_DS','TECNOLOGIA','REGION_OP',
-            'Rangos','ESTADO_RAD','CAUSA_SUSPENSION_MACRO', 'CAUSA_SUSPENSION_ESPECIFICA','etiqueta_padre', 'CAUSA_IA']:
+            'Rangos','ESTADO_RAD','CAUSA_SUSPENSION_MACRO', 'CAUSA_SUSPENSION_ESPECIFICA','etiqueta_padre', 'CAUSA_IA', 'origen_archivo']:
     if col in eventos.columns:
         eventos[col] = eventos[col].fillna('Sin dato')
 
@@ -328,6 +357,7 @@ for _, r in eventos.iterrows():
         intern(r['CAUSA_IA']),                     # 22: causa_ia
         1 if r['is_active'] else 0,                # 23: is_active (1 o 0)
         intern(r['SEMANA']),                       # 24: semana
+        intern(r['origen_archivo']),               # 25: origen_archivo
     ])
 
 print(f"Eventos: {len(data)}, Strings pool: {len(str_list)}")

@@ -1764,7 +1764,7 @@
           style="margin-top:14px; border: 1px solid var(--naranja); border-top: 3px solid var(--naranja);">
           <div class="card-head" style="padding-bottom: 0;">
             <div>
-              <h3>Matriz de Cumplimiento Huawei (SLA)</h3>
+              <h3 id="sla-matrix-title">Matriz de Cumplimiento Huawei (SLA)</h3>
               <p class="sub">Disponibilidad regional vs. penalidades (Enero - Agosto 2026)</p>
             </div>
           </div>
@@ -2653,7 +2653,8 @@
       masiva_id: S[e[21]],
       causa_ia: S[e[22]] || 'Otra',
       is_active: e[23] === 1,
-      semana: S[e[24]] || ''
+      semana: S[e[24]] || '',
+      origen_archivo: S[e[25]] || ''
     }));
     const fmtDT = ts => ts ? new Date(ts).toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
     const fmtISO = ts => ts ? new Date(ts).toISOString() : '';
@@ -2709,11 +2710,11 @@
       return DATA.filter(s => {
         let cumpleModo = true;
         if (d.modo === "SIN_EXCLUSIONES") {
-          cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
+          cumpleModo = s.origen_archivo === 'V2' && !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
         } else if (d.modo === "CONTRATO") {
-          cumpleModo = s.etiqueta_padre === 'NAR';
+          cumpleModo = s.origen_archivo === 'Contrato' && s.etiqueta_padre === 'NAR';
         } else if (d.modo === "DISPUTA") {
-          cumpleModo = s.etiqueta_padre === 'NAR';
+          cumpleModo = s.origen_archivo === 'V2' && s.etiqueta_padre === 'NAR';
         }
         return cumpleModo &&
           (!d.reg || s.region === d.reg) &&
@@ -5194,9 +5195,11 @@
       } let v = DATA.filter(s => {
         let cumpleModo = true;
         if (filtro.modo === "SIN_EXCLUSIONES") {
-          cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
-        } else if (filtro.modo === "CONTRATO" || filtro.modo === "DISPUTA") {
-          cumpleModo = s.etiqueta_padre === 'NAR';
+          cumpleModo = s.origen_archivo === 'V2' && !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
+        } else if (filtro.modo === "CONTRATO") {
+          cumpleModo = s.origen_archivo === 'Contrato' && s.etiqueta_padre === 'NAR';
+        } else if (filtro.modo === "DISPUTA") {
+          cumpleModo = s.origen_archivo === 'V2' && s.etiqueta_padre === 'NAR';
         }
         return cumpleModo;
       });
@@ -5381,9 +5384,11 @@
       return DATA.filter(s => {
         let cumpleModo = true;
         if (filtro.modo === "SIN_EXCLUSIONES") {
-          cumpleModo = !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
-        } else if (filtro.modo === "CONTRATO" || filtro.modo === "DISPUTA") {
-          cumpleModo = s.etiqueta_padre === 'NAR';
+          cumpleModo = s.origen_archivo === 'V2' && !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
+        } else if (filtro.modo === "CONTRATO") {
+          cumpleModo = s.origen_archivo === 'Contrato' && s.etiqueta_padre === 'NAR';
+        } else if (filtro.modo === "DISPUTA") {
+          cumpleModo = s.origen_archivo === 'V2' && s.etiqueta_padre === 'NAR';
         }
         return cumpleModo && (!geoMes || s.mes_ano === +geoMes);
       });
@@ -5690,13 +5695,20 @@
       // SLA Matrix
       const tblSla = document.getElementById('tbl-sla-matrix');
       if (tblSla) {
-        // Build or fetch Contrato data specifically for the SLA Matrix so it's unaffected by filtro.modo
+        // Fetch matching data depending on mode (defaulting to Contrato for Sin Exclusiones)
         let rowsHuawei;
+        const slaTitleEl = document.getElementById('sla-matrix-title');
+        
         if (filtro.modo === 'CONTRATO') {
           rowsHuawei = rows;
+          if (slaTitleEl) slaTitleEl.textContent = 'Matriz de Cumplimiento Huawei (Contrato)';
+        } else if (filtro.modo === 'DISPUTA') {
+          rowsHuawei = rows;
+          if (slaTitleEl) slaTitleEl.textContent = 'Matriz de Cumplimiento Huawei (Disputa)';
         } else {
           rowsHuawei = await fetchDispNAR('Contrato');
           rowsHuawei = rowsHuawei.filter(r => r.mes && r.mes.slice(0, 7) >= '2025-10');
+          if (slaTitleEl) slaTitleEl.textContent = 'Matriz de Cumplimiento Huawei (Contrato)';
         }
         const byMonthRegionHuawei = {};
         rowsHuawei.forEach(r => {
