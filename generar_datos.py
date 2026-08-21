@@ -229,6 +229,10 @@ df['TECNOLOGIA'] = df['domain'].replace({'RAN-3G': '3G', 'RAN-4G': '4G', 'RAN-2G
 # Minutos
 df['MIN_IND_DIA'] = pd.to_numeric(df['minutos_falla'], errors='coerce').fillna(0)
 
+# Excluir tickets que no se consideran energía para Plan 500 (Julio)
+tickets_a_excluir = ['CM-20260715-00000430', 'CM-20260715-00000431']
+df.loc[df['orderid'].isin(tickets_a_excluir), 'MIN_IND_DIA'] = 0
+
 # Rangos de duración
 def get_rango(minutos):
     if minutos > 2880: return '> 48 horas'
