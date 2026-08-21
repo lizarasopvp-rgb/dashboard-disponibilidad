@@ -4988,13 +4988,21 @@
         eventsBySite[site_cd].push(r);
       });
 
-      // 2. No deduplicar, tomar todos los eventos individuales
+      // 2. Deduplicar eventos por Ticket para evitar duplicados en la tabla y cálculos
       const dedupedEvents = [];
+      const seenTickets = new Set();
+      
       for (const site in eventsBySite) {
         eventsBySite[site].forEach(r => {
+          const ticket = _S[r[10]];
+          
+          // Si el ticket ya existe y no es "Sin dato", saltarlo
+          if (ticket !== "Sin dato" && seenTickets.has(ticket)) return;
+          if (ticket !== "Sin dato") seenTickets.add(ticket);
+          
           const ts = new Date(r[12].replace(' ', 'T')).getTime();
           const mins = r[6];
-          dedupedEvents.push({ r, ts, mins, tickets: [_S[r[10]]] });
+          dedupedEvents.push({ r, ts, mins, tickets: [ticket] });
         });
       }
 
