@@ -4979,6 +4979,11 @@
           "Mobile_Energía-Facilities_Mantenimiento Programado electrificadora"
         ];
         if (!causasPlan500.includes(causaFinal)) return;
+        
+        // Nueva regla: Para Plan 500 solo sumar fallas que duren menos de 1 día (1440 minutos)
+        const mins = r[6];
+        if (mins >= 1440) return;
+
         if (!eventsBySite[site_cd]) eventsBySite[site_cd] = [];
         eventsBySite[site_cd].push(r);
       });
