@@ -5329,10 +5329,12 @@
               const validCRTs = new Set();
               if (selectedCRs.length > 0) {
                 selectedCRs.forEach(c => {
-                  if (CAUSA_RAIZ[c]) CAUSA_RAIZ[c].forEach(t => validCRTs.add(t));
+                  if (CAUSA_RAIZ[c] && CAUSA_RAIZ[c].esp) CAUSA_RAIZ[c].esp.forEach(t => validCRTs.add(t));
                 });
               } else {
-                Object.values(CAUSA_RAIZ).flat().forEach(t => validCRTs.add(t));
+                Object.values(CAUSA_RAIZ).forEach(obj => {
+                  if (obj.esp) obj.esp.forEach(t => validCRTs.add(t));
+                });
               }
               [...validCRTs].sort().forEach(t => crt.add(new Option(t, t)));
             };
