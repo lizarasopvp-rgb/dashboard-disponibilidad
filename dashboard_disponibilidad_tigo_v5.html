@@ -5248,7 +5248,7 @@
 
       if (!baseOnly) {
         if (fCR.length > 0) v = v.filter(e => fCR.includes(e.causa_raiz_macro));
-        if (fCRT.length > 0) v = v.filter(e => fCRT.includes(e.causa_raiz));
+        if (fCRT.length > 0) v = v.filter(e => fCRT.includes(e.causa_raiz_especifica));
         if (fCS) v = v.filter(e => e.causa_suspension_macro === fCS);
         if (fFechaIni) {
           v = v.filter(e => {
@@ -5317,33 +5317,48 @@
           };
         }
         if (cr) {
-          Object.keys(CAUSA_RAIZ).forEach(c => cr.add(new Option(c, c)));
-          
+          let updateCrtOptions = null;
           if (crt) {
-            const updateCrtOptions = () => {
+            updateCrtOptions = () => {
               crt.innerHTML = '<option value="">Todas</option>';
               const selectedCRs = cr.multiple 
                 ? Array.from(cr.selectedOptions).map(o => o.value).filter(v => v)
                 : (cr.value ? [cr.value] : []);
-              
-              const validCRTs = new Set();
+              const secId = fl.closest('section').id;
+              const baseData = getLocalView(secId, true, true);
+              let validCRTs = new Set();
               if (selectedCRs.length > 0) {
-                selectedCRs.forEach(c => {
-                  if (CAUSA_RAIZ[c] && CAUSA_RAIZ[c].esp) CAUSA_RAIZ[c].esp.forEach(t => validCRTs.add(t));
-                });
+                 baseData.forEach(d => {
+                    if (selectedCRs.includes(d.causa_raiz_macro) && d.causa_raiz_especifica) validCRTs.add(d.causa_raiz_especifica);
+                 });
               } else {
-                Object.values(CAUSA_RAIZ).forEach(obj => {
-                  if (obj.esp) obj.esp.forEach(t => validCRTs.add(t));
-                });
+                 baseData.forEach(d => {
+                    if (d.causa_raiz_especifica) validCRTs.add(d.causa_raiz_especifica);
+                 });
               }
               [...validCRTs].sort().forEach(t => crt.add(new Option(t, t)));
             };
-            
-            cr.addEventListener('change', () => {
-              updateCrtOptions();
-            });
-            updateCrtOptions();
+            cr.addEventListener('change', updateCrtOptions);
           }
+
+          const updateCrOptions = () => {
+            const secId = fl.closest('section').id;
+            const baseData = getLocalView(secId, true, true);
+            const macrosDisponibles = [...new Set(baseData.map(d => d.causa_raiz_macro))].filter(Boolean).sort();
+            const currentVal = cr.multiple ? Array.from(cr.selectedOptions).map(o=>o.value) : [cr.value];
+            cr.innerHTML = '<option value="">Todas</option>';
+            macrosDisponibles.forEach(c => cr.add(new Option(c, c)));
+            if (cr.multiple) {
+              Array.from(cr.options).forEach(o => { if(currentVal.includes(o.value)) o.selected = true; });
+            } else if (currentVal[0] && macrosDisponibles.includes(currentVal[0])) {
+              cr.value = currentVal[0];
+            }
+            if (updateCrtOptions) updateCrtOptions();
+          };
+          
+          updateCrOptions();
+          const fModo = document.getElementById("f-modo");
+          if (fModo) fModo.addEventListener("change", () => setTimeout(updateCrOptions, 10));
         }
         if (cs) validCs.forEach(c => cs.add(new Option(c, c)));
         fl.addEventListener('change', (e) => {
