@@ -75,8 +75,22 @@ try:
         estado_col = estado_col[0]
         date_col = date_col[0]
         finalizados = plan500_df[plan500_df[estado_col].astype(str).str.strip().str.upper() == 'FINALIZADO']
+        meses_es = {
+            'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04', 
+            'mayo': '05', 'junio': '06', 'julio': '07', 'agosto': '08', 
+            'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
+        }
+        
         for _, row in finalizados.iterrows():
-            d = pd.to_datetime(row[date_col], errors='coerce', dayfirst=True)
+            val_fecha = str(row[date_col]).lower().strip()
+            
+            # Reemplazar " de [mes] de " por el número del mes
+            for mes_nombre, mes_num in meses_es.items():
+                if f' de {mes_nombre} de ' in val_fecha:
+                    val_fecha = val_fecha.replace(f' de {mes_nombre} de ', f'/{mes_num}/')
+                    break
+            
+            d = pd.to_datetime(val_fecha, errors='coerce', dayfirst=True)
             if pd.isna(d):
                 d = pd.to_datetime(row[date_col], errors='coerce')
             
