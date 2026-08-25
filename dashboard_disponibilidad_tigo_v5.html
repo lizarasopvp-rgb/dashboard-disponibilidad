@@ -1804,6 +1804,9 @@
         <span class="lbl">Causa Raíz</span><select class="fl-cr" multiple size="1" title="Usa Ctrl+Clic para seleccionar varias" style="height: auto; min-height: 28px; padding: 2px;">
           <option value="">Todas</option>
         </select>
+        <span class="lbl">Causa Raíz Técnica</span><select class="fl-crt" multiple size="1" title="Usa Ctrl+Clic para seleccionar varias" style="height: auto; min-height: 28px; padding: 2px;">
+          <option value="">Todas</option>
+        </select>
         <span class="lbl">Causa Suspens.</span><select class="fl-cs">
           <option value="">Todas</option>
         </select>
@@ -2242,6 +2245,9 @@
         <span class="lbl">Causa Raíz</span><select class="fl-cr">
           <option value="">Todas</option>
         </select>
+        <span class="lbl">Causa Raíz Técnica</span><select class="fl-crt">
+          <option value="">Todas</option>
+        </select>
         <span class="lbl">Causa Suspensión</span><select class="fl-cs">
           <option value="">Todas</option>
         </select>
@@ -2310,6 +2316,9 @@
         <span class="lbl">Causa Raíz</span><select class="fl-cr">
           <option value="">Todas</option>
         </select>
+        <span class="lbl">Causa Raíz Técnica</span><select class="fl-crt">
+          <option value="">Todas</option>
+        </select>
       </div>
       <div class="insights-container" id="intermitentes-insights"
         style="display:flex; margin-bottom:15px; border-radius:6px; overflow:hidden; gap:10px;"></div>
@@ -2354,6 +2363,9 @@
           <option value="">Todos</option>
         </select>
         <span class="lbl">Causa Raíz</span><select class="fl-cr">
+          <option value="">Todas</option>
+        </select>
+        <span class="lbl">Causa Raíz Técnica</span><select class="fl-crt">
           <option value="">Todas</option>
         </select>
         <span class="lbl">Causa Suspens.</span><select class="fl-cs">
@@ -5199,6 +5211,16 @@
           if (crEl.value) fCR.push(crEl.value);
         }
       }
+      
+      let fCRT = [];
+      const crtEl = sec.querySelector('.fl-crt');
+      if (crtEl) {
+        if (crtEl.multiple) {
+          fCRT = Array.from(crtEl.selectedOptions).map(opt => opt.value).filter(v => v !== "");
+        } else {
+          if (crtEl.value) fCRT.push(crtEl.value);
+        }
+      }
       const fCS = sec.querySelector('.fl-cs') ? sec.querySelector('.fl-cs').value : "";
       const fFechaIni = sec.querySelector('.fl-fecha-ini') ? sec.querySelector('.fl-fecha-ini').value : "";
       const rngEl = sec.querySelector('.fl-rng');
@@ -5226,6 +5248,7 @@
 
       if (!baseOnly) {
         if (fCR.length > 0) v = v.filter(e => fCR.includes(e.causa_raiz_macro));
+        if (fCRT.length > 0) v = v.filter(e => fCRT.includes(e.causa_raiz));
         if (fCS) v = v.filter(e => e.causa_suspension_macro === fCS);
         if (fFechaIni) {
           v = v.filter(e => {
@@ -5258,6 +5281,7 @@
         const dep = fl.querySelector('.fl-dep');
         const mun = fl.querySelector('.fl-mun');
         const cr = fl.querySelector('.fl-cr');
+        const crt = fl.querySelector('.fl-crt');
         const rng = fl.querySelector('.fl-rng');
         const cs = fl.querySelector('.fl-cs');
         if (mes) {
@@ -5292,7 +5316,33 @@
             fl.dispatchEvent(new Event('change'));
           };
         }
-        if (cr) Object.keys(CAUSA_RAIZ).forEach(c => cr.add(new Option(c, c)));
+        if (cr) {
+          Object.keys(CAUSA_RAIZ).forEach(c => cr.add(new Option(c, c)));
+          
+          if (crt) {
+            const updateCrtOptions = () => {
+              crt.innerHTML = '<option value="">Todas</option>';
+              const selectedCRs = cr.multiple 
+                ? Array.from(cr.selectedOptions).map(o => o.value).filter(v => v)
+                : (cr.value ? [cr.value] : []);
+              
+              const validCRTs = new Set();
+              if (selectedCRs.length > 0) {
+                selectedCRs.forEach(c => {
+                  if (CAUSA_RAIZ[c]) CAUSA_RAIZ[c].forEach(t => validCRTs.add(t));
+                });
+              } else {
+                Object.values(CAUSA_RAIZ).flat().forEach(t => validCRTs.add(t));
+              }
+              [...validCRTs].sort().forEach(t => crt.add(new Option(t, t)));
+            };
+            
+            cr.addEventListener('change', () => {
+              updateCrtOptions();
+            });
+            updateCrtOptions();
+          }
+        }
         if (cs) validCs.forEach(c => cs.add(new Option(c, c)));
         fl.addEventListener('change', (e) => {
           if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') {
