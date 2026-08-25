@@ -17,8 +17,8 @@ Mapeo de columnas (Data.xlsx):
 import pandas as pd
 import json
 
-print("Leyendo DataV2.xlsx...")
-xls = pd.ExcelFile('DataV2.xlsx')
+print("Leyendo Data-Disputa-Sinexclusiones.xlsx...")
+xls = pd.ExcelFile('Data-Disputa-Sinexclusiones.xlsx')
 sheet_to_parse = 'Data' if 'Data' in xls.sheet_names else xls.sheet_names[0]
 df_v2 = xls.parse(sheet_to_parse)
 print(f"  DataV2: {len(df_v2)} filas, {len(df_v2.columns)} columnas leídas")
