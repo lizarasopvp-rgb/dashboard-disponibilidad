@@ -3706,21 +3706,9 @@
        9 · WORST OFFENDERS
     ============================================================ */
     function renderWorst() {
-      const baseView = getLocalView('worst', false, true);
-      const topBase = [...metricasSitio(baseView)].sort((a, b) => b.min - a.min).slice(0, 20);
-      const topSitios = topBase.map(s => s.sitio_id);
-
       const VIEW = getLocalView('worst');
-      const base = VIEW;
       const sm = metricasSitio(VIEW);
-      const smMap = new Map();
-      for (let s of sm) smMap.set(s.sitio_id, s);
-
-      const top = [];
-      for (let sid of topSitios) {
-        if (smMap.has(sid)) top.push(smMap.get(sid));
-        else top.push({ sitio_id: sid, min: 0, ev: 0, nEv: 0 });
-      }
+      const top = [...sm].sort((a, b) => b.min - a.min).slice(0, 20);
 
       const tot = sm.reduce((a, s) => a + s.min, 0);
       let acc = 0; const cum = top.map(s => { acc += s.min; return +(100 * acc / (tot || 1)).toFixed(1) });
