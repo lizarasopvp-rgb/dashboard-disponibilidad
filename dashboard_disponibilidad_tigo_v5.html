@@ -3389,7 +3389,7 @@
       // 0. Regional options
       if (gReg) {
         gReg.innerHTML = '<option value="">Todas</option>';
-        const validR = [...new Set(getGeoBase().map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+        const validR = [...new Set(getGeoBase().map(e => e.region))].filter(x => x && x.toLowerCase() !== "sin información" && isNaN(x)).sort();
         validR.forEach(r => gReg.add(new Option(r, r)));
         gReg.value = currR || "";
       }
@@ -3399,7 +3399,7 @@
         gDepto.innerHTML = '<option value="">Todos</option>';
         let d_base = getGeoBase();
         if (gReg && gReg.value) d_base = d_base.filter(e => e.region === gReg.value);
-        const validD = [...new Set(d_base.map(e => e.departamento))].filter(Boolean).sort();
+        const validD = [...new Set(d_base.map(e => e.departamento))].filter(d => d && isNaN(d)).sort();
         validD.forEach(d => gDepto.add(new Option(d, d)));
         gDepto.value = filtro.depto || currD || geoNivel.depto || "";
         gDepto.disabled = !!filtro.depto;
@@ -3411,7 +3411,7 @@
         let d_data = getGeoBase();
         if (gReg && gReg.value) d_data = d_data.filter(e => e.region === gReg.value);
         if (gDepto && gDepto.value) d_data = d_data.filter(e => e.departamento === gDepto.value);
-        const validC = [...new Set(d_data.map(e => e.ciudad))].filter(Boolean).sort();
+        const validC = [...new Set(d_data.map(e => e.ciudad))].filter(c => c && isNaN(c)).sort();
         validC.forEach(c => gMuni.add(new Option(c, c)));
         gMuni.value = filtro.muni || currM || geoNivel.ciudad || "";
         gMuni.disabled = !!filtro.muni;
