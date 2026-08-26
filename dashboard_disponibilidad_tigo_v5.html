@@ -2534,6 +2534,7 @@
                 style="margin-left: 10px;">✕ Cerrar</button>
             </div>
           </div>
+          <div id="p5-month-insights" style="display:flex; margin-bottom:12px; gap:10px;"></div>
           <table class="datos" id="tbl-plan500"></table>
         </div>
       </div>
@@ -5143,6 +5144,33 @@
       document.getElementById("plan500-tbl-title").textContent = `Fallas de Energía en ${mStr} (${events.length})`;
       document.getElementById("wrap-plan500-tbl").style.display = "block";
 
+      // Insights del mes
+      const totalFallas = events.length;
+      const totalMin = events.reduce((a, r) => a + r[6], 0);
+      const promMin = totalFallas > 0 ? totalMin / totalFallas : 0;
+      const sitiosUnicos = new Set(events.map(r => _S[r[0]])).size;
+      const insEl = document.getElementById('p5-month-insights');
+      if (insEl) {
+        insEl.innerHTML = `
+          <span style="border-left:4px solid var(--naranja); padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
+            <div style="font-size:20px; color:var(--naranja); line-height:1; font-weight:700;">${fmt(totalFallas)}</div>
+            <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Fallas</div>
+          </span>
+          <span style="border-left:4px solid var(--azul-marino); padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
+            <div style="font-size:20px; color:var(--azul-marino); line-height:1; font-weight:700;">${fmt(Math.round(totalMin))}</div>
+            <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Minutos totales</div>
+          </span>
+          <span style="border-left:4px solid #00A3E0; padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
+            <div style="font-size:20px; color:#00A3E0; line-height:1; font-weight:700;">${fmt(Math.round(promMin))}</div>
+            <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Duración prom. / falla</div>
+          </span>
+          <span style="border-left:4px solid var(--ok); padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
+            <div style="font-size:20px; color:var(--ok); line-height:1; font-weight:700;">${fmt(sitiosUnicos)}</div>
+            <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Sitios únicos</div>
+          </span>
+        `;
+      }
+
       updatePlan500Table();
     }
 
@@ -5155,25 +5183,34 @@
       const start = (p5CurrentPage - 1) * 5;
       const pageEvents = p5CurrentEvents.slice(start, start + 5);
 
+      const planReq = typeof _PLAN500_REQ !== 'undefined' ? _PLAN500_REQ : {};
+
       let html = `<tr>
           <th>Sitio</th>
           <th>Ticket</th>
           <th>Causa Específica</th>
           <th>Fecha</th>
           <th class="num">Minutos</th>
+          <th>Se requiere (Plan)</th>
         </tr>`;
 
       if (pageEvents.length === 0) {
-        html += `<tr><td colspan="5" style="text-align:center; color:var(--gris); padding: 15px;">No hay fallas para mostrar en este mes</td></tr>`;
+        html += `<tr><td colspan="6" style="text-align:center; color:var(--gris); padding: 15px;">No hay fallas para mostrar en este mes</td></tr>`;
       } else {
         pageEvents.forEach(r => {
           const ticketStr = r.customTicket || _S[r[10]];
+          const siteCode = _S[r[0]];
+          const reqText = planReq[siteCode] || '';
+          const reqHtml = reqText 
+            ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino);font-size:11px;">Ver plan</summary>${reqText.replace(/\n/g, '<br>')}</details>` 
+            : '<span style="font-size:11px;color:var(--gris)">—</span>';
           html += `<tr>
-               <td><b>${_S[r[0]]}</b><br><span style="font-size:10.5px;color:var(--gris)">${_S[r[1]]}</span></td>
+               <td><b>${siteCode}</b><br><span style="font-size:10.5px;color:var(--gris)">${_S[r[1]]}</span></td>
                <td style="max-width: 150px; word-break: break-all;"><span class="tdpill" style="background:var(--azul-marino); white-space: normal;">${ticketStr}</span></td>
                <td>${_S[r[8]]}</td>
                <td style="font-family: var(--f-mono); font-size: 11px;">${r[12]}</td>
                <td class="num" style="font-weight:600; color:var(--rojo)">${r[6].toFixed(1)}</td>
+               <td>${reqHtml}</td>
              </tr>`;
         });
       }

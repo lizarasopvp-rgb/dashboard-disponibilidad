@@ -71,6 +71,7 @@ try:
     
     plan500_sites = {}
     plan500_counts = {}
+    plan500_req = {}
     if estado_col and date_col:
         estado_col = estado_col[0]
         date_col = date_col[0]
@@ -101,10 +102,18 @@ try:
                 n = str(row['Netco']).strip() if pd.notna(row['Netco']) else None
                 if c and c != 'nan': plan500_sites[c] = mes
                 if n and n != 'nan': plan500_sites[n] = mes
+                # Extraer "Se requiere"
+                se_req_col = [col for col in plan500_df.columns if 'Se requiere' in col]
+                if se_req_col:
+                    se_req_val = str(row[se_req_col[0]]).strip() if pd.notna(row[se_req_col[0]]) else ''
+                    if se_req_val and se_req_val != 'nan' and se_req_val != 'None':
+                        if c and c != 'nan': plan500_req[c] = se_req_val
+                        if n and n != 'nan': plan500_req[n] = se_req_val
 except Exception as e:
     print(f"Error leyendo PLAN 500: {e}")
     plan500_sites = {}
     plan500_counts = {}
+    plan500_req = {}
 print(f"  Sitios Plan 500 Finalizados (con fecha): {len(plan500_sites)}")
 
 print("Leyendo CMDB.xlsx...")
@@ -422,6 +431,7 @@ js += f"const _CS={json.dumps(cs_map, ensure_ascii=False)};\n"
 js += f"const _MA={json.dumps(meses_disponibles)};\n"
 js += f"const _PLAN500={json.dumps(plan500_sites)};\n"
 js += f"const _PLAN500_COUNTS={json.dumps(plan500_counts)};\n"
+js += f"const _PLAN500_REQ={json.dumps(plan500_req, ensure_ascii=False)};\n"
 js += f"const _LAST_UPDATED={json.dumps(last_updated_str)};\n"
 import gzip
 with gzip.open('datos.js.gz', 'wt', encoding='utf-8') as f:
