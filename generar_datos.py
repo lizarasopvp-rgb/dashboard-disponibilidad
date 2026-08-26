@@ -152,6 +152,16 @@ for _, row in cmdb.dropna(subset=['Nombre_Site']).iterrows():
 # DERIVAR COLUMNAS SEGÚN INSTRUCCIONES DEL USUARIO
 # ============================================================
 
+if 'city' in df.columns and 'Ciudad' in df.columns:
+    df['Ciudad'] = df['Ciudad'].fillna(df['city'])
+elif 'city' in df.columns:
+    df['Ciudad'] = df['city']
+
+if 'department' in df.columns and 'Departamento' in df.columns:
+    df['Departamento'] = df['Departamento'].fillna(df['department'])
+elif 'department' in df.columns:
+    df['Departamento'] = df['department']
+
 df['Ciudad'] = df['Ciudad'].replace({
     'BOGOTÁ, D.C.': 'BOGOTA', 'Bogotá, D.C.': 'Bogota',
     'BOGOTÁ D.C.': 'BOGOTA', 'Bogotá D.C.': 'Bogota',
