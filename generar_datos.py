@@ -26,6 +26,14 @@ if 'etiqueta_padre' not in df_v2.columns:
     df_v2['etiqueta_padre'] = 'Sin dato'
 df_v2['origen_archivo'] = 'V2'
 
+rename_map_v2 = {
+    'latitude_y': 'Latitud',
+    'longitude_y': 'Longitud',
+    'city_name_y': 'Ciudad',
+    'department_name_y': 'Departamento'
+}
+df_v2 = df_v2.rename(columns=rename_map_v2)
+
 print("Leyendo Data_Contrato.xlsx...")
 try:
     xls_c = pd.ExcelFile('Data_Contrato.xlsx')
