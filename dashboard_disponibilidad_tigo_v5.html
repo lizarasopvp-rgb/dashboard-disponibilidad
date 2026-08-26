@@ -5320,7 +5320,7 @@
             if (dep) {
               dep.innerHTML = '<option value="">Todos</option>';
               const depsForReg = reg.value ? DATA.filter(d => d.region === reg.value) : DATA;
-              const validDeps = [...new Set(depsForReg.map(d => d.departamento))].filter(Boolean).sort();
+              const validDeps = [...new Set(depsForReg.map(d => d.departamento))].filter(d => d && isNaN(d)).sort();
               validDeps.forEach(d => dep.add(new Option(d, d)));
             }
             if (mun) mun.innerHTML = '<option value="">Todos</option>';
@@ -5328,14 +5328,14 @@
           };
         }
         if (dep) {
-          const validDeps = [...new Set(DATA.map(d => d.departamento))].filter(Boolean).sort();
+          const validDeps = [...new Set(DATA.map(d => d.departamento))].filter(d => d && isNaN(d)).sort();
           validDeps.forEach(d => dep.add(new Option(d, d)));
           dep.onchange = () => {
             if (mun) {
               mun.innerHTML = '<option value="">Todos</option>';
               if (dep.value) {
                 const munsForDep = DATA.filter(d => d.departamento === dep.value);
-                const validMuns = [...new Set(munsForDep.map(d => d.ciudad))].filter(Boolean).sort();
+                const validMuns = [...new Set(munsForDep.map(d => d.ciudad))].filter(d => d && isNaN(d)).sort();
                 validMuns.forEach(m => mun.add(new Option(m, m)));
               }
             }
@@ -5531,7 +5531,7 @@
       if (gDepto) {
         let d_data = getGeoBase();
         if (rValNew) d_data = d_data.filter(e => e.region === rValNew);
-        const validD = [...new Set(d_data.map(e => e.departamento))].filter(Boolean).sort();
+        const validD = [...new Set(d_data.map(e => e.departamento))].filter(d => d && isNaN(d)).sort();
         gDepto.innerHTML = '<option value="">Todos</option>';
         validD.forEach(d => gDepto.add(new Option(d, d)));
         gDepto.value = validD.includes(dVal) ? dVal : "";
@@ -5544,7 +5544,7 @@
         let m_data = getGeoBase();
         if (rValNew) m_data = m_data.filter(e => e.region === rValNew);
         if (dValNew) m_data = m_data.filter(e => e.departamento === dValNew);
-        const validC = [...new Set(m_data.map(e => e.ciudad))].filter(Boolean).sort();
+        const validC = [...new Set(m_data.map(e => e.ciudad))].filter(c => c && isNaN(c)).sort();
         gMuni.innerHTML = '<option value="">Todos</option>';
         validC.forEach(c => gMuni.add(new Option(c, c)));
         gMuni.value = validC.includes(mVal) ? mVal : "";
