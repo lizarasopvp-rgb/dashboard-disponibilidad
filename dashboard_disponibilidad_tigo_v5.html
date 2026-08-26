@@ -2725,7 +2725,7 @@
         if (d.modo === "SIN_EXCLUSIONES") {
           cumpleModo = s.origen_archivo === 'V2' && !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
         } else if (d.modo === "CONTRATO") {
-          cumpleModo = s.origen_archivo === 'Contrato' && s.etiqueta_padre === 'NAR';
+          cumpleModo = s.origen_archivo === 'Contrato';
         } else if (d.modo === "DISPUTA") {
           cumpleModo = s.origen_archivo === 'V2' && s.etiqueta_padre === 'NAR';
         }
@@ -5260,7 +5260,7 @@
         if (filtro.modo === "SIN_EXCLUSIONES") {
           cumpleModo = s.origen_archivo === 'V2' && !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
         } else if (filtro.modo === "CONTRATO") {
-          cumpleModo = s.origen_archivo === 'Contrato' && s.etiqueta_padre === 'NAR';
+          cumpleModo = s.origen_archivo === 'Contrato';
         } else if (filtro.modo === "DISPUTA") {
           cumpleModo = s.origen_archivo === 'V2' && s.etiqueta_padre === 'NAR';
         }
@@ -5494,7 +5494,7 @@
         if (filtro.modo === "SIN_EXCLUSIONES") {
           cumpleModo = s.origen_archivo === 'V2' && !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
         } else if (filtro.modo === "CONTRATO") {
-          cumpleModo = s.origen_archivo === 'Contrato' && s.etiqueta_padre === 'NAR';
+          cumpleModo = s.origen_archivo === 'Contrato';
         } else if (filtro.modo === "DISPUTA") {
           cumpleModo = s.origen_archivo === 'V2' && s.etiqueta_padre === 'NAR';
         }
