@@ -3707,6 +3707,7 @@
     ============================================================ */
     function renderWorst() {
       const VIEW = getLocalView('worst');
+      const base = VIEW;
       const sm = metricasSitio(VIEW);
       const top = [...sm].sort((a, b) => b.min - a.min).slice(0, 20);
 
