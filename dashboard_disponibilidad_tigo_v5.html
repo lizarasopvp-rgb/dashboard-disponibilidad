@@ -2186,7 +2186,7 @@
           <option value="">Todas</option>
         </select>
         <span class="lbl">Rango duración</span>
-        <select id="geo-rango">
+        <select id="geo-rango" multiple size="1" title="Usa Ctrl+Clic para seleccionar varios" style="height: auto; min-height: 28px; padding: 2px;">
           <option value="">Todos</option>
         </select>
         <span class="lbl">Causa suspens.</span>
@@ -3469,7 +3469,14 @@
       const fCREsp = gCrEsp ? gCrEsp.value : "";
       const fCS = gCs ? gCs.value : "";
       const fCSEsp = gCsEsp ? gCsEsp.value : "";
-      const fRango = gRango ? gRango.value : "";
+      let fRango = [];
+      if (gRango) {
+        if (gRango.multiple) {
+          fRango = Array.from(gRango.selectedOptions).map(opt => opt.value).filter(v => v !== "");
+        } else {
+          if (gRango.value) fRango = [gRango.value];
+        }
+      }
 
       if (fCR) geoEvs = geoEvs.filter(e => e.causa_raiz_macro === fCR);
       if (fCREsp) geoEvs = geoEvs.filter(e => e.causa_raiz_especifica === fCREsp);
@@ -3478,7 +3485,7 @@
       if (fReg) geoEvs = geoEvs.filter(e => e.region === fReg);
       if (fDepto) geoEvs = geoEvs.filter(e => e.departamento === fDepto);
       if (fMuni) geoEvs = geoEvs.filter(e => e.ciudad === fMuni);
-      if (fRango) geoEvs = geoEvs.filter(e => e.rango === fRango);
+      if (fRango.length > 0) geoEvs = geoEvs.filter(e => fRango.includes(e.rango));
 
       function updateGeoInsights(evsList) {
         const totalMin = evsList.reduce((sum, e) => sum + e.minutos_caidos, 0);
@@ -6133,6 +6140,18 @@
         Object.keys(CAUSA_RAIZ).forEach(c => masCr.add(new Option(c, c)));
         masCr.onchange = () => renderMasivas();
       }
+      
+      document.querySelectorAll('select[multiple]').forEach(sel => {
+        sel.addEventListener('change', function(e) {
+          const selected = Array.from(this.selectedOptions).map(o => o.value);
+          if (selected.includes("")) {
+             Array.from(this.options).forEach(opt => {
+                if (opt.value !== "") opt.selected = true;
+             });
+             this.options[0].selected = false;
+          }
+        });
+      });
     }
     function initNav() {
       document.querySelectorAll('.sb-item').forEach(item => {
