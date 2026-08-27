@@ -2939,7 +2939,7 @@
       VIEW_TEND.forEach(e => { const mo = parseInt(String(e.mes_ano).slice(4)) - 1; if (String(e.mes_ano).startsWith('2026') && mo <= maxMoCR && aggCR[e.causa_raiz_macro]) aggCR[e.causa_raiz_macro][mo] += e.minutos_caidos });
       destroy("tendcr");
       const activeMacros = macros.filter(mc => aggCR[mc].some(v => v > 0));
-      const datasetsCR = activeMacros.map(mc => ({ label: mc, data: aggCR[mc], backgroundColor: PAL[macros.indexOf(mc) % PAL.length] }));
+      const datasetsCR = activeMacros.map(mc => ({ label: mc, data: aggCR[mc], backgroundColor: mc === 'Fuerza Mayor' ? '#DA291C' : PAL[macros.indexOf(mc) % PAL.length] }));
       charts.tendcr = new Chart(document.getElementById("ch-tend-cr"), {
         type: "bar", data: { labels: MESES.slice(0, nMoCR), datasets: datasetsCR },
         options: {
