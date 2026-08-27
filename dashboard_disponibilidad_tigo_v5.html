@@ -5300,15 +5300,21 @@
         newBtn.addEventListener('click', () => {
           let csv = "Mes,Semana,Tiquete,Regional,Departamento,Municipio,Causa Raiz Especifica,Cierre (Solucion)\n";
           dedupedEvents.forEach(ev => {
+             const fechaStr = ev.r[12] || "";
+             let mesDesc = "";
+             if (fechaStr.length >= 7) {
+                const dateObj = new Date(fechaStr);
+                mesDesc = isNaN(dateObj) ? fechaStr.substring(0,7) : dateObj.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+             }
              const row = [
-                _S[ev.r[17]] || ev.r[15],
-                ev.r[16],
-                _S[ev.r[9]],
-                _S[ev.r[4]],
-                _S[ev.r[2]],
-                _S[ev.r[3]],
-                _S[ev.r[8]],
-                _S[ev.r[10]]
+                mesDesc,
+                _S[ev.r[24]] || "", // Semana
+                _S[ev.r[10]],       // Tiquete
+                _S[ev.r[4]],        // Regional
+                _S[ev.r[2]],        // Departamento
+                _S[ev.r[3]],        // Municipio
+                _S[ev.r[8]],        // Causa raiz
+                _S[ev.r[11]]        // Cierre (Solucion)
              ];
              csv += row.map(c => `"${String(c || '').replace(/"/g, '""')}"`).join(",") + "\n";
           });
