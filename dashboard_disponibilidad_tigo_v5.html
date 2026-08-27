@@ -5299,7 +5299,7 @@
         btnExport.parentNode.replaceChild(newBtn, btnExport);
         newBtn.addEventListener('click', () => {
           const planReq = typeof _PLAN500_REQ !== 'undefined' ? _PLAN500_REQ : {};
-          let csv = "Mes;Semana;Tiquete;Regional;Departamento;Municipio;Fecha de inicio;Causa Raiz Especifica;Cierre (Solucion);Minutos;Plan realizado\n";
+          let csv = "Sitio;Nombre del Sitio;Mes;Semana;Tiquete;Regional;Departamento;Municipio;Fecha de inicio;Minutos;Causa Raiz Especifica;Cierre (Solucion);Plan realizado\n";
           
           dedupedEvents.forEach(ev => {
              const fechaStr = ev.r[12] || "";
@@ -5309,10 +5309,12 @@
                 mesDesc = isNaN(dateObj) ? fechaStr.substring(0,7) : dateObj.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
              }
              
-             const siteCode = _S[ev.r[0]];
+             const siteCode = _S[ev.r[0]] || "";
              const reqText = planReq[siteCode] || '';
              
              const row = [
+                siteCode,
+                _S[ev.r[1]] || "",
                 mesDesc,
                 _S[ev.r[24]] || "",
                 _S[ev.r[10]],
@@ -5320,9 +5322,9 @@
                 _S[ev.r[2]],
                 _S[ev.r[3]],
                 fechaStr,
+                ev.r[6] ? ev.r[6].toFixed(1) : "0",
                 _S[ev.r[8]],
                 _S[ev.r[11]],
-                ev.r[6].toFixed(1),
                 reqText
              ];
              
