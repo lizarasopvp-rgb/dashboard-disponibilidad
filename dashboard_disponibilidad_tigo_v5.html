@@ -5200,26 +5200,62 @@
         plugins: [plan500LabelsPlugin]
       });
 
+      destroy('plan500semanal');
       destroy('plan500finalizados');
-      const p5finLabels = ["6", "8", "9", "10", "11", "12", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33"];
-      const p5finData = [1, 3, 10, 12, 14, 15, 16, 19, 25, 26, 29, 38, 47, 56, 67, 76, 90, 98, 109, 115, 125, 138, 143, 165, 178, 179];
+
+      const hardcodedFin = {
+        6: 1, 8: 3, 9: 10, 10: 12, 11: 14, 12: 15, 14: 16, 15: 19, 16: 25, 17: 26, 18: 29, 19: 38,
+        20: 47, 21: 56, 22: 67, 23: 76, 24: 90, 25: 98, 26: 109, 27: 115, 28: 125, 29: 138, 30: 143,
+        31: 165, 32: 178, 33: 179
+      };
+      const sortedWeeks = Object.keys(byWeek).map(Number).sort((a,b) => a - b);
       
+      const allWeeksSet = new Set([...sortedWeeks, ...Object.keys(hardcodedFin).map(Number)]);
+      const unifiedWeeks = Array.from(allWeeksSet).sort((a,b) => a - b);
+      const unifiedLabels = unifiedWeeks.map(w => w.toString());
+      
+      let lastFin = 0;
+      const unifiedFinData = unifiedWeeks.map(w => {
+         if (hardcodedFin[w] !== undefined) lastFin = hardcodedFin[w];
+         return lastFin;
+      });
+
+      const unifiedMinData = unifiedWeeks.map(w => {
+         return byWeek[w] ? byWeek[w].mins : 0;
+      });
+
       charts.plan500finalizados = new Chart(document.getElementById("ch-plan500-finalizados"), {
         type: "line",
         data: {
-          labels: p5finLabels,
-          datasets: [{
-            label: "Planes Finalizados",
-            data: p5finData,
-            borderColor: "#4A72B2",
-            backgroundColor: "rgba(74, 114, 178, 0.2)",
-            borderWidth: 3,
-            pointBackgroundColor: "#4A72B2",
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            fill: true,
-            tension: 0.1
-          }]
+          labels: unifiedLabels,
+          datasets: [
+            {
+              label: "Planes Finalizados (Acumulado)",
+              data: unifiedFinData,
+              borderColor: "#4A72B2",
+              backgroundColor: "rgba(74, 114, 178, 0.2)",
+              borderWidth: 3,
+              pointBackgroundColor: "#4A72B2",
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              fill: true,
+              tension: 0.1,
+              yAxisID: 'y'
+            },
+            {
+              label: "Minutos de Energía",
+              data: unifiedMinData,
+              borderColor: "#DA291C",
+              backgroundColor: "transparent",
+              borderWidth: 2,
+              pointBackgroundColor: "#DA291C",
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              fill: false,
+              tension: 0.3,
+              yAxisID: 'y1'
+            }
+          ]
         },
         options: {
           responsive: true,
@@ -5227,17 +5263,29 @@
           layout: { padding: { top: 20 } },
           scales: {
             x: { grid: { display: false }, ticks: { font: { family: "IBM Plex Mono", size: 11 } } },
-            y: { type: "linear", position: "left", grid: { color: "#E4E8EE" }, suggestedMax: 200, min: 0 }
+            y: { 
+              type: "linear", 
+              position: "left", 
+              grid: { color: "#E4E8EE" }, 
+              suggestedMax: 200, 
+              min: 0,
+              title: { display: true, text: "Planes Finalizados", font: { size: 11, weight: "bold" }, color: "#4A72B2" }
+            },
+            y1: { 
+              type: "linear", 
+              position: "right", 
+              grid: { display: false }, 
+              min: 0,
+              title: { display: true, text: "Minutos Caídos", font: { size: 11, weight: "bold" }, color: "#DA291C" }
+            }
           },
           plugins: {
-            legend: { display: false },
+            legend: { position: "top", labels: { font: { family: "IBM Plex Sans", size: 12 }, usePointStyle: true, boxWidth: 8 } },
             tooltip: { mode: "index", intersect: false }
           }
         }
       });
 
-      destroy('plan500semanal');
-      const sortedWeeks = Object.keys(byWeek).map(Number).sort((a,b) => a - b);
       const weeklyLabels = sortedWeeks.map(w => w.toString());
       const weeklyData = sortedWeeks.map(w => byWeek[w].mins);
 
