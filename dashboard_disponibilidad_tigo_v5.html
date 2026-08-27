@@ -5003,9 +5003,9 @@
         ];
         if (!causasPlan500.includes(causaFinal)) return;
         
-        // Nueva regla: Para Plan 500 solo sumar fallas que duren menos de 800 minutos
+        // Nueva regla: Para Plan 500 solo sumar fallas que duren menos de 240 minutos
         const mins = r[6];
-        if (mins >= 800) return;
+        if (mins >= 240) return;
 
         if (!eventsBySite[site_cd]) eventsBySite[site_cd] = [];
         eventsBySite[site_cd].push(r);
