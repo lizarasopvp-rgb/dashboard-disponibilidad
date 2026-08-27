@@ -2554,8 +2554,9 @@
       </div>
       <div class="card" style="margin-top:16px;">
         <div class="card-head">
-          <div style="width: 100%; text-align: center;">
+          <div style="width: 100%; text-align: center; position: relative;">
             <h3 style="font-size: 18px; color: #555; font-family: var(--f-body); font-weight: normal; margin-bottom: 10px;">Plan 500 Execution Finished (Acumulado)</h3>
+            <button id="btn-export-plan500" style="position: absolute; right: 10px; top: -5px; padding: 4px 10px; font-size: 12px; cursor: pointer; background: var(--azul-marino); color: white; border: none; border-radius: 4px;">Exportar Fallas</button>
           </div>
         </div>
         <div style="height: 350px;">
@@ -5020,6 +5021,9 @@
       _E.forEach(r => {
         const site_cd = _S[r[0]];
         if (!planDates[site_cd]) return;
+        // Filtrar fallas >= 4 horas (240 min)
+        if (r[6] >= 240) return;
+        
         const causaFinal = _S[r[8]];
         const causasPlan500 = [
           "Mobile_Energía-Facilities_Corte energia comercial sin autonomia/bloqueadas",
@@ -5234,7 +5238,7 @@
               yAxisID: 'y'
             },
             {
-              label: "Minutos de Energía",
+              label: "Minutos de Energía < 4h",
               data: unifiedMinData,
               borderColor: "#DA291C",
               backgroundColor: "transparent",
@@ -5267,7 +5271,7 @@
               position: "right", 
               grid: { display: false }, 
               min: 0,
-              title: { display: true, text: "Minutos Caídos", font: { size: 11, weight: "bold" }, color: "#DA291C" }
+              title: { display: true, text: "Minutos Caídos < 4h", font: { size: 11, weight: "bold" }, color: "#DA291C" }
             }
           },
           plugins: {
@@ -5287,6 +5291,37 @@
 
 
       
+      // Botón exportar
+      const btnExport = document.getElementById('btn-export-plan500');
+      if (btnExport) {
+        // Remover listener anterior si existe clonando
+        const newBtn = btnExport.cloneNode(true);
+        btnExport.parentNode.replaceChild(newBtn, btnExport);
+        newBtn.addEventListener('click', () => {
+          let csv = "Mes,Semana,Tiquete,Regional,Departamento,Municipio,Causa Raiz Especifica,Cierre (Solucion)\n";
+          dedupedEvents.forEach(ev => {
+             const row = [
+                _S[ev.r[17]] || ev.r[15],
+                ev.r[16],
+                _S[ev.r[9]],
+                _S[ev.r[4]],
+                _S[ev.r[2]],
+                _S[ev.r[3]],
+                _S[ev.r[8]],
+                _S[ev.r[10]]
+             ];
+             csv += row.map(c => `"${String(c || '').replace(/"/g, '""')}"`).join(",") + "\n";
+          });
+          const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = "Fallas_Plan500_Menores_4h.csv";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+      }
+
       // TOP 10 LOGIC
       const sitesTop = {};
       dedupedEvents.forEach(ev => {
