@@ -2525,25 +2525,31 @@
         <div style="height: 350px;">
           <canvas id="ch-plan500"></canvas>
         </div>
-        <div class="scrollx" id="wrap-plan500-tbl"
-          style="margin-top:14px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
+        <div id="p5-drilldown-container" style="margin-top:14px; display:none; border-top: 1px solid var(--linea); padding-top: 14px;">
           <div style="padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="plan500-tbl-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle de fallas
-            </h3>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <button class="btn-fant" id="p5-btn-back" style="display:none; padding: 4px 8px; font-size: 11px;">◀ Volver</button>
+              <h3 id="plan500-tbl-title" style="margin: 0; font-size: 14px; color: var(--azul-marino);">Detalle de fallas</h3>
+            </div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <button class="btn-fant" onclick="if(p5CurrentPage > 1) { p5CurrentPage--; updatePlan500Table(); }"
-                style="padding: 4px 8px; font-size: 11px;">◀</button>
-              <span id="p5-page-info" style="font-size: 11px; font-family: var(--f-disp); font-weight: 600;">1 /
-                1</span>
-              <button class="btn-fant"
-                onclick="if(p5CurrentPage < Math.ceil(p5CurrentEvents.length / 5)) { p5CurrentPage++; updatePlan500Table(); }"
-                style="padding: 4px 8px; font-size: 11px;">▶</button>
-              <button class="btn-fant" onclick="document.getElementById('wrap-plan500-tbl').style.display='none'"
-                style="margin-left: 10px;">✕ Cerrar</button>
+              <div id="p5-pagination" style="display: none; align-items: center; gap: 8px;">
+                <button class="btn-fant" onclick="if(p5CurrentPage > 1) { p5CurrentPage--; updatePlan500Table(); }" style="padding: 4px 8px; font-size: 11px;">◀</button>
+                <span id="p5-page-info" style="font-size: 11px; font-family: var(--f-disp); font-weight: 600;">1 / 1</span>
+                <button class="btn-fant" onclick="if(p5CurrentPage < Math.ceil(p5CurrentEvents.length / 5)) { p5CurrentPage++; updatePlan500Table(); }" style="padding: 4px 8px; font-size: 11px;">▶</button>
+              </div>
+              <button class="btn-fant" onclick="document.getElementById('p5-drilldown-container').style.display='none'" style="margin-left: 10px;">✕ Cerrar</button>
             </div>
           </div>
           <div id="p5-month-insights" style="display:flex; margin-bottom:12px; gap:10px;"></div>
-          <table class="datos" id="tbl-plan500"></table>
+          
+          <div id="p5-drilldown-content">
+             <div id="p5-chart-reg-container" style="display:none; height:250px;">
+                <canvas id="ch-plan500-regionales"></canvas>
+             </div>
+             <div class="scrollx" id="p5-table-container" style="display:none;">
+                <table class="datos" id="tbl-plan500"></table>
+             </div>
+          </div>
         </div>
       </div>
       <div class="card" style="margin-top:16px;">
@@ -2554,6 +2560,18 @@
         </div>
         <div style="height: 350px;">
           <canvas id="ch-plan500-semanal"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px; border: 1px solid var(--azul-marino); border-top: 3px solid var(--azul-marino);">
+        <div class="card-head">
+          <div>
+            <h3>Conclusión: Top 10 Sitios Más Intermitentes (Año)</h3>
+            <p class="sub">Sitios con mayor cantidad de fallas en el año, desglosado por mes</p>
+          </div>
+        </div>
+        <div class="scrollx" style="padding-top: 14px;">
+           <table class="datos" id="tbl-plan500-top10"></table>
         </div>
       </div>
     </section>
@@ -5163,7 +5181,9 @@
             if (!elements.length) return;
             const idx = elements[0].index;
             const mesStr = labels[idx];
-            renderPlan500Table(mesStr, byMonth[mesStr].events || []);
+            p5DrillState.mes = mesStr;
+            p5DrillState.allEvents = byMonth[mesStr].events || [];
+            renderPlan500Drilldown(1);
           }
         },
         plugins: [plan500LabelsPlugin]
@@ -5241,48 +5261,236 @@
         ]
       });
     }
+    // TOP 10 LOGIC
+    const sitesTop = {};
+    dedupedEvents.forEach(ev => {
+       const site = _S[ev.r[0]];
+       const d = new Date(ev.ts);
+       const mes = String(d.getMonth() + 1).padStart(2, '0');
+       if (!sitesTop[site]) sitesTop[site] = { totalFallas: 0, totalMin: 0, byMes: {} };
+       sitesTop[site].totalFallas++;
+       sitesTop[site].totalMin += ev.mins;
+       if (!sitesTop[site].byMes[mes]) sitesTop[site].byMes[mes] = 0;
+       sitesTop[site].byMes[mes] += ev.mins;
+    });
+    
+    const top10 = Object.keys(sitesTop)
+       .sort((a,b) => sitesTop[b].totalFallas - sitesTop[a].totalFallas)
+       .slice(0, 10);
+       
+    const t10Body = document.getElementById("tbl-plan500-top10");
+    if (t10Body) {
+       let html = `<tr>
+          <th>Sitio</th>
+          <th class="num">Total Fallas</th>
+          <th class="num">Total Minutos</th>
+          <th>Desglose Mensual (Minutos)</th>
+       </tr>`;
+       if (top10.length === 0) {
+          html += `<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--gris);">No hay datos</td></tr>`;
+       } else {
+          top10.forEach(s => {
+             const st = sitesTop[s];
+             let mesesHtml = `<div style="display:flex; gap:4px; flex-wrap:wrap; font-size:10px;">`;
+             for(let i=1; i<=12; i++) {
+                const m = String(i).padStart(2, '0');
+                if (st.byMes[m]) {
+                   mesesHtml += `<span style="background:#f1f3f5; border:1px solid #ddd; padding:2px 4px; border-radius:3px;">
+                      <b>M${i}</b>: ${st.byMes[m].toFixed(0)}m
+                   </span>`;
+                }
+             }
+             mesesHtml += `</div>`;
+             html += `<tr>
+                <td style="font-weight:600; color:var(--azul-marino);">${s}</td>
+                <td class="num">${st.totalFallas}</td>
+                <td class="num" style="color:var(--rojo); font-weight:600;">${st.totalMin.toFixed(0)}</td>
+                <td>${mesesHtml}</td>
+             </tr>`;
+          });
+       }
+       t10Body.innerHTML = html;
+    }
+
     var p5CurrentPage = 1;
     var p5CurrentEvents = [];
+    
+    window.p5DrillState = {
+       level: 0, mes: null, reg: null, depto: null, muni: null, sitio: null,
+       allEvents: [], filteredEvents: []
+    };
 
-    function renderPlan500Table(mes, events) {
+    window.renderPlan500Drilldown = function(level, key) {
+       p5DrillState.level = level;
+       const container = document.getElementById('p5-drilldown-container');
+       const chartContainer = document.getElementById('p5-chart-reg-container');
+       const tableContainer = document.getElementById('p5-table-container');
+       const backBtn = document.getElementById('p5-btn-back');
+       const title = document.getElementById('plan500-tbl-title');
+       const paginator = document.getElementById('p5-pagination');
+       
+       container.style.display = "block";
+       backBtn.style.display = level > 1 ? 'inline-block' : 'none';
+       
+       let evs = [];
+       if (level === 1) {
+          evs = p5DrillState.allEvents;
+          p5DrillState.filteredEvents = evs;
+          chartContainer.style.display = 'block';
+          tableContainer.style.display = 'none';
+          paginator.style.display = 'none';
+          
+          const mStr = p5DrillState.mes.substring(0, 4) + '-' + p5DrillState.mes.substring(4);
+          title.textContent = `Regionales en ${mStr}`;
+          
+          const byReg = {};
+          evs.forEach(ev => {
+             const reg = _S[ev[4]] || 'Sin dato';
+             if (!byReg[reg]) byReg[reg] = 0;
+             byReg[reg] += ev[6];
+          });
+          const labels = Object.keys(byReg).sort((a, b) => byReg[b] - byReg[a]);
+          const data = labels.map(l => byReg[l]);
+          
+          if (charts.p5Reg) charts.p5Reg.destroy();
+          charts.p5Reg = new Chart(document.getElementById("ch-plan500-regionales"), {
+             type: 'bar',
+             data: { labels: labels, datasets: [{ label: 'Minutos', data: data, backgroundColor: '#00A3E0', borderRadius: 4 }] },
+             options: {
+                responsive: true, maintainAspectRatio: false,
+                onClick: (e, elements) => {
+                   if (!elements.length) return;
+                   const r = labels[elements[0].index];
+                   window.renderPlan500Drilldown(2, r);
+                }
+             }
+          });
+       } else if (level === 2) {
+          if (key) p5DrillState.reg = key;
+          evs = p5DrillState.allEvents.filter(ev => (_S[ev[4]] || 'Sin dato') === p5DrillState.reg);
+          p5DrillState.filteredEvents = evs;
+          chartContainer.style.display = 'none';
+          tableContainer.style.display = 'block';
+          paginator.style.display = 'none';
+          title.textContent = `Departamentos en ${p5DrillState.reg}`;
+          
+          const byGrp = {};
+          evs.forEach(ev => {
+             const depto = _S[ev[2]] || 'Sin dato';
+             if (!byGrp[depto]) byGrp[depto] = { count: 0, mins: 0 };
+             byGrp[depto].count++;
+             byGrp[depto].mins += ev[6];
+          });
+          window.renderGenericDrilldownTable(byGrp, 3, 'Departamento');
+       } else if (level === 3) {
+          if (key) p5DrillState.depto = key;
+          evs = p5DrillState.allEvents.filter(ev => (_S[ev[4]] || 'Sin dato') === p5DrillState.reg && (_S[ev[2]] || 'Sin dato') === p5DrillState.depto);
+          p5DrillState.filteredEvents = evs;
+          chartContainer.style.display = 'none';
+          tableContainer.style.display = 'block';
+          paginator.style.display = 'none';
+          title.textContent = `Municipios en ${p5DrillState.depto}`;
+          
+          const byGrp = {};
+          evs.forEach(ev => {
+             const muni = _S[ev[3]] || 'Sin dato';
+             if (!byGrp[muni]) byGrp[muni] = { count: 0, mins: 0 };
+             byGrp[muni].count++;
+             byGrp[muni].mins += ev[6];
+          });
+          window.renderGenericDrilldownTable(byGrp, 4, 'Municipio');
+       } else if (level === 4) {
+          if (key) p5DrillState.muni = key;
+          evs = p5DrillState.allEvents.filter(ev => (_S[ev[4]] || 'Sin dato') === p5DrillState.reg && (_S[ev[2]] || 'Sin dato') === p5DrillState.depto && (_S[ev[3]] || 'Sin dato') === p5DrillState.muni);
+          p5DrillState.filteredEvents = evs;
+          chartContainer.style.display = 'none';
+          tableContainer.style.display = 'block';
+          paginator.style.display = 'none';
+          title.textContent = `Sitios en ${p5DrillState.muni}`;
+          
+          const byGrp = {};
+          evs.forEach(ev => {
+             const sitio = _S[ev[0]] || 'Sin dato';
+             if (!byGrp[sitio]) byGrp[sitio] = { count: 0, mins: 0 };
+             byGrp[sitio].count++;
+             byGrp[sitio].mins += ev[6];
+          });
+          window.renderGenericDrilldownTable(byGrp, 5, 'Sitio');
+       } else if (level === 5) {
+          if (key) p5DrillState.sitio = key;
+          evs = p5DrillState.allEvents.filter(ev => (_S[ev[4]] || 'Sin dato') === p5DrillState.reg && (_S[ev[2]] || 'Sin dato') === p5DrillState.depto && (_S[ev[3]] || 'Sin dato') === p5DrillState.muni && (_S[ev[0]] || 'Sin dato') === p5DrillState.sitio);
+          p5DrillState.filteredEvents = evs;
+          chartContainer.style.display = 'none';
+          tableContainer.style.display = 'block';
+          paginator.style.display = 'flex';
+          title.textContent = `Fallas del sitio ${p5DrillState.sitio}`;
+          
+          renderPlan500Table(evs);
+       }
+       
+       if (level < 5) {
+          const totalFallas = evs.length;
+          const totalMin = evs.reduce((a, r) => a + r[6], 0);
+          const promMin = totalFallas > 0 ? totalMin / totalFallas : 0;
+          const sitiosUnicos = new Set(evs.map(r => _S[r[0]])).size;
+          
+          const insEl = document.getElementById('p5-month-insights');
+          if (insEl) {
+            insEl.innerHTML = `
+              <span style="border-left:4px solid var(--naranja); padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
+                <div style="font-size:20px; color:var(--naranja); line-height:1; font-weight:700;">${fmt(totalFallas)}</div>
+                <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Fallas</div>
+              </span>
+              <span style="border-left:4px solid var(--azul-marino); padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
+                <div style="font-size:20px; color:var(--azul-marino); line-height:1; font-weight:700;">${fmt(Math.round(totalMin))}</div>
+                <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Minutos totales</div>
+              </span>
+              <span style="border-left:4px solid #00A3E0; padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
+                <div style="font-size:20px; color:#00A3E0; line-height:1; font-weight:700;">${fmt(Math.round(promMin))}</div>
+                <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Duración prom. / falla</div>
+              </span>
+              <span style="border-left:4px solid var(--ok); padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
+                <div style="font-size:20px; color:var(--ok); line-height:1; font-weight:700;">${fmt(sitiosUnicos)}</div>
+                <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Sitios únicos</div>
+              </span>
+            `;
+          }
+       }
+    };
+    
+    document.getElementById('p5-btn-back').onclick = () => {
+        window.renderPlan500Drilldown(p5DrillState.level - 1);
+    };
+
+    window.renderGenericDrilldownTable = function(byGrp, nextLevel, colName) {
+       const tbody = document.getElementById("tbl-plan500");
+       let html = `<tr>
+           <th>${colName}</th>
+           <th class="num">Fallas</th>
+           <th class="num">Minutos</th>
+         </tr>`;
+       const keys = Object.keys(byGrp).sort((a,b) => byGrp[b].mins - byGrp[a].mins);
+       if (keys.length === 0) {
+          html += `<tr><td colspan="3" style="text-align:center; padding:15px; color:var(--gris);">Sin datos</td></tr>`;
+       } else {
+          keys.forEach(k => {
+             html += `<tr style="cursor:pointer;" onclick="renderPlan500Drilldown(${nextLevel}, '${k}')" onmouseover="this.style.background='#f1f3f5'" onmouseout="this.style.background=''">
+                <td style="color:var(--azul-marino); font-weight:600;">${k}</td>
+                <td class="num">${byGrp[k].count}</td>
+                <td class="num" style="color:var(--rojo); font-weight:600;">${byGrp[k].mins.toFixed(1)}</td>
+             </tr>`;
+          });
+       }
+       tbody.innerHTML = html;
+    };
+
+    function renderPlan500Table(events) {
       p5CurrentEvents = events.sort((a, b) => b[6] - a[6]);
       p5CurrentPage = 1;
-
-      const mStr = mes.substring(0, 4) + '-' + mes.substring(4);
-      document.getElementById("plan500-tbl-title").textContent = `Fallas de Energía en ${mStr} (${events.length})`;
-      document.getElementById("wrap-plan500-tbl").style.display = "block";
-
-      // Insights del mes
-      const totalFallas = events.length;
-      const totalMin = events.reduce((a, r) => a + r[6], 0);
-      const promMin = totalFallas > 0 ? totalMin / totalFallas : 0;
-      const sitiosUnicos = new Set(events.map(r => _S[r[0]])).size;
-      const insEl = document.getElementById('p5-month-insights');
-      if (insEl) {
-        insEl.innerHTML = `
-          <span style="border-left:4px solid var(--naranja); padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
-            <div style="font-size:20px; color:var(--naranja); line-height:1; font-weight:700;">${fmt(totalFallas)}</div>
-            <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Fallas</div>
-          </span>
-          <span style="border-left:4px solid var(--azul-marino); padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
-            <div style="font-size:20px; color:var(--azul-marino); line-height:1; font-weight:700;">${fmt(Math.round(totalMin))}</div>
-            <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Minutos totales</div>
-          </span>
-          <span style="border-left:4px solid #00A3E0; padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
-            <div style="font-size:20px; color:#00A3E0; line-height:1; font-weight:700;">${fmt(Math.round(promMin))}</div>
-            <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Duración prom. / falla</div>
-          </span>
-          <span style="border-left:4px solid var(--ok); padding:8px 14px; background:#f9fafb; flex:1; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0;">
-            <div style="font-size:20px; color:var(--ok); line-height:1; font-weight:700;">${fmt(sitiosUnicos)}</div>
-            <div style="color:var(--gris); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; margin-top:3px;">Sitios únicos</div>
-          </span>
-        `;
-      }
-
       updatePlan500Table();
     }
 
-    function updatePlan500Table() {
+    window.updatePlan500Table = function() {
       const tbody = document.getElementById("tbl-plan500");
       const totalPages = Math.ceil(p5CurrentEvents.length / 5) || 1;
 
@@ -5303,7 +5511,7 @@
         </tr>`;
 
       if (pageEvents.length === 0) {
-        html += `<tr><td colspan="6" style="text-align:center; color:var(--gris); padding: 15px;">No hay fallas para mostrar en este mes</td></tr>`;
+        html += `<tr><td colspan="6" style="text-align:center; color:var(--gris); padding: 15px;">No hay fallas para mostrar</td></tr>`;
       } else {
         pageEvents.forEach(r => {
           const ticketStr = r.customTicket || _S[r[10]];
@@ -5312,7 +5520,7 @@
           const reqHtml = reqText 
             ? `<details style="font-size:10.5px;color:var(--gris);max-width:300px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino);font-size:11px;">Ver plan</summary>${reqText.replace(/\n/g, '<br>')}</details>` 
             : '<span style="font-size:11px;color:var(--gris)">—</span>';
-          html += `<tr>
+          html += `<tr onmouseover="this.style.background='#f1f3f5'" onmouseout="this.style.background=''">
                <td><b>${siteCode}</b><br><span style="font-size:10.5px;color:var(--gris)">${_S[r[1]]}</span></td>
                <td style="max-width: 150px; word-break: break-all;"><span class="tdpill" style="background:var(--azul-marino); white-space: normal;">${ticketStr}</span></td>
                <td>${_S[r[8]]}</td>
@@ -6090,7 +6298,14 @@
 
       const geoRango = document.getElementById("geo-rango");
       if (geoRango) {
-        const rangos = [...new Set(DATA.map(d => d.rango))];
+        const order = ["> 48 horas", "24 horas a 48 horas", "4 horas a 24 horas", "30 min a 4 horas", "0 a 30 min"];
+        const rangos = [...new Set(DATA.map(d => d.rango))].filter(Boolean).sort((a, b) => {
+          let ia = order.indexOf(a);
+          let ib = order.indexOf(b);
+          if (ia === -1) ia = 999;
+          if (ib === -1) ib = 999;
+          return ia - ib;
+        });
         rangos.forEach(r => geoRango.add(new Option(r, r)));
         geoRango.onchange = () => { updateGeoCascade(); window.aplicarGeografia(); };
       }
