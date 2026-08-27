@@ -5047,8 +5047,9 @@
         if (weekStr) {
            const weekNum = parseInt(weekStr.replace(/\D/g, ''), 10);
            if (!isNaN(weekNum) && weekNum >= 6) {
-               if (!byWeek[weekNum]) byWeek[weekNum] = 0;
-               byWeek[weekNum] += ev.mins;
+               if (!byWeek[weekNum]) byWeek[weekNum] = { mins: 0, events: [] };
+               byWeek[weekNum].mins += ev.mins;
+               byWeek[weekNum].events.push(mergedR);
            }
         }
       });
@@ -5164,7 +5165,7 @@
       destroy('plan500semanal');
       const sortedWeeks = Object.keys(byWeek).map(Number).sort((a,b) => a - b);
       const weeklyLabels = sortedWeeks.map(w => w.toString());
-      const weeklyData = sortedWeeks.map(w => byWeek[w]);
+      const weeklyData = sortedWeeks.map(w => byWeek[w].mins);
 
       charts.plan500semanal = new Chart(document.getElementById("ch-plan500-semanal"), {
         type: "line",
@@ -5200,6 +5201,12 @@
           plugins: {
             legend: { display: false },
             tooltip: { mode: "index", intersect: false }
+          },
+          onClick: (e, elements) => {
+            if (!elements.length) return;
+            const idx = elements[0].index;
+            const weekNum = sortedWeeks[idx];
+            renderPlan500Table("Semana " + weekNum, byWeek[weekNum].events || []);
           }
         },
         plugins: [
