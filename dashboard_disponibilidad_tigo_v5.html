@@ -2563,16 +2563,7 @@
         </div>
       </div>
 
-      <div class="card" style="margin-top:16px;">
-        <div class="card-head">
-          <div style="width: 100%; text-align: center;">
-            <h3 style="font-size: 18px; color: #555; font-family: var(--f-body); font-weight: normal; margin-bottom: 10px;">Minutos de Energía (Semanales)</h3>
-          </div>
-        </div>
-        <div style="height: 350px;">
-          <canvas id="ch-plan500-semanal"></canvas>
-        </div>
-      </div>
+
 
       <div class="card" style="margin-top:16px; border: 1px solid var(--azul-marino); border-top: 3px solid var(--azul-marino);">
         <div class="card-head">
@@ -5282,79 +5273,19 @@
           plugins: {
             legend: { position: "top", labels: { font: { family: "IBM Plex Sans", size: 12 }, usePointStyle: true, boxWidth: 8 } },
             tooltip: { mode: "index", intersect: false }
-          }
-        }
-      });
-
-      const weeklyLabels = sortedWeeks.map(w => w.toString());
-      const weeklyData = sortedWeeks.map(w => byWeek[w].mins);
-
-      charts.plan500semanal = new Chart(document.getElementById("ch-plan500-semanal"), {
-        type: "line",
-        data: {
-          labels: weeklyLabels,
-          datasets: [
-            {
-              label: "Minutos de Energía (Semanas)",
-              data: weeklyData,
-              borderColor: "#4a76c8",
-              backgroundColor: "#4a76c8",
-              tension: 0,
-              borderWidth: 3,
-              pointRadius: 5,
-              pointBackgroundColor: "#4a76c8"
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          layout: { padding: { top: 25 } },
-          scales: {
-            x: { 
-              grid: { display: false },
-              ticks: { font: { family: "IBM Plex Mono", size: 11 } }
-            },
-            y: { 
-              grid: { color: "#E4E8EE" },
-              suggestedMax: Math.max(...weeklyData, 10) * 1.15
-            }
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: { mode: "index", intersect: false }
           },
           onClick: (e, elements) => {
             if (!elements.length) return;
             const idx = elements[0].index;
-            const weekNum = sortedWeeks[idx];
-            renderPlan500Table("Semana " + weekNum, byWeek[weekNum].events || []);
+            const weekStr = unifiedLabels[idx];
+            p5DrillState.mes = "Semana " + weekStr;
+            p5DrillState.allEvents = byWeek[weekStr] ? byWeek[weekStr].events : [];
+            window.renderPlan500Drilldown(1);
           }
-        },
-        plugins: [
-          {
-            id: 'plan500SemanalLabels',
-            afterDatasetsDraw: (chart) => {
-              const ctx = chart.ctx;
-              chart.data.datasets.forEach((dataset, i) => {
-                const meta = chart.getDatasetMeta(i);
-                if (meta.hidden) return;
-                meta.data.forEach((element, index) => {
-                  ctx.fillStyle = '#555';
-                  ctx.font = '600 11px "IBM Plex Mono", sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.textBaseline = 'middle';
-                  const val = dataset.data[index];
-                  if (val > 0) {
-                    const pos = element.tooltipPosition();
-                    ctx.fillText(Math.round(val).toString(), pos.x, pos.y - 15);
-                  }
-                });
-              });
-            }
-          }
-        ]
+        }
       });
+
+
       
       // TOP 10 LOGIC
       const sitesTop = {};
@@ -5436,7 +5367,10 @@
           tableContainer.style.display = 'none';
           paginator.style.display = 'none';
           
-          const mStr = p5DrillState.mes.substring(0, 4) + '-' + p5DrillState.mes.substring(4);
+          let mStr = p5DrillState.mes;
+          if (mStr && mStr.length === 6 && !mStr.startsWith("Semana")) {
+             mStr = mStr.substring(0, 4) + '-' + mStr.substring(4);
+          }
           title.textContent = `Regionales en ${mStr}`;
           
           const byReg = {};
