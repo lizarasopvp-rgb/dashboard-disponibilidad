@@ -3321,7 +3321,7 @@
     let mapa, capaMarcadores;
     function initMapa() {
       mapa = L.map("mapa", { scrollWheelZoom: false }).setView([4.6, -74.1], 5.4);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "© OpenStreetMap © CARTO", maxZoom: 18 }).addTo(mapa);
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", { attribution: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ", maxZoom: 16 }).addTo(mapa);
       capaMarcadores = L.layerGroup().addTo(mapa);
     }
     function colorEstado(e) { return e === "Activo" ? "#E03131" : e === "En_gestión" ? "#F2C12E" : "#1E9E5A" }
