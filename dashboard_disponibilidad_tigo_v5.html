@@ -4544,7 +4544,7 @@
             if (!item) return 0;
             return isMin ? item.m : item.c;
           }),
-          backgroundColor: colors[i % colors.length]
+          backgroundColor: c === 'Fuerza Mayor' ? '#DA291C' : colors[i % colors.length]
         };
       });
       datasets.push({
@@ -4770,7 +4770,7 @@
             if (!item) return 0;
             return isMin ? item.m : item.c;
           }),
-          backgroundColor: colors[i % colors.length]
+          backgroundColor: c === 'Fuerza Mayor' ? '#DA291C' : colors[i % colors.length]
         };
       });
       datasets.push({
