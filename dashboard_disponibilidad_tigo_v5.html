@@ -2344,12 +2344,19 @@
     <!-- 12 · FALLAS SIMULTÁNEAS -->
     <section id="masivas">
       <div class="sec-head">
-        <h2>Fallas simultáneas</h2><span class="pregunta">Eventos simultáneos con misma causa raíz y prefijo de
-          sitio</span>
+        <h2>Fallas simultáneas</h2><span class="pregunta">Módulo en rediseño</span>
       </div>
-      <div class="narrativa" id="narr-masivas">Agrupación automática de clústeres de fallas ocurridas en el mismo día y
-        hora (aprox), con la misma causa raíz y cercanía geográfica (prefijo de sitio). Ideal para solicitar
-        exclusiones.</div>
+      <div style="background: linear-gradient(135deg, var(--azul-marino) 0%, #2a3754 100%); border-radius: 16px; padding: 60px 40px; text-align: center; color: white; margin-top: 20px; box-shadow: 0 10px 30px rgba(26, 34, 56, 0.15); border: 1px solid rgba(255, 255, 255, 0.1); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--rojo); filter: blur(70px); opacity: 0.3;"></div>
+        <div style="position: absolute; bottom: -50px; left: -50px; width: 150px; height: 150px; background: var(--magenta); filter: blur(70px); opacity: 0.3;"></div>
+        <span style="display: inline-block; font-size: 48px; margin-bottom: 20px; animation: pulso 2s infinite ease-in-out;">🚧</span>
+        <h3 style="font-family: var(--f-disp); font-size: 28px; font-weight: 700; margin-bottom: 12px; letter-spacing: 0.5px;">Módulo en Remake</h3>
+        <p style="font-size: 16px; color: #9FB4C8; max-width: 500px; margin: 0 auto; line-height: 1.6;">
+          El NOC ha redefinido el objetivo de esta sección. Estamos trabajando en el taller forjando una experiencia completamente nueva, más precisa y potente. <br><br>
+          <span style="font-weight: 600; color: var(--rojo);">¡Prepárate para algo increíble! 🚀</span>
+        </p>
+      </div>
+      <div style="display: none;">
       <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
         <span class="lbl">Mes</span><select class="fl-mes">
           <option value="">Todos</option>
@@ -2467,6 +2474,7 @@
           </div>
           <table class="datos" id="tbl-masivas-ia-det"></table>
         </div>
+      </div>
       </div>
     </section>
 
