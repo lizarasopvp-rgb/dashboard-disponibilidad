@@ -5298,7 +5298,13 @@
         const newBtn = btnExport.cloneNode(true);
         btnExport.parentNode.replaceChild(newBtn, btnExport);
         newBtn.addEventListener('click', () => {
-          let csv = "Mes,Semana,Tiquete,Regional,Departamento,Municipio,Causa Raiz Especifica,Cierre (Solucion)\n";
+          let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"></head><body>
+<table border="1">
+  <tr>
+    <th>Mes</th><th>Semana</th><th>Tiquete</th><th>Regional</th><th>Departamento</th><th>Municipio</th><th>Causa Raiz Especifica</th><th>Cierre (Solucion)</th>
+  </tr>`;
+          
           dedupedEvents.forEach(ev => {
              const fechaStr = ev.r[12] || "";
              let mesDesc = "";
@@ -5306,22 +5312,27 @@
                 const dateObj = new Date(fechaStr);
                 mesDesc = isNaN(dateObj) ? fechaStr.substring(0,7) : dateObj.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
              }
+             
              const row = [
                 mesDesc,
-                _S[ev.r[24]] || "", // Semana
-                _S[ev.r[10]],       // Tiquete
-                _S[ev.r[4]],        // Regional
-                _S[ev.r[2]],        // Departamento
-                _S[ev.r[3]],        // Municipio
-                _S[ev.r[8]],        // Causa raiz
-                _S[ev.r[11]]        // Cierre (Solucion)
+                _S[ev.r[24]] || "",
+                _S[ev.r[10]],
+                _S[ev.r[4]],
+                _S[ev.r[2]],
+                _S[ev.r[3]],
+                _S[ev.r[8]],
+                _S[ev.r[11]]
              ];
-             csv += row.map(c => `"${String(c || '').replace(/"/g, '""')}"`).join(",") + "\n";
+             
+             tableHtml += "<tr>" + row.map(c => `<td>${String(c || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`).join("") + "</tr>";
           });
-          const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+          
+          tableHtml += "</table></body></html>";
+          
+          const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel' });
           const link = document.createElement("a");
           link.href = URL.createObjectURL(blob);
-          link.download = "Fallas_Plan500_Menores_4h.csv";
+          link.download = "Fallas_Plan500_Menores_4h.xls";
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
