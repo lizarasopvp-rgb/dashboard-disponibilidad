@@ -5260,56 +5260,57 @@
           }
         ]
       });
-    }
-    // TOP 10 LOGIC
-    const sitesTop = {};
-    dedupedEvents.forEach(ev => {
-       const site = _S[ev.r[0]];
-       const d = new Date(ev.ts);
-       const mes = String(d.getMonth() + 1).padStart(2, '0');
-       if (!sitesTop[site]) sitesTop[site] = { totalFallas: 0, totalMin: 0, byMes: {} };
-       sitesTop[site].totalFallas++;
-       sitesTop[site].totalMin += ev.mins;
-       if (!sitesTop[site].byMes[mes]) sitesTop[site].byMes[mes] = 0;
-       sitesTop[site].byMes[mes] += ev.mins;
-    });
-    
-    const top10 = Object.keys(sitesTop)
-       .sort((a,b) => sitesTop[b].totalFallas - sitesTop[a].totalFallas)
-       .slice(0, 10);
-       
-    const t10Body = document.getElementById("tbl-plan500-top10");
-    if (t10Body) {
-       let html = `<tr>
-          <th>Sitio</th>
-          <th class="num">Total Fallas</th>
-          <th class="num">Total Minutos</th>
-          <th>Desglose Mensual (Minutos)</th>
-       </tr>`;
-       if (top10.length === 0) {
-          html += `<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--gris);">No hay datos</td></tr>`;
-       } else {
-          top10.forEach(s => {
-             const st = sitesTop[s];
-             let mesesHtml = `<div style="display:flex; gap:4px; flex-wrap:wrap; font-size:10px;">`;
-             for(let i=1; i<=12; i++) {
-                const m = String(i).padStart(2, '0');
-                if (st.byMes[m]) {
-                   mesesHtml += `<span style="background:#f1f3f5; border:1px solid #ddd; padding:2px 4px; border-radius:3px;">
-                      <b>M${i}</b>: ${st.byMes[m].toFixed(0)}m
-                   </span>`;
-                }
-             }
-             mesesHtml += `</div>`;
-             html += `<tr>
-                <td style="font-weight:600; color:var(--azul-marino);">${s}</td>
-                <td class="num">${st.totalFallas}</td>
-                <td class="num" style="color:var(--rojo); font-weight:600;">${st.totalMin.toFixed(0)}</td>
-                <td>${mesesHtml}</td>
-             </tr>`;
-          });
-       }
-       t10Body.innerHTML = html;
+      
+      // TOP 10 LOGIC
+      const sitesTop = {};
+      dedupedEvents.forEach(ev => {
+         const site = _S[ev.r[0]];
+         const d = new Date(ev.ts);
+         const mes = String(d.getMonth() + 1).padStart(2, '0');
+         if (!sitesTop[site]) sitesTop[site] = { totalFallas: 0, totalMin: 0, byMes: {} };
+         sitesTop[site].totalFallas++;
+         sitesTop[site].totalMin += ev.mins;
+         if (!sitesTop[site].byMes[mes]) sitesTop[site].byMes[mes] = 0;
+         sitesTop[site].byMes[mes] += ev.mins;
+      });
+      
+      const top10 = Object.keys(sitesTop)
+         .sort((a,b) => sitesTop[b].totalFallas - sitesTop[a].totalFallas)
+         .slice(0, 10);
+         
+      const t10Body = document.getElementById("tbl-plan500-top10");
+      if (t10Body) {
+         let html = `<tr>
+            <th>Sitio</th>
+            <th class="num">Total Fallas</th>
+            <th class="num">Total Minutos</th>
+            <th>Desglose Mensual (Minutos)</th>
+         </tr>`;
+         if (top10.length === 0) {
+            html += `<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--gris);">No hay datos</td></tr>`;
+         } else {
+            top10.forEach(s => {
+               const st = sitesTop[s];
+               let mesesHtml = `<div style="display:flex; gap:4px; flex-wrap:wrap; font-size:10px;">`;
+               for(let i=1; i<=12; i++) {
+                  const m = String(i).padStart(2, '0');
+                  if (st.byMes[m]) {
+                     mesesHtml += `<span style="background:#f1f3f5; border:1px solid #ddd; padding:2px 4px; border-radius:3px;">
+                        <b>M${i}</b>: ${st.byMes[m].toFixed(0)}m
+                     </span>`;
+                  }
+               }
+               mesesHtml += `</div>`;
+               html += `<tr>
+                  <td style="font-weight:600; color:var(--azul-marino);">${s}</td>
+                  <td class="num">${st.totalFallas}</td>
+                  <td class="num" style="color:var(--rojo); font-weight:600;">${st.totalMin.toFixed(0)}</td>
+                  <td>${mesesHtml}</td>
+               </tr>`;
+            });
+         }
+         t10Body.innerHTML = html;
+      }
     }
 
     var p5CurrentPage = 1;
