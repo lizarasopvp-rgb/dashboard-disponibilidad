@@ -1939,7 +1939,7 @@
         <span class="lbl">Municipio</span><select class="fl-mun">
           <option value="">Todos</option>
         </select>
-        <span class="lbl">Rango</span><select class="fl-rng">
+        <span class="lbl">Rango</span><select class="fl-rng" multiple size="1" title="Usa Ctrl+Clic para seleccionar varios" style="height: auto; min-height: 28px; padding: 2px;">
           <option value="">Todos</option>
           <option value="> 48 horas">&gt; 48 horas</option>
           <option value="24 horas a 48 horas">24 horas a 48 horas</option>
@@ -1994,7 +1994,7 @@
         <span class="lbl">Municipio</span><select class="fl-mun">
           <option value="">Todos</option>
         </select>
-        <span class="lbl">Rango</span><select class="fl-rng">
+        <span class="lbl">Rango</span><select class="fl-rng" multiple size="1" title="Usa Ctrl+Clic para seleccionar varios" style="height: auto; min-height: 28px; padding: 2px;">
           <option value="">Todos</option>
           <option value="> 48 horas">&gt; 48 horas</option>
           <option value="24 horas a 48 horas">24 horas a 48 horas</option>
@@ -2047,7 +2047,7 @@
         <span class="lbl">Municipio</span><select class="fl-mun">
           <option value="">Todos</option>
         </select>
-        <span class="lbl">Rango</span><select class="fl-rng">
+        <span class="lbl">Rango</span><select class="fl-rng" multiple size="1" title="Usa Ctrl+Clic para seleccionar varios" style="height: auto; min-height: 28px; padding: 2px;">
           <option value="">Todos</option>
           <option value="> 48 horas">&gt; 48 horas</option>
           <option value="24 horas a 48 horas">24 horas a 48 horas</option>
@@ -2087,7 +2087,7 @@
         <span class="lbl">Municipio</span><select class="fl-mun">
           <option value="">Todos</option>
         </select>
-        <span class="lbl">Rango</span><select class="fl-rng">
+        <span class="lbl">Rango</span><select class="fl-rng" multiple size="1" title="Usa Ctrl+Clic para seleccionar varios" style="height: auto; min-height: 28px; padding: 2px;">
           <option value="">Todos</option>
           <option value="> 48 horas">&gt; 48 horas</option>
           <option value="24 horas a 48 horas">24 horas a 48 horas</option>
@@ -5353,7 +5353,11 @@
       const rngEl = sec.querySelector('.fl-rng');
       let fRngs = [];
       if (rngEl && rngEl.tagName === 'SELECT') {
-        if (rngEl.value) fRngs = [rngEl.value];
+        if (rngEl.multiple) {
+          fRngs = Array.from(rngEl.selectedOptions).map(opt => opt.value).filter(v => v !== "");
+        } else {
+          if (rngEl.value) fRngs = [rngEl.value];
+        }
       } else {
         fRngs = Array.from(sec.querySelectorAll('input.fl-rng:checked')).map(cb => cb.value);
       } let v = DATA.filter(s => {
