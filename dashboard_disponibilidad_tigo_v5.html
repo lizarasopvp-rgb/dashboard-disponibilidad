@@ -1883,6 +1883,108 @@
           <table class="datos" id="tbl-tend-heatmap"></table>
         </div>
       </div>
+
+      <!-- Apartado: Tendencia Diaria - Mapa de Calor (Región / Departamento / Municipio) -->
+      <div class="card" style="margin-top:16px" id="card-tend-daily-heatmap">
+        <div class="card-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h3>Tendencia Diaria - Mapa de Calor por Municipio</h3>
+            <p class="sub">Minutos diarios acumulados agrupados por región, departamento y municipio para el mes seleccionado</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="lbl" style="font-weight:700; color:var(--azul-marino); font-size:12px;">Mes de análisis:</span>
+            <select id="hm-diario-mes" style="padding:6px 12px; border-radius:6px; border:1px solid var(--linea); font-size:13px; background:#fff; font-weight:600; color:var(--azul-marino);" onchange="renderTendenciasDailyHeatmap()"></select>
+          </div>
+        </div>
+        <div class="scrollx" id="wrap-tend-daily-heatmap" style="margin-top:10px;">
+          <table class="datos" id="tbl-tend-daily-heatmap"></table>
+        </div>
+      </div>
+
+      <!-- Apartado: Tendencia Diaria por Municipio -->
+      <div class="card" style="margin-top:16px" id="card-tendencia-diaria">
+        <div class="card-head">
+          <div>
+            <h3>Tendencia Diaria por Municipio</h3>
+            <p class="sub">Evolución diaria de minutos de indisponibilidad (todos los días del mes en barras)</p>
+          </div>
+          <div class="toolbar">
+            <span class="meta-chip" style="background:#EBF3FA; color:#00608A; font-weight:700; font-size:11px;">
+              Requiere 4 filtros
+            </span>
+          </div>
+        </div>
+
+        <!-- Filtros dedicados para tendencia diaria -->
+        <div class="filtros" style="background:#F8FAFC; border:1px solid var(--linea); border-radius:8px; padding:12px 16px; margin-bottom:14px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="lbl" style="font-weight:700; color:var(--azul-marino); font-size:11px;">1. Mes *</span>
+            <select id="td-fl-mes" style="padding:6px 10px; border-radius:6px; border:1px solid var(--linea); font-size:13px; background:#fff; font-weight:600; color:var(--azul-marino); min-width:140px;">
+              <option value="">-- Seleccionar Mes --</option>
+            </select>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="lbl" style="font-weight:700; color:var(--azul-marino); font-size:11px;">2. Regional *</span>
+            <select id="td-fl-reg" style="padding:6px 10px; border-radius:6px; border:1px solid var(--linea); font-size:13px; background:#fff; font-weight:600; color:var(--azul-marino); min-width:140px;">
+              <option value="">-- Seleccionar Regional --</option>
+            </select>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="lbl" style="font-weight:700; color:var(--azul-marino); font-size:11px;">3. Departamento *</span>
+            <select id="td-fl-dep" style="padding:6px 10px; border-radius:6px; border:1px solid var(--linea); font-size:13px; background:#fff; font-weight:600; color:var(--azul-marino); min-width:150px;">
+              <option value="">-- Seleccionar Depto --</option>
+            </select>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="lbl" style="font-weight:700; color:var(--azul-marino); font-size:11px;">4. Municipio *</span>
+            <select id="td-fl-mun" style="padding:6px 10px; border-radius:6px; border:1px solid var(--linea); font-size:13px; background:#fff; font-weight:600; color:var(--azul-marino); min-width:160px;">
+              <option value="">-- Seleccionar Municipio --</option>
+            </select>
+          </div>
+
+          <button class="btn-fant" id="td-btn-limpiar" style="margin-left:auto; align-self:flex-end; font-size:12px; padding:6px 12px;" onclick="limpiarFiltrosTendenciaDiaria()">
+            🧹 Limpiar filtros
+          </button>
+        </div>
+
+        <!-- Estado / Placeholder cuando faltan filtros -->
+        <div id="td-placeholder" style="padding:36px 20px; text-align:center; background:#FBFCFE; border:1.5px dashed var(--linea); border-radius:8px; margin:10px 0;">
+          <div style="font-size:36px; line-height:1; margin-bottom:10px;">📊</div>
+          <h4 style="font-size:15px; font-weight:700; color:var(--azul-marino); margin-bottom:6px; font-family:var(--f-disp);">
+            Selecciona todos los filtros para visualizar la tendencia diaria
+          </h4>
+          <p style="font-size:12.5px; color:var(--gris); max-width:560px; margin:0 auto 14px auto; line-height:1.5;">
+            Para graficar las barras de minutos de cada día del mes de forma ordenada y precisa, debes seleccionar obligatoriamente: <b>Mes</b>, <b>Regional</b>, <b>Departamento</b> y <b>Municipio</b>.
+          </p>
+          <div id="td-filter-status" style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+            <!-- Renderizado dinámicamente con chips de estado -->
+          </div>
+        </div>
+
+        <!-- Contenedor visible cuando los 4 filtros están seleccionados -->
+        <div id="td-content" style="display:none;">
+          <!-- KPIs resumen del mes para el municipio -->
+          <div id="td-kpis" style="display:flex; gap:12px; margin:10px 0 16px 0; flex-wrap:wrap;"></div>
+
+          <!-- Gráfica de barras diaria -->
+          <div style="position:relative; height:340px; width:100%;">
+            <canvas id="ch-tend-diaria"></canvas>
+          </div>
+
+          <!-- Desglose tabular desplegable día a día -->
+          <details style="margin-top:16px; background:#f9fafb; border:1px solid var(--linea); border-radius:6px; padding:10px;">
+            <summary style="cursor:pointer; color:var(--azul-marino); font-weight:600; font-size:13px; outline:none;" id="td-tbl-summary">
+              📅 Ver tabla detallada día por día del mes
+            </summary>
+            <div class="scrollx" style="margin-top:10px;">
+              <table class="datos" id="tbl-tend-diaria"></table>
+            </div>
+          </details>
+        </div>
+      </div>
     </section>
 
     <!-- 4 · DISTRIBUCIÓN -->
@@ -2971,6 +3073,8 @@
       });
       document.getElementById("tend-cr-sub").textContent = "Minutos apilados por causa raíz macro · desglose mensual";
       renderTendenciasHeatmap();
+      renderTendenciasDailyHeatmap();
+      renderTendenciaDiaria();
     }
 
     function renderTendenciasHeatmap() {
@@ -3134,6 +3238,186 @@
       }
     }
 
+    function renderTendenciasDailyHeatmap() {
+      const VIEW_TEND = getLocalView('tendencias', true);
+      const tbl = document.getElementById("tbl-tend-daily-heatmap");
+      const mesSelect = document.getElementById("hm-diario-mes");
+      if (!tbl || !mesSelect) return;
+
+      const mesesLbl = { "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril", "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto", "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre" };
+
+      // Poblar selector de mes si está vacío
+      if (mesSelect.options.length === 0) {
+        _MA.forEach(m => {
+          const ms = String(m);
+          const mm = ms.slice(4);
+          const lbl = (mesesLbl[mm] || mm) + " " + ms.slice(0, 4);
+          mesSelect.add(new Option(lbl, m));
+        });
+        if (_MA.length > 0) {
+          mesSelect.value = _MA[_MA.length - 1];
+        }
+      }
+
+      const selectedMes = mesSelect.value || (_MA.length > 0 ? String(_MA[_MA.length - 1]) : "202608");
+      const y = parseInt(String(selectedMes).slice(0, 4));
+      const m = parseInt(String(selectedMes).slice(4));
+      const numDays = new Date(y, m, 0).getDate();
+
+      const byReg = {};
+
+      VIEW_TEND.forEach(e => {
+        if (e.mes_ano !== +selectedMes) return;
+        const reg = String(e.region || "").trim().toUpperCase();
+        const dep = String(e.departamento || "").trim().toUpperCase();
+        const city = String(e.ciudad || "").trim().toUpperCase();
+        const mins = e.minutos_caidos || 0;
+
+        if (!reg || reg === "SIN DATO" || !dep || dep === "SIN DATO" || !city || city === "SIN DATO") return;
+        if (!e.ts) return;
+        const d = new Date(e.ts);
+        const day = d.getDate();
+        if (day < 1 || day > numDays) return;
+        const dayIdx = day - 1;
+
+        if (!byReg[reg]) byReg[reg] = { total: 0, days: Array(numDays).fill(0), deps: {} };
+        byReg[reg].total += mins;
+        byReg[reg].days[dayIdx] += mins;
+
+        if (!byReg[reg].deps[dep]) byReg[reg].deps[dep] = { total: 0, days: Array(numDays).fill(0), cities: {} };
+        byReg[reg].deps[dep].total += mins;
+        byReg[reg].deps[dep].days[dayIdx] += mins;
+
+        if (!byReg[reg].deps[dep].cities[city]) byReg[reg].deps[dep].cities[city] = { total: 0, days: Array(numDays).fill(0) };
+        byReg[reg].deps[dep].cities[city].total += mins;
+        byReg[reg].deps[dep].cities[city].days[dayIdx] += mins;
+      });
+
+      if (Object.keys(byReg).length === 0) {
+        tbl.innerHTML = `<tr><td style="padding:20px; text-align:center; color:var(--gris);">No hay datos registrados para el mes seleccionado.</td></tr>`;
+        return;
+      }
+
+      const getHeatmapStyle = (val, localMin, localMax) => {
+        if (!val || val === 0 || localMax === localMin) return 'color: var(--gris);';
+        const scale = (val - localMin) / (localMax - localMin || 1);
+        const hue = 120 * (1 - scale);
+        return `color: hsl(${hue}, 90%, 40%); font-weight: 800;`;
+      };
+
+      let html = `<thead><tr><th style="text-align:left; min-width:240px; position:sticky; left:0; background:#FBFCFE; z-index:2;">Region Operativa / Departamento / Municipio</th>`;
+      for (let i = 1; i <= numDays; i++) {
+        const dStr = i < 10 ? '0' + i : String(i);
+        html += `<th style="text-align:right; min-width:55px; font-size:11px; padding:6px 4px;">D${dStr}</th>`;
+      }
+      html += `<th style="text-align:right; min-width:85px; font-weight:700;">Total Mes</th></tr></thead><tbody>`;
+
+      const regKeys = Object.keys(byReg).sort((a, b) => byReg[b].total - byReg[a].total);
+
+      let globalRegMin = Infinity, globalRegMax = -Infinity;
+      regKeys.forEach(reg => {
+        for (let i = 0; i < numDays; i++) {
+          let v = byReg[reg].days[i];
+          if (v > 0 && v < globalRegMin) globalRegMin = v;
+          if (v > globalRegMax) globalRegMax = v;
+        }
+      });
+      if (globalRegMin === Infinity) globalRegMin = 0;
+
+      regKeys.forEach((reg, rIdx) => {
+        const rObj = byReg[reg];
+        const regId = `daily-reg-${rIdx}`;
+
+        html += `<tr id="${regId}" style="background: rgba(0,0,0,0.04); font-weight:bold; cursor:pointer;" onclick="toggleDailyHeatmapRow('${regId}')">
+             <td style="text-align:left; position:sticky; left:0; background:#F4F6F9; z-index:1;"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${reg}</td>`;
+        for (let i = 0; i < numDays; i++) {
+          html += `<td class="num" style="${getHeatmapStyle(rObj.days[i], globalRegMin, globalRegMax)}">${fmt(Math.round(rObj.days[i]))}</td>`;
+        }
+        html += `<td class="num" style="font-weight:700;">${fmt(Math.round(rObj.total))}</td></tr>`;
+
+        const depKeys = Object.keys(rObj.deps).filter(d => {
+          let nonzero = 0;
+          for (let i = 0; i < numDays; i++) if (rObj.deps[d].days[i] > 0) nonzero++;
+          return nonzero >= 1;
+        }).sort((a, b) => rObj.deps[b].total - rObj.deps[a].total);
+
+        let localDepMin = Infinity, localDepMax = -Infinity;
+        depKeys.forEach(dep => {
+          for (let i = 0; i < numDays; i++) {
+            let v = rObj.deps[dep].days[i];
+            if (v > 0 && v < localDepMin) localDepMin = v;
+            if (v > localDepMax) localDepMax = v;
+          }
+        });
+        if (localDepMin === Infinity) localDepMin = 0;
+
+        depKeys.forEach((dep, dIdx) => {
+          const dObj = rObj.deps[dep];
+          const depId = `${regId}-dep-${dIdx}`;
+
+          html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; background: rgba(0,0,0,0.015); cursor:pointer;" onclick="toggleDailyHeatmapRow('${depId}')">
+               <td style="text-align:left; padding-left: 24px; position:sticky; left:0; background:#FAFBFD; z-index:1;"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${dep}</td>`;
+          for (let i = 0; i < numDays; i++) {
+            html += `<td class="num" style="${getHeatmapStyle(dObj.days[i], localDepMin, localDepMax)}">${fmt(Math.round(dObj.days[i]))}</td>`;
+          }
+          html += `<td class="num" style="font-weight:bold;">${fmt(Math.round(dObj.total))}</td></tr>`;
+
+          const cityKeys = Object.keys(dObj.cities).filter(c => {
+            let nonzero = 0;
+            for (let i = 0; i < numDays; i++) if (dObj.cities[c].days[i] > 0) nonzero++;
+            return nonzero >= 1;
+          }).sort((a, b) => dObj.cities[b].total - dObj.cities[a].total).slice(0, 25);
+
+          let localCityMin = Infinity, localCityMax = -Infinity;
+          cityKeys.forEach(city => {
+            for (let i = 0; i < numDays; i++) {
+              let v = dObj.cities[city].days[i];
+              if (v > 0 && v < localCityMin) localCityMin = v;
+              if (v > localCityMax) localCityMax = v;
+            }
+          });
+          if (localCityMin === Infinity) localCityMin = 0;
+
+          cityKeys.forEach((city, cIdx) => {
+            const cObj = dObj.cities[city];
+            const cityId = `${depId}-city-${cIdx}`;
+
+            html += `<tr id="${cityId}" class="child-of-${depId}" style="display:none; background: #ffffff;">
+                 <td style="text-align:left; padding-left: 48px; position:sticky; left:0; background:#ffffff; z-index:1;">${city}</td>`;
+            for (let i = 0; i < numDays; i++) {
+              html += `<td class="num" style="${getHeatmapStyle(cObj.days[i], localCityMin, localCityMax)}">${fmt(Math.round(cObj.days[i]))}</td>`;
+            }
+            html += `<td class="num" style="font-weight:600;">${fmt(Math.round(cObj.total))}</td></tr>`;
+          });
+        });
+      });
+
+      html += `</tbody>`;
+      tbl.innerHTML = html;
+
+      if (!window.toggleDailyHeatmapRow) {
+        window.toggleDailyHeatmapRow = function (id) {
+          const btn = document.querySelector('#' + id + ' .hm-btn');
+          if (!btn) return;
+          const isExpanded = btn.textContent === "[-]";
+          btn.textContent = isExpanded ? "[+]" : "[-]";
+
+          document.querySelectorAll('.child-of-' + id).forEach(c => {
+            c.style.display = isExpanded ? "none" : "table-row";
+            if (isExpanded) {
+              const childBtn = c.querySelector('.hm-btn');
+              if (childBtn && childBtn.textContent === "[-]") {
+                childBtn.textContent = "[+]";
+                document.querySelectorAll('.child-of-' + c.id).forEach(grandchild => {
+                  grandchild.style.display = "none";
+                });
+              }
+            }
+          });
+        };
+      }
+    }
+
   let tendEvs = [];
   let tendPage = 0;
 
@@ -3186,6 +3470,538 @@
     tendPage = 0;
     window.renderTendPage(0);
     wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  /* ============================================================
+     2.1 · TENDENCIA DIARIA (FILTRADO ESTRICTO: MES, REGIONAL, DEPTO, MUNICIPIO)
+  ============================================================ */
+  function getTendenciaDiariaBase() {
+    return DATA.filter(s => {
+      let cumpleModo = true;
+      if (filtro.modo === "SIN_EXCLUSIONES") {
+        cumpleModo = s.origen_archivo === 'V2' && !['ESCO', 'NO_CMDB', 'NO_APLICA', 'SIN_CODIGO_NETCO'].includes(s.etiqueta_padre);
+      } else if (filtro.modo === "CONTRATO") {
+        cumpleModo = s.origen_archivo === 'Contrato' && s.etiqueta_padre === 'NAR';
+      } else if (filtro.modo === "DISPUTA") {
+        cumpleModo = s.origen_archivo === 'V2' && s.etiqueta_padre === 'NAR';
+      }
+      return cumpleModo;
+    });
+  }
+
+  function initTendenciaDiariaFilters() {
+    const elMes = document.getElementById("td-fl-mes");
+    const elReg = document.getElementById("td-fl-reg");
+    const elDep = document.getElementById("td-fl-dep");
+    const elMun = document.getElementById("td-fl-mun");
+
+    if (!elMes || !elReg || !elDep || !elMun) return;
+
+    const mesesLbl = { "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril", "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto", "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre" };
+
+    // Poblar meses
+    elMes.innerHTML = '<option value="">-- Seleccionar Mes --</option>';
+    _MA.forEach(m => {
+      const ms = String(m);
+      const mm = ms.slice(4);
+      const lbl = (mesesLbl[mm] || mm) + " " + ms.slice(0, 4);
+      elMes.add(new Option(lbl, m));
+    });
+
+    // Poblar regionales
+    const baseData = getTendenciaDiariaBase();
+    const validReg = [...new Set(baseData.map(d => d.region))].filter(x => x && x.toLowerCase() !== "sin información").sort();
+    elReg.innerHTML = '<option value="">-- Seleccionar Regional --</option>';
+    validReg.forEach(r => elReg.add(new Option(r, r)));
+
+    // Eventos change
+    elMes.onchange = () => {
+      renderTendenciaDiaria();
+    };
+
+    elReg.onchange = () => {
+      updateTendenciaDiariaCascade(false, false);
+      renderTendenciaDiaria();
+    };
+
+    elDep.onchange = () => {
+      updateTendenciaDiariaCascade(true, false);
+      renderTendenciaDiaria();
+    };
+
+    elMun.onchange = () => {
+      renderTendenciaDiaria();
+    };
+
+    updateTendenciaDiariaCascade(false, false);
+    renderTendenciaDiaria();
+  }
+
+  function updateTendenciaDiariaCascade(keepDepto = true, keepMuni = false) {
+    const elReg = document.getElementById("td-fl-reg");
+    const elDep = document.getElementById("td-fl-dep");
+    const elMun = document.getElementById("td-fl-mun");
+
+    if (!elReg || !elDep || !elMun) return;
+
+    const rVal = elReg.value;
+    const prevDVal = elDep.value;
+    const prevMVal = elMun.value;
+
+    const baseData = getTendenciaDiariaBase();
+    let dData = baseData;
+    if (rVal) dData = dData.filter(e => e.region === rVal);
+
+    // Actualizar Departamentos
+    const validDeps = [...new Set(dData.map(d => d.departamento))].filter(d => d && isNaN(d)).sort();
+    elDep.innerHTML = '<option value="">-- Seleccionar Depto --</option>';
+    validDeps.forEach(d => elDep.add(new Option(d, d)));
+
+    if (keepDepto && validDeps.includes(prevDVal)) {
+      elDep.value = prevDVal;
+    } else {
+      elDep.value = "";
+    }
+
+    const currDVal = elDep.value;
+
+    // Actualizar Municipios
+    let mData = dData;
+    if (currDVal) mData = mData.filter(e => e.departamento === currDVal);
+
+    const validMuns = [...new Set(mData.map(d => d.ciudad))].filter(c => c && isNaN(c)).sort();
+    elMun.innerHTML = '<option value="">-- Seleccionar Municipio --</option>';
+    validMuns.forEach(m => elMun.add(new Option(m, m)));
+
+    if (keepMuni && validMuns.includes(prevMVal)) {
+      elMun.value = prevMVal;
+    } else {
+      elMun.value = "";
+    }
+  }
+
+  window.limpiarFiltrosTendenciaDiaria = function () {
+    const elMes = document.getElementById("td-fl-mes");
+    const elReg = document.getElementById("td-fl-reg");
+    const elDep = document.getElementById("td-fl-dep");
+    const elMun = document.getElementById("td-fl-mun");
+
+    if (elMes) elMes.value = "";
+    if (elReg) elReg.value = "";
+    if (elDep) elDep.innerHTML = '<option value="">-- Seleccionar Depto --</option>';
+    if (elMun) elMun.innerHTML = '<option value="">-- Seleccionar Municipio --</option>';
+
+    updateTendenciaDiariaCascade(false, false);
+    renderTendenciaDiaria();
+  };
+
+  function renderTendenciaDiaria() {
+    const elMes = document.getElementById("td-fl-mes");
+    const elReg = document.getElementById("td-fl-reg");
+    const elDep = document.getElementById("td-fl-dep");
+    const elMun = document.getElementById("td-fl-mun");
+    const placeholder = document.getElementById("td-placeholder");
+    const content = document.getElementById("td-content");
+    const statusDiv = document.getElementById("td-filter-status");
+
+    if (!elMes || !elReg || !elDep || !elMun || !placeholder || !content) return;
+
+    const fMes = elMes.value;
+    const fReg = elReg.value;
+    const fDep = elDep.value;
+    const fMun = elMun.value;
+
+    const allSelected = Boolean(fMes && fReg && fDep && fMun);
+
+    if (!allSelected) {
+      placeholder.style.display = "block";
+      content.style.display = "none";
+      destroy("tenddiaria");
+
+      // Actualizar chips de estado
+      if (statusDiv) {
+        const mesesLbl = { "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril", "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto", "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre" };
+        let mesText = fMes ? (mesesLbl[String(fMes).slice(4)] || fMes) + " " + String(fMes).slice(0, 4) : "";
+
+        statusDiv.innerHTML = `
+          <span class="meta-chip" style="background:${fMes ? '#E6F4EA' : '#FCE8E6'}; color:${fMes ? '#137333' : '#C5221F'}; font-weight:600; padding:6px 12px; font-size:12px;">
+            ${fMes ? '✓ Mes: ' + mesText : '✗ Falta: Mes'}
+          </span>
+          <span class="meta-chip" style="background:${fReg ? '#E6F4EA' : '#FCE8E6'}; color:${fReg ? '#137333' : '#C5221F'}; font-weight:600; padding:6px 12px; font-size:12px;">
+            ${fReg ? '✓ Regional: ' + fReg : '✗ Falta: Regional'}
+          </span>
+          <span class="meta-chip" style="background:${fDep ? '#E6F4EA' : '#FCE8E6'}; color:${fDep ? '#137333' : '#C5221F'}; font-weight:600; padding:6px 12px; font-size:12px;">
+            ${fDep ? '✓ Depto: ' + fDep : '✗ Falta: Departamento'}
+          </span>
+          <span class="meta-chip" style="background:${fMun ? '#E6F4EA' : '#FCE8E6'}; color:${fMun ? '#137333' : '#C5221F'}; font-weight:600; padding:6px 12px; font-size:12px;">
+            ${fMun ? '✓ Municipio: ' + fMun : '✗ Falta: Municipio'}
+          </span>
+        `;
+      }
+      return;
+    }
+
+    placeholder.style.display = "none";
+    content.style.display = "block";
+
+    // 1. Filtrar los eventos exactamente para ese mes, regional, depto y municipio
+    const baseData = getTendenciaDiariaBase();
+    const evs = baseData.filter(s =>
+      s.mes_ano === +fMes &&
+      s.region === fReg &&
+      s.departamento === fDep &&
+      s.ciudad === fMun
+    );
+
+    // 2. Determinar cantidad de días del mes
+    const y = parseInt(String(fMes).slice(0, 4));
+    const m = parseInt(String(fMes).slice(4)); // 1..12
+    const numDays = new Date(y, m, 0).getDate(); // Total días en el mes
+
+    const dayLabels = [];
+    const dayMins = Array(numDays).fill(0);
+    const dayEvents = Array(numDays).fill(0);
+    const daySitios = Array.from({ length: numDays }, () => new Set());
+    const dayCausesMap = Array.from({ length: numDays }, () => ({}));
+    const dayEventsList = Array.from({ length: numDays }, () => []);
+
+    evs.forEach(e => {
+      if (!e.ts) return;
+      const d = new Date(e.ts);
+      const day = d.getDate(); // 1..numDays
+      if (day >= 1 && day <= numDays) {
+        const idx = day - 1;
+        dayMins[idx] += e.minutos_caidos;
+        dayEvents[idx] += 1;
+        daySitios[idx].add(e.sitio_id);
+        const cr = e.causa_raiz_macro || 'Sin dato';
+        dayCausesMap[idx][cr] = (dayCausesMap[idx][cr] || 0) + e.minutos_caidos;
+        dayEventsList[idx].push(e);
+      }
+    });
+
+    const dayTopCause = [];
+    for (let i = 1; i <= numDays; i++) {
+      dayLabels.push(`Día ${i < 10 ? '0' + i : i}`);
+      const causes = Object.entries(dayCausesMap[i - 1]).sort((a, b) => b[1] - a[1]);
+      dayTopCause.push(causes.length > 0 ? causes[0][0] : 'Sin afectación');
+    }
+
+    // 3. Calcular KPIs
+    const totMin = dayMins.reduce((a, b) => a + b, 0);
+    const avgMin = numDays > 0 ? totMin / numDays : 0;
+    const totEvents = dayEvents.reduce((a, b) => a + b, 0);
+    const uniqueSitios = new Set(evs.map(e => e.sitio_id)).size;
+    const maxMin = Math.max(...dayMins);
+    const maxDayIdx = dayMins.indexOf(maxMin);
+    const maxDayLabel = maxMin > 0 ? `Día ${maxDayIdx + 1 < 10 ? '0' + (maxDayIdx + 1) : (maxDayIdx + 1)} (${fmt(Math.round(maxMin))} min)` : 'Sin fallas';
+    const daysWithFailures = dayMins.filter(min => min > 0).length;
+    const daysZeroFailures = numDays - daysWithFailures;
+
+    // Render KPIs
+    const kpisEl = document.getElementById("td-kpis");
+    if (kpisEl) {
+      kpisEl.innerHTML = `
+        <span style="border-left:5px solid var(--azul-marino); padding:10px 16px; background:#fff; flex:1; min-width:140px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0; border-top:1px solid var(--linea); border-right:1px solid var(--linea); border-bottom:1px solid var(--linea);">
+          <div style="font-size:22px; color:var(--azul-marino); font-weight:700; line-height:1;">${fmt(Math.round(totMin))} min</div>
+          <div style="color:var(--gris); text-transform:uppercase; font-size:10.5px; letter-spacing:0.5px; margin-top:4px;">Minutos Totales Mes</div>
+          <div style="color:var(--gris); font-size:10px;">${fMun}, ${fDep}</div>
+        </span>
+        <span style="border-left:5px solid var(--rojo); padding:10px 16px; background:#fff; flex:1; min-width:140px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0; border-top:1px solid var(--linea); border-right:1px solid var(--linea); border-bottom:1px solid var(--linea);">
+          <div style="font-size:22px; color:var(--rojo); font-weight:700; line-height:1;">${fmt(Math.round(avgMin))} min/día</div>
+          <div style="color:var(--gris); text-transform:uppercase; font-size:10.5px; letter-spacing:0.5px; margin-top:4px;">Promedio Diario</div>
+          <div style="color:var(--gris); font-size:10px;">En ${numDays} días del mes</div>
+        </span>
+        <span style="border-left:5px solid #E03131; padding:10px 16px; background:#fff; flex:1; min-width:140px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0; border-top:1px solid var(--linea); border-right:1px solid var(--linea); border-bottom:1px solid var(--linea);">
+          <div style="font-size:20px; color:#E03131; font-weight:700; line-height:1;">${maxDayLabel}</div>
+          <div style="color:var(--gris); text-transform:uppercase; font-size:10.5px; letter-spacing:0.5px; margin-top:4px;">Día Pico (Peor Día)</div>
+          <div style="color:var(--gris); font-size:10px;">Mayor concentración</div>
+        </span>
+        <span style="border-left:5px solid #00A3E0; padding:10px 16px; background:#fff; flex:1; min-width:140px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0; border-top:1px solid var(--linea); border-right:1px solid var(--linea); border-bottom:1px solid var(--linea);">
+          <div style="font-size:22px; color:#00A3E0; font-weight:700; line-height:1;">${totEvents} ev · ${uniqueSitios} sit</div>
+          <div style="color:var(--gris); text-transform:uppercase; font-size:10.5px; letter-spacing:0.5px; margin-top:4px;">Eventos y Sitios Únicos</div>
+          <div style="color:var(--gris); font-size:10px;">Afectados en el mes</div>
+        </span>
+        <span style="border-left:5px solid var(--ok); padding:10px 16px; background:#fff; flex:1; min-width:140px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-radius:0 6px 6px 0; border-top:1px solid var(--linea); border-right:1px solid var(--linea); border-bottom:1px solid var(--linea);">
+          <div style="font-size:22px; color:var(--ok); font-weight:700; line-height:1;">${daysZeroFailures} / ${numDays} días</div>
+          <div style="color:var(--gris); text-transform:uppercase; font-size:10.5px; letter-spacing:0.5px; margin-top:4px;">Días Sin Fallas (100% OK)</div>
+          <div style="color:var(--gris); font-size:10px;">${((daysZeroFailures / numDays) * 100).toFixed(1)}% del mes limpio</div>
+        </span>
+      `;
+    }
+
+    // 4. Render Gráfica de barras
+    destroy("tenddiaria");
+    const canvas = document.getElementById("ch-tend-diaria");
+    if (canvas) {
+      const bgColors = dayMins.map(m => {
+        if (m === 0) return 'rgba(30, 158, 90, 0.2)';
+        if (m === maxMin && maxMin > 0) return '#E03131';
+        if (m > avgMin * 1.5) return '#F08C2E';
+        return '#FF9900';
+      });
+
+      const borderColors = dayMins.map(m => {
+        if (m === 0) return 'rgba(30, 158, 90, 0.5)';
+        if (m === maxMin && maxMin > 0) return '#C92A2A';
+        return '#D98200';
+      });
+
+      const mesesLbl = { "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril", "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto", "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre" };
+      const mesNombre = (mesesLbl[String(fMes).slice(4)] || fMes) + " " + String(fMes).slice(0, 4);
+
+      charts.tenddiaria = new Chart(canvas, {
+        type: "bar",
+        data: {
+          labels: dayLabels,
+          datasets: [
+            {
+              label: "Minutos no disponibles",
+              data: dayMins,
+              backgroundColor: bgColors,
+              borderColor: borderColors,
+              borderWidth: 1,
+              borderRadius: 4,
+              borderSkipped: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          onClick: (evt, elements) => {
+            if (elements && elements.length > 0) {
+              const dayIndex = elements[0].index;
+              const dayNum = dayIndex + 1;
+              const detailsTag = document.querySelector("#card-tendencia-diaria details");
+              if (detailsTag && !detailsTag.open) detailsTag.open = true;
+              const tr = document.getElementById(`td-row-day-${dayNum}`);
+              if (tr) {
+                tr.click();
+                tr.scrollIntoView({ behavior: "smooth", block: "center" });
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (items) => {
+                  const idx = items[0].dataIndex;
+                  const dNum = idx + 1;
+                  return `Día ${dNum < 10 ? '0' + dNum : dNum} de ${mesNombre} — ${fMun}`;
+                },
+                label: (item) => {
+                  const idx = item.dataIndex;
+                  const val = item.raw;
+                  const evCount = dayEvents[idx];
+                  const sitCount = daySitios[idx].size;
+                  const cr = dayTopCause[idx];
+                  return [
+                    `⏱️ Minutos caídos: ${fmt(Math.round(val))} min`,
+                    `📋 Eventos / Tiquetes: ${evCount}`,
+                    `📍 Sitios afectados: ${sitCount}`,
+                    `🔍 Causa principal: ${cr}`,
+                    evCount > 0 ? `👉 Clic para ver desglose de fallas` : ''
+                  ].filter(Boolean);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                font: { family: '"IBM Plex Mono", monospace', size: 10, weight: '600' },
+                color: '#1A2330',
+                maxRotation: 45,
+                minRotation: 0
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Minutos de indisponibilidad",
+                font: { family: '"IBM Plex Sans", sans-serif', size: 12, weight: '600' },
+                color: '#707A8A'
+              },
+              ticks: {
+                callback: (v) => fmt(v) + ' min',
+                font: { family: '"IBM Plex Mono", monospace', size: 10.5 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 5. Render Tabla detallada día a día con soporte de desglose (Drilldown)
+    const tbl = document.getElementById("tbl-tend-diaria");
+    const summaryEl = document.getElementById("td-tbl-summary");
+    if (summaryEl) {
+      summaryEl.textContent = `📅 Ver tabla detallada de los ${numDays} días de ${fMun} (${fmt(Math.round(totMin))} min en total · Clic en un día para desglosar)`;
+    }
+
+    if (tbl) {
+      tbl.innerHTML = `
+        <thead>
+          <tr>
+            <th style="width:90px">Día</th>
+            <th>Fecha</th>
+            <th class="num">Minutos</th>
+            <th class="num">Impacto (%)</th>
+            <th class="num"># Eventos</th>
+            <th class="num">Sitios Afect.</th>
+            <th>Causa Raíz Principal</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tb-tend-diaria"></tbody>
+      `;
+
+      const tbody = document.getElementById("tb-tend-diaria");
+
+      for (let i = 0; i < numDays; i++) {
+        const dNum = i + 1;
+        const dStr = dNum < 10 ? '0' + dNum : String(dNum);
+        const mStr = String(m < 10 ? '0' + m : m);
+        const fechaStr = `${y}-${mStr}-${dStr}`;
+        const mins = dayMins[i];
+        const evsCount = dayEvents[i];
+        const sitCount = daySitios[i].size;
+        const cr = dayTopCause[i];
+        const pct = totMin > 0 ? (100 * mins / totMin).toFixed(1) : "0.0";
+        const isMax = mins === maxMin && maxMin > 0;
+        const isZero = mins === 0;
+        const dayEvs = dayEventsList[i] || [];
+
+        const tr = document.createElement("tr");
+        tr.id = `td-row-day-${dNum}`;
+        if (isMax) tr.className = "rojo";
+        if (evsCount > 0) {
+          tr.style.cursor = "pointer";
+          tr.title = "Clic para ver u ocultar el desglose de fallas de este día";
+        }
+
+        const badgeHtml = isZero 
+          ? '<span class="tdpill" style="background:var(--ok)">100% Disponible</span>'
+          : (isMax ? '<span class="tdpill" style="background:#E03131">Día Pico</span>' : '<span class="tdpill" style="background:var(--rojo)">Con fallas</span>');
+
+        tr.innerHTML = `
+          <td style="font-family:var(--f-mono); font-weight:700;">
+            Día ${dStr} ${evsCount > 0 ? '<span class="td-toggle-icon" style="color:var(--azul-marino); font-size:12px; margin-left:4px; font-weight:bold;">⊞</span>' : ''}
+          </td>
+          <td style="font-family:var(--f-mono); font-size:11.5px; color:var(--gris);">${fechaStr}</td>
+          <td class="num" style="font-weight:700; color:${isMax ? '#E03131' : (isZero ? 'var(--ok)' : 'var(--tinta)')};">
+            ${fmt(Math.round(mins))} min
+          </td>
+          <td class="num">
+            <div class="minibar-wrap" style="justify-content:flex-end;">
+              <span class="minibar" style="width:${totMin > 0 ? Math.max(4, Math.round(100 * mins / (maxMin || 1))) : 0}px; background:${isMax ? '#E03131' : 'var(--rojo)'};"></span>
+              <span style="font-size:11px; font-weight:600; color:var(--gris);">${pct}%</span>
+            </div>
+          </td>
+          <td class="num" style="font-weight:${evsCount > 0 ? '700' : 'normal'}; color:${evsCount > 0 ? 'var(--azul-marino)' : 'inherit'};">${evsCount}</td>
+          <td class="num">${sitCount}</td>
+          <td style="font-size:12px;">${cr}</td>
+          <td>${badgeHtml}</td>
+        `;
+
+        tbody.appendChild(tr);
+
+        if (evsCount > 0) {
+          const detTr = document.createElement("tr");
+          detTr.style.display = "none";
+          detTr.style.background = "#F8FAFC";
+
+          const sortedEvs = [...dayEvs].sort((a, b) => b.minutos_caidos - a.minutos_caidos);
+
+          let detTableHtml = `
+            <td colspan="8" style="padding:12px 18px; border-bottom:2px solid var(--linea);">
+              <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <span style="font-weight:700; font-size:13px; color:var(--azul-marino);">
+                  📋 Desglose de fallas — Día ${dStr} (${fechaStr}) · ${fMun}, ${fDep}
+                </span>
+                <span style="font-size:11.5px; color:var(--gris);">
+                  <b>${evsCount}</b> fallas registradas · <b>${fmt(Math.round(mins))}</b> min totales · <b>${sitCount}</b> sitios únicos
+                </span>
+              </div>
+              <div class="scrollx">
+                <table class="datos" style="margin:0; box-shadow:none; border:1px solid var(--linea); background:#fff; width:100%;">
+                  <thead>
+                    <tr>
+                      <th>Ticket / ID</th>
+                      <th>Sitio</th>
+                      <th>Hora Inicio</th>
+                      <th>Hora Fin</th>
+                      <th class="num">Duración</th>
+                      <th>Causa Raíz</th>
+                      <th>Causa Suspensión</th>
+                      <th>Solución</th>
+                      <th style="min-width:180px">Detalle</th>
+                      <th style="text-align:center" title="Anotar Falla">💬</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+          `;
+
+          sortedEvs.forEach(e => {
+            const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
+            const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato"
+              ? `<details style="font-size:10.5px;color:var(--gris);min-width:180px;max-width:400px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>`
+              : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
+            const detTxt = e.detalle_falla
+              ? `<details style="font-size:10.5px;color:var(--gris);min-width:180px;max-width:400px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>`
+              : '<span style="font-size:11px;color:var(--gris)">—</span>';
+
+            detTableHtml += `
+              <tr onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''">
+                <td style="font-weight:700; white-space:nowrap; font-size:11.5px;">${e.ticket}${getAud(e)}</td>
+                <td><b>${e.sitio_id}</b><br><span style="font-size:10px;color:var(--gris)">${e.nombre}</span></td>
+                <td style="font-size:11px;font-family:var(--f-mono);white-space:nowrap;">${fmtDT(e.ts)}</td>
+                <td style="font-size:11px;font-family:var(--f-mono);white-space:nowrap;">${fmtDT(e.ts_fin)}</td>
+                <td class="num" style="font-weight:700; color:var(--rojo); white-space:nowrap;">${fmt(Math.round(e.minutos_caidos))} min</td>
+                <td style="font-size:11.5px;"><b>${e.causa_raiz_macro}</b><br><span style="font-size:10.5px;color:var(--gris)">${e.causa_raiz_especifica}</span></td>
+                <td style="font-size:11.5px;">${e.causa_suspension_especifica || 'Sin dato'}</td>
+                <td>${solTxt}</td>
+                <td>${detTxt}</td>
+                <td style="text-align:center;">
+                  <button class="btn-hist" data-tipo="falla" data-ticket="${e.ticket}" data-inicio="${fmtISO(e.ts)}" data-fin="${fmtISO(e.ts_fin)}" data-duracion="${e.minutos_caidos}" data-causa="${e.causa_raiz_especifica}" data-solucion="${(e.solucion || '').substring(0, 100).replace(/"/g, '&quot;')}" data-codigo="${e.sitio_id}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">💬</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          detTableHtml += `
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          `;
+
+          detTr.innerHTML = detTableHtml;
+          tbody.appendChild(detTr);
+
+          // Bind toggle row
+          tr.onclick = (e) => {
+            if (e.target.closest(".btn-hist")) return;
+            const isDetOpen = detTr.style.display === "table-row";
+            detTr.style.display = isDetOpen ? "none" : "table-row";
+            const icon = tr.querySelector(".td-toggle-icon");
+            if (icon) icon.textContent = isDetOpen ? "⊞" : "⊟";
+          };
+
+          // Bind notas click
+          detTr.querySelectorAll(".btn-hist").forEach(btn => {
+            btn.onclick = (e) => {
+              e.stopPropagation();
+              openHistorial(btn.dataset);
+            };
+          });
+        }
+      }
+    }
   }
 
   /* ============================================================
@@ -6418,13 +7234,14 @@
       const fmodo = document.getElementById("f-modo");
       if (fmodo) {
         filtro.modo = fmodo.value;
-        fmodo.onchange = () => {
-          filtro.modo = fmodo.value;
+        fmodo.onchange = (e) => {
+          filtro.modo = e.target.value;
+          updateTendenciaDiariaCascade(true, true);
           renderAll();
         };
       }
-      document.getElementById("f-modo").onchange = (e) => { filtro.modo = e.target.value; renderAll(); };
       initLocalFilters();
+      initTendenciaDiariaFilters();
 
       document.getElementById("cr-comp").onchange = e => { crComp = e.target.value; crSel = null; renderCausaRaiz() };
       const tendMetric = document.getElementById("tend-metric"); if (tendMetric) tendMetric.onchange = () => renderTendencias();
