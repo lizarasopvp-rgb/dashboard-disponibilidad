@@ -1875,8 +1875,8 @@
       <div class="card" style="margin-top:16px">
         <div class="card-head">
           <div>
-            <h3>Tendencia Mensual - Top 20 Departamentos</h3>
-            <p class="sub">Minutos acumulados agrupados por región y departamento (Mapa de Calor)</p>
+            <h3>Tendencia Mensual - Top 20 Municipios</h3>
+            <p class="sub">Minutos acumulados agrupados por región, departamento y municipio (Mapa de Calor)</p>
           </div>
         </div>
         <div class="scrollx" id="wrap-tend-heatmap">
@@ -3022,7 +3022,7 @@
       };
 
 
-      let html = `<thead><tr><th style="text-align:left">Region Operativa / Departamento</th>`;
+      let html = `<thead><tr><th style="text-align:left">Region Operativa / Departamento / Municipio</th>`;
       for (let i = 0; i < activeMonthsCount; i++) {
         html += `<th>${MESES[i]}</th>`;
       }
@@ -3071,31 +3071,68 @@
           const dObj = rObj.deps[dep];
           const depId = `${regId}-dep-${dIdx}`;
 
-          html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; background: rgba(0,0,0,0.015);">
-               <td style="text-align:left; padding-left: 24px;">${dep}</td>`;
-        for (let i = 0; i < activeMonthsCount; i++) {
-          html += `<td class="num" style="${getHeatmapStyle(dObj.mo[i], localDepMin, localDepMax)}">${fmt(dObj.mo[i])}</td>`;
-        }
-        html += `<td class="num" style="font-weight:bold;">${fmt(dObj.total)}</td></tr>`;
-      });
-    });
+          html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; background: rgba(0,0,0,0.015); cursor:pointer;" onclick="toggleHeatmapRow('${depId}')">
+               <td style="text-align:left; padding-left: 24px;"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${dep}</td>`;
+          for (let i = 0; i < activeMonthsCount; i++) {
+            html += `<td class="num" style="${getHeatmapStyle(dObj.mo[i], localDepMin, localDepMax)}">${fmt(dObj.mo[i])}</td>`;
+          }
+          html += `<td class="num" style="font-weight:bold;">${fmt(dObj.total)}</td></tr>`;
 
-    html += `</tbody>`;
-    tbl.innerHTML = html;
+          const cityKeys = Object.keys(dObj.cities).filter(c => {
+            let nonzero = 0;
+            for (let i = 0; i < activeMonthsCount; i++) if (dObj.cities[c].mo[i] > 0) nonzero++;
+            return nonzero >= 1;
+          }).sort((a, b) => dObj.cities[b].total - dObj.cities[a].total).slice(0, 20);
 
-    if (!window.toggleHeatmapRow) {
-      window.toggleHeatmapRow = function (id) {
-        const btn = document.querySelector('#' + id + ' .hm-btn');
-        if (!btn) return;
-        const isExpanded = btn.textContent === "[-]";
-        btn.textContent = isExpanded ? "[+]" : "[-]";
+          let localCityMin = Infinity, localCityMax = -Infinity;
+          cityKeys.forEach(city => {
+            for (let i = 0; i < activeMonthsCount; i++) {
+              let v = dObj.cities[city].mo[i];
+              if (v > 0 && v < localCityMin) localCityMin = v;
+              if (v > localCityMax) localCityMax = v;
+            }
+          });
+          if (localCityMin === Infinity) localCityMin = 0;
 
-        document.querySelectorAll('.child-of-' + id).forEach(c => {
-          c.style.display = isExpanded ? "none" : "table-row";
+          cityKeys.forEach((city, cIdx) => {
+            const cObj = dObj.cities[city];
+            const cityId = `${depId}-city-${cIdx}`;
+
+            html += `<tr id="${cityId}" class="child-of-${depId}" style="display:none; background: #ffffff;">
+                 <td style="text-align:left; padding-left: 48px;">${city}</td>`;
+            for (let i = 0; i < activeMonthsCount; i++) {
+              html += `<td class="num" style="${getHeatmapStyle(cObj.mo[i], localCityMin, localCityMax)}">${fmt(cObj.mo[i])}</td>`;
+            }
+            html += `<td class="num">${fmt(cObj.total)}</td></tr>`;
+          });
         });
-      };
+      });
+
+      html += `</tbody>`;
+      tbl.innerHTML = html;
+
+      if (!window.toggleHeatmapRow) {
+        window.toggleHeatmapRow = function (id) {
+          const btn = document.querySelector('#' + id + ' .hm-btn');
+          if (!btn) return;
+          const isExpanded = btn.textContent === "[-]";
+          btn.textContent = isExpanded ? "[+]" : "[-]";
+
+          document.querySelectorAll('.child-of-' + id).forEach(c => {
+            c.style.display = isExpanded ? "none" : "table-row";
+            if (isExpanded) {
+              const childBtn = c.querySelector('.hm-btn');
+              if (childBtn && childBtn.textContent === "[-]") {
+                childBtn.textContent = "[+]";
+                document.querySelectorAll('.child-of-' + c.id).forEach(grandchild => {
+                  grandchild.style.display = "none";
+                });
+              }
+            }
+          });
+        };
+      }
     }
-  }
 
   let tendEvs = [];
   let tendPage = 0;
