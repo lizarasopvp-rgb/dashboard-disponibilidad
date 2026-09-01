@@ -223,6 +223,44 @@
       cursor: pointer
     }
 
+    /* Segmented Control for Heatmap */
+    .hm-seg-control {
+      display: inline-flex;
+      background: #EDF2F7;
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--linea);
+      gap: 3px;
+    }
+
+    .hm-seg-btn {
+      font-family: var(--f-body);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--gris);
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .hm-seg-btn:hover {
+      color: var(--azul-marino);
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    .hm-seg-btn.active {
+      color: #ffffff;
+      background: var(--azul-marino);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+      font-weight: 700;
+    }
+
     main {
       max-width: 1480px;
       margin: 0 auto;
@@ -627,6 +665,15 @@
 
     table.datos tr:hover td {
       background: #FAFBFD
+    }
+
+    .hm-row-active > td:first-child {
+      background: #E8F2FC !important;
+      border-left: 4px solid var(--azul-marino) !important;
+      font-weight: 800;
+    }
+    .hm-row-active {
+      background: rgba(0, 96, 138, 0.03) !important;
     }
 
     table.datos tr.clickable {
@@ -1872,31 +1919,39 @@
         </div>
         <canvas id="ch-tend-cr"></canvas>
       </div>
-      <div class="card" style="margin-top:16px">
-        <div class="card-head">
-          <div>
-            <h3>Tendencia Mensual - Top 20 Municipios</h3>
-            <p class="sub">Minutos acumulados agrupados por región, departamento y municipio (Mapa de Calor)</p>
-          </div>
-        </div>
-        <div class="scrollx" id="wrap-tend-heatmap">
-          <table class="datos" id="tbl-tend-heatmap"></table>
-        </div>
-      </div>
-
-      <!-- Apartado: Tendencia Diaria - Mapa de Calor (Región / Departamento / Municipio) -->
-      <div class="card" style="margin-top:16px" id="card-tend-daily-heatmap">
+      <!-- Apartado Unificado: Mapa de Calor por Municipio (Modo Mensual / Diario) -->
+      <div class="card" style="margin-top:16px" id="card-tend-heatmap-unified">
         <div class="card-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
-            <h3>Tendencia Diaria - Mapa de Calor por Municipio</h3>
-            <p class="sub">Minutos diarios acumulados agrupados por región, departamento y municipio para el mes seleccionado</p>
+            <h3 id="hm-unified-title">Tendencia Mensual - Top 20 Municipios</h3>
+            <p class="sub" id="hm-unified-sub">Minutos acumulados agrupados por región, departamento y municipio (Mapa de Calor)</p>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span class="lbl" style="font-weight:700; color:var(--azul-marino); font-size:12px;">Mes de análisis:</span>
-            <select id="hm-diario-mes" style="padding:6px 12px; border-radius:6px; border:1px solid var(--linea); font-size:13px; background:#fff; font-weight:600; color:var(--azul-marino);" onchange="renderTendenciasDailyHeatmap()"></select>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <!-- Selector de Mes (visible solo en modo Diario) -->
+            <div id="hm-diario-mes-wrap" style="display:none; align-items:center; gap:8px;">
+              <span class="lbl" style="font-weight:700; color:var(--azul-marino); font-size:12px;">Mes de análisis:</span>
+              <select id="hm-diario-mes" style="padding:5px 12px; border-radius:6px; border:1px solid var(--linea); font-size:13px; background:#fff; font-weight:600; color:var(--azul-marino);" onchange="renderTendenciasDailyHeatmap()"></select>
+            </div>
+
+            <!-- Segmented Control: Mensual / Diario -->
+            <div class="hm-seg-control">
+              <button type="button" id="btn-hm-mode-mensual" class="hm-seg-btn active" onclick="setHeatmapMode('mensual')">
+                📅 Mensual
+              </button>
+              <button type="button" id="btn-hm-mode-diario" class="hm-seg-btn" onclick="setHeatmapMode('diario')">
+                📆 Diario
+              </button>
+            </div>
           </div>
         </div>
-        <div class="scrollx" id="wrap-tend-daily-heatmap" style="margin-top:10px;">
+
+        <!-- Tabla Modo Mensual -->
+        <div class="scrollx" id="wrap-tend-heatmap" style="display:block;">
+          <table class="datos" id="tbl-tend-heatmap"></table>
+        </div>
+
+        <!-- Tabla Modo Diario -->
+        <div class="scrollx" id="wrap-tend-daily-heatmap" style="display:none; margin-top:10px;">
           <table class="datos" id="tbl-tend-daily-heatmap"></table>
         </div>
       </div>
@@ -3077,6 +3132,38 @@
       renderTendenciaDiaria();
     }
 
+    let currentHeatmapMode = 'mensual';
+
+    window.setHeatmapMode = function (mode) {
+      currentHeatmapMode = mode;
+      const btnMensual = document.getElementById("btn-hm-mode-mensual");
+      const btnDiario = document.getElementById("btn-hm-mode-diario");
+      const wrapMensual = document.getElementById("wrap-tend-heatmap");
+      const wrapDiario = document.getElementById("wrap-tend-daily-heatmap");
+      const mesWrap = document.getElementById("hm-diario-mes-wrap");
+      const title = document.getElementById("hm-unified-title");
+      const sub = document.getElementById("hm-unified-sub");
+
+      if (mode === 'mensual') {
+        if (btnMensual) btnMensual.classList.add("active");
+        if (btnDiario) btnDiario.classList.remove("active");
+        if (wrapMensual) wrapMensual.style.display = "block";
+        if (wrapDiario) wrapDiario.style.display = "none";
+        if (mesWrap) mesWrap.style.display = "none";
+        if (title) title.textContent = "Tendencia Mensual - Top 20 Municipios";
+        if (sub) sub.textContent = "Minutos acumulados agrupados por región, departamento y municipio (Mapa de Calor)";
+      } else {
+        if (btnMensual) btnMensual.classList.remove("active");
+        if (btnDiario) btnDiario.classList.add("active");
+        if (wrapMensual) wrapMensual.style.display = "none";
+        if (wrapDiario) wrapDiario.style.display = "block";
+        if (mesWrap) mesWrap.style.display = "inline-flex";
+        if (title) title.textContent = "Tendencia Diaria - Mapa de Calor por Municipio";
+        if (sub) sub.textContent = "Minutos diarios acumulados agrupados por región, departamento y municipio para el mes seleccionado";
+        renderTendenciasDailyHeatmap();
+      }
+    };
+
     function renderTendenciasHeatmap() {
       const VIEW_TEND = getLocalView('tendencias', true);
       const tbl = document.getElementById("tbl-tend-heatmap");
@@ -3089,6 +3176,7 @@
         const reg = String(e.region || "").trim().toUpperCase();
         const dep = String(e.departamento || "").trim().toUpperCase();
         const city = String(e.ciudad || "").trim().toUpperCase();
+        const site = String(e.sitio_id || e.nombre || "").trim();
         const mins = e.minutos_caidos || 0;
 
         if (!reg || reg === "SIN DATO" || !dep || dep === "SIN DATO" || !city || city === "SIN DATO") return;
@@ -3099,8 +3187,11 @@
         if (!byReg[reg].deps[dep]) byReg[reg].deps[dep] = { total: 0, mo: Array(activeMonthsCount).fill(0), cities: {} };
         byReg[reg].deps[dep].total += mins;
 
-        if (!byReg[reg].deps[dep].cities[city]) byReg[reg].deps[dep].cities[city] = { total: 0, mo: Array(activeMonthsCount).fill(0) };
+        if (!byReg[reg].deps[dep].cities[city]) byReg[reg].deps[dep].cities[city] = { total: 0, mo: Array(activeMonthsCount).fill(0), sites: new Set() };
         byReg[reg].deps[dep].cities[city].total += mins;
+        if (site && mins > 0) {
+          byReg[reg].deps[dep].cities[city].sites.add(site);
+        }
 
         if (String(e.mes_ano).startsWith('2026')) {
           const mo = parseInt(String(e.mes_ano).slice(4)) - 1;
@@ -3117,6 +3208,8 @@
         return;
       }
 
+      const totalGeneral = Object.values(byReg).reduce((acc, r) => acc + r.total, 0);
+
       const getHeatmapStyle = (val, localMin, localMax) => {
         if (!val || val === 0 || localMax === localMin) return 'color: var(--gris);';
         const scale = (val - localMin) / (localMax - localMin || 1);
@@ -3125,12 +3218,11 @@
         return `color: hsl(${hue}, 90%, 40%); font-weight: 800;`;
       };
 
-
-      let html = `<thead><tr><th style="text-align:left">Region Operativa / Departamento / Municipio</th>`;
+      let html = `<thead><tr><th style="text-align:left; min-width:320px;">Region Operativa / Departamento / Municipio</th>`;
       for (let i = 0; i < activeMonthsCount; i++) {
         html += `<th>${MESES[i]}</th>`;
       }
-      html += `<th>Total</th></tr></thead><tbody>`;
+      html += `<th style="text-align:right; min-width:90px;">Total</th></tr></thead><tbody>`;
 
       const regKeys = Object.keys(byReg).sort((a, b) => byReg[b].total - byReg[a].total);
 
@@ -3147,13 +3239,18 @@
       regKeys.forEach((reg, rIdx) => {
         const rObj = byReg[reg];
         const regId = `reg-${rIdx}`;
+        const regPct = totalGeneral > 0 ? ((rObj.total / totalGeneral) * 100).toFixed(1) : "0.0";
 
         html += `<tr id="${regId}" style="background: rgba(0,0,0,0.04); font-weight:bold; cursor:pointer;" onclick="toggleHeatmapRow('${regId}')">
-             <td style="text-align:left"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${reg}</td>`;
+             <td style="text-align:left; white-space:nowrap;">
+               <span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span>
+               <span>${reg}</span>
+               <span style="display:inline-block; font-size:10.5px; font-weight:700; color:#00608A; background:#EBF3FA; border:1px solid #D0E1FD; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte sobre el total nacional">${regPct}%</span>
+             </td>`;
         for (let i = 0; i < activeMonthsCount; i++) {
           html += `<td class="num" style="${getHeatmapStyle(rObj.mo[i], globalRegMin, globalRegMax)}">${fmt(rObj.mo[i])}</td>`;
         }
-        html += `<td class="num">${fmt(rObj.total)}</td></tr>`;
+        html += `<td class="num" style="white-space:nowrap;">${fmt(rObj.total)} <span style="font-size:11px; font-weight:600; color:#00608A;">(${regPct}%)</span></td></tr>`;
 
         const depKeys = Object.keys(rObj.deps).filter(d => {
           let nonzero = 0;
@@ -3174,13 +3271,18 @@
         depKeys.forEach((dep, dIdx) => {
           const dObj = rObj.deps[dep];
           const depId = `${regId}-dep-${dIdx}`;
+          const depPct = rObj.total > 0 ? ((dObj.total / rObj.total) * 100).toFixed(1) : "0.0";
 
           html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; background: rgba(0,0,0,0.015); cursor:pointer;" onclick="toggleHeatmapRow('${depId}')">
-               <td style="text-align:left; padding-left: 24px;"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${dep}</td>`;
+               <td style="text-align:left; padding-left: 24px; white-space:nowrap;">
+                 <span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span>
+                 <span>${dep}</span>
+                 <span style="display:inline-block; font-size:10.5px; font-weight:600; color:#475569; background:#F1F5F9; border:1px solid #CBD5E1; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte a la regional ${reg}">${depPct}%</span>
+               </td>`;
           for (let i = 0; i < activeMonthsCount; i++) {
             html += `<td class="num" style="${getHeatmapStyle(dObj.mo[i], localDepMin, localDepMax)}">${fmt(dObj.mo[i])}</td>`;
           }
-          html += `<td class="num" style="font-weight:bold;">${fmt(dObj.total)}</td></tr>`;
+          html += `<td class="num" style="font-weight:bold; white-space:nowrap;">${fmt(dObj.total)} <span style="font-size:11px; font-weight:600; color:#64748B;">(${depPct}%)</span></td></tr>`;
 
           const cityKeys = Object.keys(dObj.cities).filter(c => {
             let nonzero = 0;
@@ -3201,13 +3303,19 @@
           cityKeys.forEach((city, cIdx) => {
             const cObj = dObj.cities[city];
             const cityId = `${depId}-city-${cIdx}`;
+            const cityPct = dObj.total > 0 ? ((cObj.total / dObj.total) * 100).toFixed(1) : "0.0";
+            const numSites = cObj.sites ? cObj.sites.size : 0;
 
             html += `<tr id="${cityId}" class="child-of-${depId}" style="display:none; background: #ffffff;">
-                 <td style="text-align:left; padding-left: 48px;">${city}</td>`;
+                 <td style="text-align:left; padding-left: 48px; white-space:nowrap;">
+                   <span>${city}</span>
+                   <span style="display:inline-block; font-size:10.5px; font-weight:600; color:#166534; background:#DCFCE7; border:1px solid #86EFAC; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte al departamento ${dep}">${cityPct}%</span>
+                   <span style="display:inline-block; font-size:10.5px; font-weight:700; color:#92400E; background:#FEF3C7; border:1px solid #FCD34D; padding:1px 6px; border-radius:10px; margin-left:6px;" title="Cantidad de sitios únicos con indisponibilidad">📍 ${numSites} ${numSites === 1 ? 'sitio' : 'sitios'}</span>
+                 </td>`;
             for (let i = 0; i < activeMonthsCount; i++) {
               html += `<td class="num" style="${getHeatmapStyle(cObj.mo[i], localCityMin, localCityMax)}">${fmt(cObj.mo[i])}</td>`;
             }
-            html += `<td class="num">${fmt(cObj.total)}</td></tr>`;
+            html += `<td class="num" style="white-space:nowrap;">${fmt(cObj.total)} <span style="font-size:11px; font-weight:600; color:#166534;">(${cityPct}%)</span></td></tr>`;
           });
         });
       });
@@ -3215,27 +3323,76 @@
       html += `</tbody>`;
       tbl.innerHTML = html;
 
-      if (!window.toggleHeatmapRow) {
-        window.toggleHeatmapRow = function (id) {
-          const btn = document.querySelector('#' + id + ' .hm-btn');
-          if (!btn) return;
-          const isExpanded = btn.textContent === "[-]";
-          btn.textContent = isExpanded ? "[+]" : "[-]";
+      window.toggleHeatmapRow = function (id) {
+        const row = document.getElementById(id);
+        if (!row) return;
+        const btn = row.querySelector('.hm-btn');
+        if (!btn) return;
+        const isExpanded = btn.textContent === "[-]";
 
-          document.querySelectorAll('.child-of-' + id).forEach(c => {
-            c.style.display = isExpanded ? "none" : "table-row";
-            if (isExpanded) {
-              const childBtn = c.querySelector('.hm-btn');
-              if (childBtn && childBtn.textContent === "[-]") {
-                childBtn.textContent = "[+]";
-                document.querySelectorAll('.child-of-' + c.id).forEach(grandchild => {
-                  grandchild.style.display = "none";
-                });
-              }
+        if (isExpanded) {
+          // Collapse this row
+          btn.textContent = "[+]";
+          row.classList.remove('hm-row-active');
+          document.querySelectorAll('#tbl-tend-heatmap .child-of-' + id).forEach(c => {
+            c.style.display = "none";
+            c.classList.remove('hm-row-active');
+            const childBtn = c.querySelector('.hm-btn');
+            if (childBtn) {
+              childBtn.textContent = "[+]";
+              document.querySelectorAll('#tbl-tend-heatmap .child-of-' + c.id).forEach(gc => {
+                gc.style.display = "none";
+              });
             }
           });
-        };
-      }
+        } else {
+          // Expand this row
+          if (!id.includes('-dep-')) {
+            // Regional level: collapse other open regional branches in this table
+            document.querySelectorAll('#tbl-tend-heatmap tr[id^="reg-"]:not([id*="-dep-"])').forEach(otherReg => {
+              if (otherReg.id !== id) {
+                const oBtn = otherReg.querySelector('.hm-btn');
+                if (oBtn && oBtn.textContent === "[-]") {
+                  oBtn.textContent = "[+]";
+                  otherReg.classList.remove('hm-row-active');
+                  document.querySelectorAll('#tbl-tend-heatmap .child-of-' + otherReg.id).forEach(dep => {
+                    dep.style.display = "none";
+                    dep.classList.remove('hm-row-active');
+                    const depBtn = dep.querySelector('.hm-btn');
+                    if (depBtn) {
+                      depBtn.textContent = "[+]";
+                      document.querySelectorAll('#tbl-tend-heatmap .child-of-' + dep.id).forEach(city => {
+                        city.style.display = "none";
+                      });
+                    }
+                  });
+                }
+              }
+            });
+          } else {
+            // Department level: collapse other sibling departments in this region
+            const parentRegId = id.split('-dep-')[0];
+            document.querySelectorAll('#tbl-tend-heatmap .child-of-' + parentRegId).forEach(siblingDep => {
+              if (siblingDep.id !== id) {
+                const sBtn = siblingDep.querySelector('.hm-btn');
+                if (sBtn && sBtn.textContent === "[-]") {
+                  sBtn.textContent = "[+]";
+                  siblingDep.classList.remove('hm-row-active');
+                  document.querySelectorAll('#tbl-tend-heatmap .child-of-' + siblingDep.id).forEach(city => {
+                    city.style.display = "none";
+                  });
+                }
+              }
+            });
+          }
+
+          btn.textContent = "[-]";
+          row.classList.add('hm-row-active');
+          document.querySelectorAll('#tbl-tend-heatmap .child-of-' + id).forEach(c => {
+            c.style.display = "table-row";
+          });
+        }
+      };
     }
 
     function renderTendenciasDailyHeatmap() {
@@ -3271,6 +3428,7 @@
         const reg = String(e.region || "").trim().toUpperCase();
         const dep = String(e.departamento || "").trim().toUpperCase();
         const city = String(e.ciudad || "").trim().toUpperCase();
+        const site = String(e.sitio_id || e.nombre || "").trim();
         const mins = e.minutos_caidos || 0;
 
         if (!reg || reg === "SIN DATO" || !dep || dep === "SIN DATO" || !city || city === "SIN DATO") return;
@@ -3288,15 +3446,20 @@
         byReg[reg].deps[dep].total += mins;
         byReg[reg].deps[dep].days[dayIdx] += mins;
 
-        if (!byReg[reg].deps[dep].cities[city]) byReg[reg].deps[dep].cities[city] = { total: 0, days: Array(numDays).fill(0) };
+        if (!byReg[reg].deps[dep].cities[city]) byReg[reg].deps[dep].cities[city] = { total: 0, days: Array(numDays).fill(0), sites: new Set() };
         byReg[reg].deps[dep].cities[city].total += mins;
         byReg[reg].deps[dep].cities[city].days[dayIdx] += mins;
+        if (site && mins > 0) {
+          byReg[reg].deps[dep].cities[city].sites.add(site);
+        }
       });
 
       if (Object.keys(byReg).length === 0) {
         tbl.innerHTML = `<tr><td style="padding:20px; text-align:center; color:var(--gris);">No hay datos registrados para el mes seleccionado.</td></tr>`;
         return;
       }
+
+      const totalGeneral = Object.values(byReg).reduce((acc, r) => acc + r.total, 0);
 
       const getHeatmapStyle = (val, localMin, localMax) => {
         if (!val || val === 0 || localMax === localMin) return 'color: var(--gris);';
@@ -3305,12 +3468,12 @@
         return `color: hsl(${hue}, 90%, 40%); font-weight: 800;`;
       };
 
-      let html = `<thead><tr><th style="text-align:left; min-width:240px; position:sticky; left:0; background:#FBFCFE; z-index:2;">Region Operativa / Departamento / Municipio</th>`;
+      let html = `<thead><tr><th style="text-align:left; min-width:320px; position:sticky; left:0; background:#FBFCFE; z-index:2;">Region Operativa / Departamento / Municipio</th>`;
       for (let i = 1; i <= numDays; i++) {
         const dStr = i < 10 ? '0' + i : String(i);
         html += `<th style="text-align:right; min-width:55px; font-size:11px; padding:6px 4px;">D${dStr}</th>`;
       }
-      html += `<th style="text-align:right; min-width:85px; font-weight:700;">Total Mes</th></tr></thead><tbody>`;
+      html += `<th style="text-align:right; min-width:100px; font-weight:700;">Total Mes</th></tr></thead><tbody>`;
 
       const regKeys = Object.keys(byReg).sort((a, b) => byReg[b].total - byReg[a].total);
 
@@ -3327,13 +3490,18 @@
       regKeys.forEach((reg, rIdx) => {
         const rObj = byReg[reg];
         const regId = `daily-reg-${rIdx}`;
+        const regPct = totalGeneral > 0 ? ((rObj.total / totalGeneral) * 100).toFixed(1) : "0.0";
 
         html += `<tr id="${regId}" style="background: rgba(0,0,0,0.04); font-weight:bold; cursor:pointer;" onclick="toggleDailyHeatmapRow('${regId}')">
-             <td style="text-align:left; position:sticky; left:0; background:#F4F6F9; z-index:1;"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${reg}</td>`;
+             <td style="text-align:left; position:sticky; left:0; background:#F4F6F9; z-index:1; white-space:nowrap;">
+               <span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span>
+               <span>${reg}</span>
+               <span style="display:inline-block; font-size:10.5px; font-weight:700; color:#00608A; background:#EBF3FA; border:1px solid #D0E1FD; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte sobre el total nacional">${regPct}%</span>
+             </td>`;
         for (let i = 0; i < numDays; i++) {
           html += `<td class="num" style="${getHeatmapStyle(rObj.days[i], globalRegMin, globalRegMax)}">${fmt(Math.round(rObj.days[i]))}</td>`;
         }
-        html += `<td class="num" style="font-weight:700;">${fmt(Math.round(rObj.total))}</td></tr>`;
+        html += `<td class="num" style="font-weight:700; white-space:nowrap;">${fmt(Math.round(rObj.total))} <span style="font-size:11px; font-weight:600; color:#00608A;">(${regPct}%)</span></td></tr>`;
 
         const depKeys = Object.keys(rObj.deps).filter(d => {
           let nonzero = 0;
@@ -3354,13 +3522,18 @@
         depKeys.forEach((dep, dIdx) => {
           const dObj = rObj.deps[dep];
           const depId = `${regId}-dep-${dIdx}`;
+          const depPct = rObj.total > 0 ? ((dObj.total / rObj.total) * 100).toFixed(1) : "0.0";
 
           html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; background: rgba(0,0,0,0.015); cursor:pointer;" onclick="toggleDailyHeatmapRow('${depId}')">
-               <td style="text-align:left; padding-left: 24px; position:sticky; left:0; background:#FAFBFD; z-index:1;"><span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span> ${dep}</td>`;
+               <td style="text-align:left; padding-left: 24px; position:sticky; left:0; background:#FAFBFD; z-index:1; white-space:nowrap;">
+                 <span class="hm-btn" style="color:var(--azul-marino); display:inline-block; width:20px;">[+]</span>
+                 <span>${dep}</span>
+                 <span style="display:inline-block; font-size:10.5px; font-weight:600; color:#475569; background:#F1F5F9; border:1px solid #CBD5E1; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte a la regional ${reg}">${depPct}%</span>
+               </td>`;
           for (let i = 0; i < numDays; i++) {
             html += `<td class="num" style="${getHeatmapStyle(dObj.days[i], localDepMin, localDepMax)}">${fmt(Math.round(dObj.days[i]))}</td>`;
           }
-          html += `<td class="num" style="font-weight:bold;">${fmt(Math.round(dObj.total))}</td></tr>`;
+          html += `<td class="num" style="font-weight:bold; white-space:nowrap;">${fmt(Math.round(dObj.total))} <span style="font-size:11px; font-weight:600; color:#64748B;">(${depPct}%)</span></td></tr>`;
 
           const cityKeys = Object.keys(dObj.cities).filter(c => {
             let nonzero = 0;
@@ -3381,13 +3554,19 @@
           cityKeys.forEach((city, cIdx) => {
             const cObj = dObj.cities[city];
             const cityId = `${depId}-city-${cIdx}`;
+            const cityPct = dObj.total > 0 ? ((cObj.total / dObj.total) * 100).toFixed(1) : "0.0";
+            const numSites = cObj.sites ? cObj.sites.size : 0;
 
             html += `<tr id="${cityId}" class="child-of-${depId}" style="display:none; background: #ffffff;">
-                 <td style="text-align:left; padding-left: 48px; position:sticky; left:0; background:#ffffff; z-index:1;">${city}</td>`;
+                 <td style="text-align:left; padding-left: 48px; position:sticky; left:0; background:#ffffff; z-index:1; white-space:nowrap;">
+                   <span>${city}</span>
+                   <span style="display:inline-block; font-size:10.5px; font-weight:600; color:#166534; background:#DCFCE7; border:1px solid #86EFAC; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte al departamento ${dep}">${cityPct}%</span>
+                   <span style="display:inline-block; font-size:10.5px; font-weight:700; color:#92400E; background:#FEF3C7; border:1px solid #FCD34D; padding:1px 6px; border-radius:10px; margin-left:6px;" title="Cantidad de sitios únicos con indisponibilidad">📍 ${numSites} ${numSites === 1 ? 'sitio' : 'sitios'}</span>
+                 </td>`;
             for (let i = 0; i < numDays; i++) {
               html += `<td class="num" style="${getHeatmapStyle(cObj.days[i], localCityMin, localCityMax)}">${fmt(Math.round(cObj.days[i]))}</td>`;
             }
-            html += `<td class="num" style="font-weight:600;">${fmt(Math.round(cObj.total))}</td></tr>`;
+            html += `<td class="num" style="font-weight:600; white-space:nowrap;">${fmt(Math.round(cObj.total))} <span style="font-size:11px; font-weight:600; color:#166534;">(${cityPct}%)</span></td></tr>`;
           });
         });
       });
@@ -3395,27 +3574,76 @@
       html += `</tbody>`;
       tbl.innerHTML = html;
 
-      if (!window.toggleDailyHeatmapRow) {
-        window.toggleDailyHeatmapRow = function (id) {
-          const btn = document.querySelector('#' + id + ' .hm-btn');
-          if (!btn) return;
-          const isExpanded = btn.textContent === "[-]";
-          btn.textContent = isExpanded ? "[+]" : "[-]";
+      window.toggleDailyHeatmapRow = function (id) {
+        const row = document.getElementById(id);
+        if (!row) return;
+        const btn = row.querySelector('.hm-btn');
+        if (!btn) return;
+        const isExpanded = btn.textContent === "[-]";
 
-          document.querySelectorAll('.child-of-' + id).forEach(c => {
-            c.style.display = isExpanded ? "none" : "table-row";
-            if (isExpanded) {
-              const childBtn = c.querySelector('.hm-btn');
-              if (childBtn && childBtn.textContent === "[-]") {
-                childBtn.textContent = "[+]";
-                document.querySelectorAll('.child-of-' + c.id).forEach(grandchild => {
-                  grandchild.style.display = "none";
-                });
-              }
+        if (isExpanded) {
+          // Collapse this row
+          btn.textContent = "[+]";
+          row.classList.remove('hm-row-active');
+          document.querySelectorAll('#tbl-tend-daily-heatmap .child-of-' + id).forEach(c => {
+            c.style.display = "none";
+            c.classList.remove('hm-row-active');
+            const childBtn = c.querySelector('.hm-btn');
+            if (childBtn) {
+              childBtn.textContent = "[+]";
+              document.querySelectorAll('#tbl-tend-daily-heatmap .child-of-' + c.id).forEach(gc => {
+                gc.style.display = "none";
+              });
             }
           });
-        };
-      }
+        } else {
+          // Expand this row
+          if (!id.includes('-dep-')) {
+            // Regional level: collapse other open regional branches in this table
+            document.querySelectorAll('#tbl-tend-daily-heatmap tr[id^="daily-reg-"]:not([id*="-dep-"])').forEach(otherReg => {
+              if (otherReg.id !== id) {
+                const oBtn = otherReg.querySelector('.hm-btn');
+                if (oBtn && oBtn.textContent === "[-]") {
+                  oBtn.textContent = "[+]";
+                  otherReg.classList.remove('hm-row-active');
+                  document.querySelectorAll('#tbl-tend-daily-heatmap .child-of-' + otherReg.id).forEach(dep => {
+                    dep.style.display = "none";
+                    dep.classList.remove('hm-row-active');
+                    const depBtn = dep.querySelector('.hm-btn');
+                    if (depBtn) {
+                      depBtn.textContent = "[+]";
+                      document.querySelectorAll('#tbl-tend-daily-heatmap .child-of-' + dep.id).forEach(city => {
+                        city.style.display = "none";
+                      });
+                    }
+                  });
+                }
+              }
+            });
+          } else {
+            // Department level: collapse other sibling departments in this region
+            const parentRegId = id.split('-dep-')[0];
+            document.querySelectorAll('#tbl-tend-daily-heatmap .child-of-' + parentRegId).forEach(siblingDep => {
+              if (siblingDep.id !== id) {
+                const sBtn = siblingDep.querySelector('.hm-btn');
+                if (sBtn && sBtn.textContent === "[-]") {
+                  sBtn.textContent = "[+]";
+                  siblingDep.classList.remove('hm-row-active');
+                  document.querySelectorAll('#tbl-tend-daily-heatmap .child-of-' + siblingDep.id).forEach(city => {
+                    city.style.display = "none";
+                  });
+                }
+              }
+            });
+          }
+
+          btn.textContent = "[-]";
+          row.classList.add('hm-row-active');
+          document.querySelectorAll('#tbl-tend-daily-heatmap .child-of-' + id).forEach(c => {
+            c.style.display = "table-row";
+          });
+        }
+      };
     }
 
   let tendEvs = [];
