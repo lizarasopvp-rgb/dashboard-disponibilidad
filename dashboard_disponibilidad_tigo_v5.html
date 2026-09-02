@@ -3033,17 +3033,51 @@
       }
       const periodoMin = dias * 24 * 60;
       
-      const disp = (100 * (1 - tot / (sitiosAfect * periodoMin))).toFixed(3);
-      const k = document.getElementById("kpi-strip");
-      const cls = disp >= 99 ? "k-ok" : disp >= 98 ? "k-al" : disp >= 97 ? "k-cm" : "k-cr";
-      k.innerHTML = `
-   <div class="kpi ${cls}"><div class="et">Disponibilidad red</div><div class="valor">${disp}%</div><div class="delta">&nbsp;</div></div>
+      let dispCalc = (100 * (1 - tot / (sitiosAfect * periodoMin))).toFixed(3);
+
+      const renderUI = (dispVal) => {
+        const k = document.getElementById("kpi-strip");
+        const cls = dispVal >= 99 ? "k-ok" : dispVal >= 98 ? "k-al" : dispVal >= 97 ? "k-cm" : "k-cr";
+        k.innerHTML = `
+   <div class="kpi ${cls}"><div class="et">Disponibilidad red</div><div class="valor">${dispVal}%</div><div class="delta">&nbsp;</div></div>
    <div class="kpi k-cr"><div class="et">Minutos no disponibles</div><div class="valor">${fmt(tot)}</div><div class="delta">${nEv} eventos · ${sitiosAfect} sitios</div></div>
    <div class="kpi k-cr"><div class="et">Fallas activas</div><div class="valor">${activos}</div><div class="delta">eventos sin restaurar</div></div>
    <div class="kpi k-cm"><div class="et">Mediana de duración (P50)</div><div class="valor">${(p50 / 60).toFixed(1)}h</div><div class="delta">mitad de eventos por debajo</div></div>
    <div class="kpi k-al"><div class="et">Cola P99</div><div class="valor">${(p99 / 60).toFixed(1)}h</div><div class="delta">el 1% peor · ${(p99 / p50).toFixed(0)}× la mediana</div></div>`;
-      document.getElementById("narr-resumen").innerHTML =
-        `En el periodo analizado, la red registra <b>${fmt(nEv)} incidentes</b> distribuidos en <b>${sitiosAfect} sitios</b>, impactando la operación con <b>${fmt(tot)} minutos caídos</b> reales. Con <b>${activos} fallas actualmente activas</b>, la prioridad es acelerar su resolución y restauración física. El análisis muestra que aunque la mayoría de tickets se cierran en <b>${(p50 / 60).toFixed(1)}h</b>, el P99 se arrastra hasta <b>${(p99 / 60).toFixed(1)}h</b> por casos complejos.`;
+        document.getElementById("narr-resumen").innerHTML =
+          `En el periodo analizado, la red registra <b>${fmt(nEv)} incidentes</b> distribuidos en <b>${sitiosAfect} sitios</b>, impactando la operación con <b>${fmt(tot)} minutos caídos</b> reales. Con <b>${activos} fallas actualmente activas</b>, la prioridad es acelerar su resolución y restauración física. El análisis muestra que aunque la mayoría de tickets se cierran en <b>${(p50 / 60).toFixed(1)}h</b>, el P99 se arrastra hasta <b>${(p99 / 60).toFixed(1)}h</b> por casos complejos.`;
+      };
+
+      // Inicialmente renderizar con el valor calculado como fallback rápido
+      renderUI(dispCalc);
+
+      // Intentar obtener el dato real de la API
+      const fuenteMap = { 'CONTRATO': 'Contrato', 'DISPUTA': 'Disputa', 'SIN_EXCLUSIONES': 'SinExclusiones' };
+      const fuente = fuenteMap[filtro.modo] || 'SinExclusiones';
+      
+      if (typeof fetchDispNAR === "function") {
+        fetchDispNAR(fuente).then(rows => {
+          if (rows && rows.length > 0) {
+            let finalDisp = null;
+            if (fMesValue) {
+              const apiMes = fMesValue.substring(0, 4) + "-" + fMesValue.substring(4, 6);
+              const globalRow = rows.find(r => r.region === 'GLOBAL' && r.mes.startsWith(apiMes));
+              if (globalRow && globalRow.nar_pct !== undefined) {
+                finalDisp = (Math.floor(globalRow.nar_pct * 1000) / 1000).toFixed(3); 
+              }
+            } else {
+              const globalRows = rows.filter(r => r.region === 'GLOBAL').sort((a, b) => a.mes.localeCompare(b.mes));
+              if (globalRows.length > 0) {
+                const lastRow = globalRows[globalRows.length - 1];
+                finalDisp = (Math.floor(lastRow.nar_pct * 1000) / 1000).toFixed(3);
+              }
+            }
+            if (finalDisp !== null && finalDisp !== dispCalc) {
+              renderUI(finalDisp);
+            }
+          }
+        }).catch(e => console.error("Error API resumen:", e));
+      }
     }
 
     /* ============================================================
