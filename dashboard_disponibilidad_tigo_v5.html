@@ -5320,7 +5320,20 @@
     const VIEW = getLocalView('heatmap-suspension');
     let VIEW_MAYORES = VIEW; // Now respects fl-rng or global filters
     const chkHide = document.getElementById("chk-hide-sindato-hs");
-    if (chkHide && chkHide.checked) {
+    const modoActivo = document.getElementById("f-modo") ? document.getElementById("f-modo").value : "SIN_EXCLUSIONES";
+    
+    if (chkHide) {
+      chkHide.disabled = (modoActivo !== "SIN_EXCLUSIONES");
+      if (chkHide.disabled) {
+        chkHide.parentElement.style.opacity = "0.5";
+        chkHide.parentElement.title = 'Solo disponible en modo "Sin exclusiones"';
+      } else {
+        chkHide.parentElement.style.opacity = "1";
+        chkHide.parentElement.title = "";
+      }
+    }
+
+    if (chkHide && chkHide.checked && modoActivo === "SIN_EXCLUSIONES") {
       VIEW_MAYORES = VIEW_MAYORES.filter(e =>
         e.causa_suspension_macro !== 'Sin dato' &&
         e.causa_suspension_macro !== 'Sin especificar' &&
