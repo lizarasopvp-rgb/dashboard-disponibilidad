@@ -1775,6 +1775,11 @@
       <div class="sec-head">
         <h2>Resumen</h2><span class="pregunta">¿Cómo está la red y qué la está frenando?</span>
       </div>
+      <div class="filtros filtros-local" style="background:transparent;border:none;padding:0 0 10px">
+        <span class="lbl">Mes</span><select class="fl-mes" onchange="renderResumen()">
+          <option value="">Todos</option>
+        </select>
+      </div>
 
       <div class="narrativa" id="narr-resumen"></div>
       <div class="kpis" id="kpi-strip"></div>
@@ -3017,18 +3022,28 @@
       const activos = VIEW.filter(s => s.estado === "Activo").length;
       const dur = VIEW.map(s => s.minutos_caidos).sort((a, b) => a - b);
       const p50 = percentil(dur, 50), p90 = percentil(dur, 90), p99 = percentil(dur, 99);
-      const periodoMin = 213 * 24 * 60;
+      
+      const secResumen = document.getElementById("resumen");
+      const fMesValue = secResumen && secResumen.querySelector('.fl-mes') ? secResumen.querySelector('.fl-mes').value : "";
+      let dias = 213;
+      if (fMesValue) {
+        const y = parseInt(String(fMesValue).substring(0, 4));
+        const m = parseInt(String(fMesValue).substring(4, 6));
+        dias = new Date(y, m, 0).getDate();
+      }
+      const periodoMin = dias * 24 * 60;
+      
       const disp = (100 * (1 - tot / (sitiosAfect * periodoMin))).toFixed(3);
       const k = document.getElementById("kpi-strip");
       const cls = disp >= 99 ? "k-ok" : disp >= 98 ? "k-al" : disp >= 97 ? "k-cm" : "k-cr";
       k.innerHTML = `
-   <div class="kpi ${cls}"><div class="et">Disponibilidad red</div><div class="valor">${disp}%</div><div class="delta">Objetivo 99.000%</div></div>
+   <div class="kpi ${cls}"><div class="et">Disponibilidad red</div><div class="valor">${disp}%</div><div class="delta">&nbsp;</div></div>
    <div class="kpi k-cr"><div class="et">Minutos no disponibles</div><div class="valor">${fmt(tot)}</div><div class="delta">${nEv} eventos · ${sitiosAfect} sitios</div></div>
    <div class="kpi k-cr"><div class="et">Fallas activas</div><div class="valor">${activos}</div><div class="delta">eventos sin restaurar</div></div>
    <div class="kpi k-cm"><div class="et">Mediana de duración (P50)</div><div class="valor">${(p50 / 60).toFixed(1)}h</div><div class="delta">mitad de eventos por debajo</div></div>
    <div class="kpi k-al"><div class="et">Cola P99</div><div class="valor">${(p99 / 60).toFixed(1)}h</div><div class="delta">el 1% peor · ${(p99 / p50).toFixed(0)}× la mediana</div></div>`;
       document.getElementById("narr-resumen").innerHTML =
-        `En el periodo analizado, la red registra <b>${fmt(nEv)} incidentes</b> distribuidos en <b>${sitiosAfect} sitios</b>, impactando la operación con <b>${fmt(tot)} minutos caídos</b> reales. Con <b>${activos} fallas actualmente activas</b>, la prioridad es acelerar su resolución y restauración física. El análisis muestra que aunque la mayoría de tickets se cierran en <b>${(p50 / 60).toFixed(1)}h</b>, el P99 se arrastra hasta <b>${(p99 / 60).toFixed(1)}h</b> por casos complejos. El objetivo es mantener la disponibilidad en <b>99.000%</b>.`;
+        `En el periodo analizado, la red registra <b>${fmt(nEv)} incidentes</b> distribuidos en <b>${sitiosAfect} sitios</b>, impactando la operación con <b>${fmt(tot)} minutos caídos</b> reales. Con <b>${activos} fallas actualmente activas</b>, la prioridad es acelerar su resolución y restauración física. El análisis muestra que aunque la mayoría de tickets se cierran en <b>${(p50 / 60).toFixed(1)}h</b>, el P99 se arrastra hasta <b>${(p99 / 60).toFixed(1)}h</b> por casos complejos.`;
     }
 
     /* ============================================================
