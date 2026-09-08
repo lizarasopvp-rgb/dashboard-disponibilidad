@@ -24,40 +24,91 @@ df_v2 = xls.parse(sheet_to_parse)
 print(f"  DataV2: {len(df_v2)} filas, {len(df_v2.columns)} columnas leídas")
 if 'etiqueta_padre' not in df_v2.columns:
     df_v2['etiqueta_padre'] = 'Sin dato'
+if 'task_id' not in df_v2.columns:
+    df_v2['task_id'] = 'Sin dato'
 df_v2['origen_archivo'] = 'V2'
 
-rename_map_v2 = {
-    'latitude_y': 'Latitud',
-    'longitude_y': 'Longitud',
-    'city_name_y': 'Ciudad',
-    'department_name_y': 'Departamento'
-}
-df_v2 = df_v2.rename(columns=rename_map_v2)
+# Normalizar columnas de V2
+if 'city_name_y' in df_v2.columns and 'city_name_x' in df_v2.columns:
+    df_v2['Ciudad'] = df_v2['city_name_y'].fillna(df_v2['city_name_x'])
+elif 'city_name_y' in df_v2.columns:
+    df_v2['Ciudad'] = df_v2['city_name_y']
+elif 'city_name_x' in df_v2.columns:
+    df_v2['Ciudad'] = df_v2['city_name_x']
 
-print("Leyendo Data_Contrato.xlsx...")
+if 'department_name_y' in df_v2.columns and 'department_name_x' in df_v2.columns:
+    df_v2['Departamento'] = df_v2['department_name_y'].fillna(df_v2['department_name_x'])
+elif 'department_name_y' in df_v2.columns:
+    df_v2['Departamento'] = df_v2['department_name_y']
+elif 'department_name_x' in df_v2.columns:
+    df_v2['Departamento'] = df_v2['department_name_x']
+
+if 'latitude_y' in df_v2.columns and 'latitude_x' in df_v2.columns:
+    df_v2['Latitud'] = df_v2['latitude_y'].fillna(df_v2['latitude_x'])
+elif 'latitude_y' in df_v2.columns:
+    df_v2['Latitud'] = df_v2['latitude_y']
+elif 'latitude_x' in df_v2.columns:
+    df_v2['Latitud'] = df_v2['latitude_x']
+
+if 'longitude_y' in df_v2.columns and 'longitude_x' in df_v2.columns:
+    df_v2['Longitud'] = df_v2['longitude_y'].fillna(df_v2['longitude_x'])
+elif 'longitude_y' in df_v2.columns:
+    df_v2['Longitud'] = df_v2['longitude_y']
+elif 'longitude_x' in df_v2.columns:
+    df_v2['Longitud'] = df_v2['longitude_x']
+
+cols_to_drop_v2 = [c for c in ['latitude_x','latitude_y','longitude_x','longitude_y','city_name_x','city_name_y','department_name_x','department_name_y'] if c in df_v2.columns]
+df_v2 = df_v2.drop(columns=cols_to_drop_v2)
+
+import os
+contrato_filename = 'DataContrato.xlsx' if os.path.exists('DataContrato.xlsx') else 'Data_Contrato.xlsx'
+print(f"Leyendo {contrato_filename}...")
 try:
-    xls_c = pd.ExcelFile('Data_Contrato.xlsx')
+    xls_c = pd.ExcelFile(contrato_filename)
     sheet_c = 'Data' if 'Data' in xls_c.sheet_names else xls_c.sheet_names[0]
     df_c = xls_c.parse(sheet_c)
     print(f"  Contrato: {len(df_c)} filas, {len(df_c.columns)} columnas leídas")
     if 'etiqueta_padre' not in df_c.columns:
         df_c['etiqueta_padre'] = 'Sin dato'
+    if 'task_id' not in df_c.columns:
+        df_c['task_id'] = 'Sin dato'
     
-    # Normalizar columnas de Contrato
-    rename_map = {
-        'latitude_y': 'Latitud',
-        'longitude_y': 'Longitud',
-        'city_name_y': 'Ciudad',
-        'department_name_y': 'Departamento',
-        'city_name_x': 'Ciudad',
-        'department_name_x': 'Departamento'
-    }
-    df_c = df_c.rename(columns=rename_map)
+    # Normalizar columnas de Contrato sin duplicar nombres
+    if 'city_name_y' in df_c.columns and 'city_name_x' in df_c.columns:
+        df_c['Ciudad'] = df_c['city_name_y'].fillna(df_c['city_name_x'])
+    elif 'city_name_y' in df_c.columns:
+        df_c['Ciudad'] = df_c['city_name_y']
+    elif 'city_name_x' in df_c.columns:
+        df_c['Ciudad'] = df_c['city_name_x']
+
+    if 'department_name_y' in df_c.columns and 'department_name_x' in df_c.columns:
+        df_c['Departamento'] = df_c['department_name_y'].fillna(df_c['department_name_x'])
+    elif 'department_name_y' in df_c.columns:
+        df_c['Departamento'] = df_c['department_name_y']
+    elif 'department_name_x' in df_c.columns:
+        df_c['Departamento'] = df_c['department_name_x']
+
+    if 'latitude_y' in df_c.columns and 'latitude_x' in df_c.columns:
+        df_c['Latitud'] = df_c['latitude_y'].fillna(df_c['latitude_x'])
+    elif 'latitude_y' in df_c.columns:
+        df_c['Latitud'] = df_c['latitude_y']
+    elif 'latitude_x' in df_c.columns:
+        df_c['Latitud'] = df_c['latitude_x']
+
+    if 'longitude_y' in df_c.columns and 'longitude_x' in df_c.columns:
+        df_c['Longitud'] = df_c['longitude_y'].fillna(df_c['longitude_x'])
+    elif 'longitude_y' in df_c.columns:
+        df_c['Longitud'] = df_c['longitude_y']
+    elif 'longitude_x' in df_c.columns:
+        df_c['Longitud'] = df_c['longitude_x']
+
+    cols_to_drop_c = [c for c in ['latitude_x','latitude_y','longitude_x','longitude_y','city_name_x','city_name_y','department_name_x','department_name_y'] if c in df_c.columns]
+    df_c = df_c.drop(columns=cols_to_drop_c)
     df_c['origen_archivo'] = 'Contrato'
     
     df = pd.concat([df_v2, df_c], ignore_index=True)
 except Exception as e:
-    print(f"Error leyendo Data_Contrato.xlsx: {e}")
+    print(f"Error leyendo {contrato_filename}: {e}")
     df = df_v2
 
 print(f"Total unificado: {len(df)} filas")
@@ -193,6 +244,12 @@ else:
 
 # Ticket: Mostrar unicamente orderid (CM) segun requerimiento
 df['TICKET'] = df['orderid'].fillna('Sin dato')
+
+# Task ID / WO (Orden de trabajo)
+if 'task_id' not in df.columns:
+    df['task_id'] = 'Sin dato'
+else:
+    df['task_id'] = df['task_id'].fillna('Sin dato').astype(str).str.strip().replace({'nan': 'Sin dato', 'None': 'Sin dato', '': 'Sin dato'})
 
 # Causa raíz (específica): causa_final
 df['CAUSA_RAIZ'] = df['causa_final'].fillna('Sin dato')
@@ -338,7 +395,7 @@ print(f"  Total fallas simultáneas detectadas: {len(masiva_clusters)}")
 
 for col in ['CAUSA_GLOBAL','CAUSA_RAIZ','TICKET','SOLUCION_TICKET','DETALLE_FALLA',
             'SITE_CD','SITE_NAME','CITY_DS','DEPARTMENT_DS','TECNOLOGIA','REGION_OP',
-            'Rangos','ESTADO_RAD','CAUSA_SUSPENSION_MACRO', 'CAUSA_SUSPENSION_ESPECIFICA','etiqueta_padre', 'CAUSA_IA', 'origen_archivo']:
+            'Rangos','ESTADO_RAD','CAUSA_SUSPENSION_MACRO', 'CAUSA_SUSPENSION_ESPECIFICA','etiqueta_padre', 'CAUSA_IA', 'origen_archivo', 'task_id']:
     if col in eventos.columns:
         eventos[col] = eventos[col].fillna('Sin dato')
 
@@ -398,6 +455,7 @@ for _, r in eventos.iterrows():
         1 if r['is_active'] else 0,                # 23: is_active (1 o 0)
         intern(r['SEMANA']),                       # 24: semana
         intern(r['origen_archivo']),               # 25: origen_archivo
+        intern(r['task_id']),                      # 26: task_id (WO)
     ])
 
 print(f"Eventos: {len(data)}, Strings pool: {len(str_list)}")

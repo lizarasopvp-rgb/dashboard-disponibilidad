@@ -1666,7 +1666,7 @@
       style="padding: 8px 26px; display: flex; justify-content: space-between; align-items: center;">
       <div class="titulo">
         <h1 style="font-size:17px">Disponibilidad Operativa de Red</h1>
-        <p>Huawei MSP — Análisis causa raíz 4G · Periodo 2026-01 → 2026-08</p>
+        <p>Huawei MSP — Análisis causa raíz 4G · Periodo 2026-01 → 2026-09</p>
       </div>
       <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding: 2px 0;">
         <div style="font-size: 11px; color: #cbd5e1;">
@@ -2906,7 +2906,8 @@
       causa_ia: S[e[22]] || 'Otra',
       is_active: e[23] === 1,
       semana: S[e[24]] || '',
-      origen_archivo: S[e[25]] || ''
+      origen_archivo: S[e[25]] || '',
+      task_id: e[26] !== undefined ? (S[e[26]] || '') : ''
     }));
     const fmtDT = ts => ts ? new Date(ts).toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
     const fmtISO = ts => ts ? new Date(ts).toISOString() : '';
@@ -4455,12 +4456,14 @@
       detTr.style.background = "#f9fafb";
 
       const evts = evs.filter(e => e.sitio_id === s.sitio_id).sort((a, b) => b.minutos_caidos - a.minutos_caidos);
-      let detHtml = `<td colspan="8" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
+      let detHtml = `<td colspan="8" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>WO</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
       evts.forEach(e => {
         const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
         const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
         const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
-        detHtml += `<tr><td>${e.ticket}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-sitio="${e.ticket}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
+        const woVal = e.task_id && e.task_id !== 'Sin dato' && e.task_id !== '-' && e.task_id !== 'nan' ? e.task_id.trim() : '';
+        const woHtml = woVal ? `<span style="display:inline-block;padding:2px 7px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:4px;font-weight:600;font-size:11px;" title="Orden de trabajo (WO)">${woVal}</span>` : '<span style="color:var(--gris);font-size:11px;">-</span>';
+        detHtml += `<tr><td>${e.ticket}</td><td>${woHtml}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-sitio="${e.ticket}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
       });
       detHtml += `</tbody></table></td>`;
       detTr.innerHTML = detHtml;
@@ -4761,6 +4764,7 @@
         const pctMin = totalMinCiudad > 0 ? (100 * s.min / totalMinCiudad).toFixed(1) : "0.0";
         const mxE = s.maxEv || {};
         const tipTkt = mxE.ticket || 'N/A';
+        const tipWo = mxE.task_id && mxE.task_id !== 'Sin dato' && mxE.task_id !== '-' && mxE.task_id !== 'nan' ? ` · WO: ${mxE.task_id}` : '';
         const tipMin = mxE.minutos_caidos ? fmt(mxE.minutos_caidos) : '0';
         const tipSol = mxE.solucion || 'Sin soluci\u00f3n';
         const hasNotes = (historialData[s.sitio_id] && historialData[s.sitio_id].length > 0) || dbNotasSitios.has(s.sitio_id);
@@ -4768,7 +4772,7 @@
         const tr = document.createElement("tr");
         tr.className = `site-row ${s.estado === 'Activo' ? 'rojo' : ''}`;
         tr.style.cursor = "pointer";
-        tr.innerHTML = `<td><b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ⊞<div class="site-tip">🎫 <b>${tipTkt}</b> · ${tipMin} min<br>🔧 ${tipSol}</div></td>` +
+        tr.innerHTML = `<td><b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ⊞<div class="site-tip">🎫 <b>${tipTkt}</b>${tipWo} · ${tipMin} min<br>🔧 ${tipSol}</div></td>` +
           `<td>${s.crTop}</td>` +
           `<td class="num">${fmt(s.min)}</td><td class="num">${pctMin}%</td>` +
           `<td class="num">${s.nEv}</td><td>${s.csTop}</td>` +
@@ -4778,12 +4782,14 @@
         detTr.style.display = "none";
         detTr.style.background = "#f9fafb";
         const evts = evs.filter(e => e.sitio_id === s.sitio_id).sort((a, b) => b.minutos_caidos - a.minutos_caidos);
-        let detHtml = `<td colspan="7" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>Hora Inicio</th><th>Hora Fin</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
+        let detHtml = `<td colspan="7" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>WO</th><th>Hora Inicio</th><th>Hora Fin</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
         evts.forEach(e => {
           const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
           const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
           const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
-          detHtml += `<tr><td>${e.ticket}${getAud(e)}</td><td style="font-size:11px">${fmtDT(e.ts)}</td><td style="font-size:11px">${fmtDT(e.ts_fin)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-tipo="falla" data-ticket="${e.ticket}" data-inicio="${fmtISO(e.ts)}" data-fin="${fmtISO(e.ts_fin)}" data-duracion="${e.minutos_caidos}" data-causa="${e.causa_raiz_especifica}" data-solucion="${(e.solucion || '').substring(0, 100).replace(/"/g, '&quot;')}" data-codigo="${e.sitio_id}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">💬</button></td></tr>`;
+          const woVal = e.task_id && e.task_id !== 'Sin dato' && e.task_id !== '-' && e.task_id !== 'nan' ? e.task_id.trim() : '';
+          const woHtml = woVal ? `<span style="display:inline-block;padding:2px 7px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:4px;font-weight:600;font-size:11px;" title="Orden de trabajo (WO)">${woVal}</span>` : '<span style="color:var(--gris);font-size:11px;">-</span>';
+          detHtml += `<tr><td>${e.ticket}${getAud(e)}</td><td>${woHtml}</td><td style="font-size:11px">${fmtDT(e.ts)}</td><td style="font-size:11px">${fmtDT(e.ts_fin)}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-tipo="falla" data-ticket="${e.ticket}" data-inicio="${fmtISO(e.ts)}" data-fin="${fmtISO(e.ts_fin)}" data-duracion="${e.minutos_caidos}" data-causa="${e.causa_raiz_especifica}" data-solucion="${(e.solucion || '').substring(0, 100).replace(/"/g, '&quot;')}" data-codigo="${e.sitio_id}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">💬</button></td></tr>`;
         });
         detHtml += `</tbody></table></td>`;
         detTr.innerHTML = detHtml;
@@ -4802,7 +4808,7 @@
 
           const isDet = detTr.style.display === "table-row";
           detTr.style.display = isDet ? "none" : "table-row";
-          tr.cells[0].innerHTML = `<b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ${isDet ? "⊞" : "⊟"}<div class="site-tip">🎫 <b>${tipTkt}</b> · ${tipMin} min<br>🔧 ${tipSol}</div>`;
+          tr.cells[0].innerHTML = `<b>${s.sitio_id}</b><br><span style="font-size:11px;color:var(--gris)">${s.nombre}</span> ${isDet ? "⊞" : "⊟"}<div class="site-tip">🎫 <b>${tipTkt}</b>${tipWo} · ${tipMin} min<br>🔧 ${tipSol}</div>`;
 
           if (!isDet) {
             updateGeoInsights(evts);
@@ -4986,12 +4992,14 @@
       detTr.style.background = "#f9fafb";
 
       const evts = base.filter(e => e.sitio_id === s.sitio_id).sort((a, b) => b.minutos_caidos - a.minutos_caidos);
-      let detHtml = `<td colspan="10" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
+      let detHtml = `<td colspan="10" style="padding:10px 20px"><table class="datos" style="margin:0;box-shadow:none;border:1px solid var(--linea)"><thead><tr><th>Ticket / ID</th><th>WO</th><th>Duración</th><th>Causa Raíz</th><th>Causa Suspensión</th><th>Solución</th><th style="min-width:200px">Detalle</th><th>Nota</th></tr></thead><tbody>`;
       evts.forEach(e => {
         const tHasNotes = (historialData[e.ticket] && historialData[e.ticket].length > 0) || dbNotasFallas.has(e.ticket);
         const solTxt = e.solucion && e.solucion.trim() && e.solucion.trim().toLowerCase() !== "sin dato" ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver solución</summary>${e.solucion}</details>` : '<span style="font-size:11px;color:var(--gris)">Sin dato</span>';
         const detTxt = e.detalle_falla ? `<details style="font-size:10.5px;color:var(--gris);min-width:250px;max-width:550px;white-space:normal;word-break:break-word;"><summary style="cursor:pointer;color:var(--azul-marino)">Ver detalle</summary>${e.detalle_falla}</details>` : '';
-        detHtml += `<tr><td>${e.ticket}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-sitio="${e.ticket}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
+        const woVal = e.task_id && e.task_id !== 'Sin dato' && e.task_id !== '-' && e.task_id !== 'nan' ? e.task_id.trim() : '';
+        const woHtml = woVal ? `<span style="display:inline-block;padding:2px 7px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:4px;font-weight:600;font-size:11px;" title="Orden de trabajo (WO)">${woVal}</span>` : '<span style="color:var(--gris);font-size:11px;">-</span>';
+        detHtml += `<tr><td>${e.ticket}</td><td>${woHtml}</td><td class="num">${fmt(e.minutos_caidos)} min</td><td>${e.causa_raiz_especifica}</td><td>${e.causa_suspension_especifica}</td><td>${solTxt}</td><td>${detTxt}</td><td><button class="btn-hist" data-sitio="${e.ticket}" data-nombre="Tiquete ${e.ticket}" ${tHasNotes ? 'data-has-notes="true"' : ''} title="Anotar Falla">📋</button></td></tr>`;
       });
       detHtml += `</tbody></table></td>`;
       detTr.innerHTML = detHtml;
