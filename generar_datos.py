@@ -14,11 +14,13 @@ Mapeo de columnas (Data.xlsx):
   - Solución: procsolutiondes
   - Detalle falla: diagnosedescription + closeacceptdes + procsolutiondes
 """
+import os
 import pandas as pd
 import json
 
-print("Leyendo Data-Disputa-Sinexclusiones.xlsx...")
-xls = pd.ExcelFile('Data-Disputa-Sinexclusiones.xlsx')
+disputa_filename = 'DataDisputa-Sinexclusiones.xlsx' if os.path.exists('DataDisputa-Sinexclusiones.xlsx') else 'Data-Disputa-Sinexclusiones.xlsx'
+print(f"Leyendo {disputa_filename}...")
+xls = pd.ExcelFile(disputa_filename)
 sheet_to_parse = 'Data' if 'Data' in xls.sheet_names else xls.sheet_names[0]
 df_v2 = xls.parse(sheet_to_parse)
 print(f"  DataV2: {len(df_v2)} filas, {len(df_v2.columns)} columnas leídas")
@@ -413,8 +415,8 @@ def intern(s):
     return str_pool[s]
 
 # Build events with short keys and interned strings
-# Truncate long text fields to save space
-def truncate(s, max_len=1500):
+# Truncate long text fields to save space and keep datos.js.gz < 25MB for GitHub
+def truncate(s, max_len=350):
     s = str(s)
     return s[:max_len] + '...' if len(s) > max_len else s
 
@@ -505,14 +507,21 @@ js += f"const _PLAN500_COUNTS={json.dumps(plan500_counts)};\n"
 js += f"const _PLAN500_REQ={json.dumps(plan500_req, ensure_ascii=False)};\n"
 js += f"const _LAST_UPDATED={json.dumps(last_updated_str)};\n"
 import gzip
-with gzip.open('datos.js.gz', 'wt', encoding='utf-8') as f:
-    f.write(js)
 
+print("Escribiendo datos.js...")
 with open('datos.js', 'w', encoding='utf-8') as f:
     f.write(js)
+print(f"datos.js: {len(js):,} bytes")
 
-with gzip.open('datos.js.gz', 'wt', encoding='utf-8') as f:
+print("Escribiendo datos.js.gz (compresión máxima)...")
+with gzip.open('datos.js.gz', 'wt', encoding='utf-8', compresslevel=9) as f:
     f.write(js)
 
-print(f"datos.js: {len(js):,} bytes")
+import os
+gz_size = os.path.getsize('datos.js.gz')
+print(f"datos.js.gz: {gz_size:,} bytes ({gz_size / (1024*1024):.2f} MB)")
+if gz_size < 25 * 1024 * 1024:
+    print("[OK] datos.js.gz pesa MENOS de 25 MB (apto para GitHub Web).")
+else:
+    print("[WARN] datos.js.gz supera 25 MB.")
 print("¡LISTO!")
