@@ -36,6 +36,77 @@ def serve_datos_js():
     return send_file('datos.js')
 
 # ============================================================
+#  CARGA REMOTA DE DATOS (datos.js / datos.js.gz / .zip)
+# ============================================================
+@app.route('/api/upload_datos', methods=['POST'])
+def upload_datos():
+    import gzip
+    import zipfile
+    import io
+    if 'file' not in request.files:
+        return jsonify({"ok": False, "error": "No se envió ningún archivo"}), 400
+    
+    file = request.files['file']
+    if not file or file.filename == '':
+        return jsonify({"ok": False, "error": "Archivo vacío o no seleccionado"}), 400
+    
+    fname = file.filename.lower()
+    if not (fname.endswith('.js') or fname.endswith('.gz') or fname.endswith('.zip')):
+        return jsonify({"ok": False, "error": "Solo se permiten archivos .js.gz, .js o .zip"}), 400
+    
+    try:
+        content = file.read()
+        if fname.endswith('.zip'):
+            with zipfile.ZipFile(io.BytesIO(content)) as z:
+                found = False
+                for zname in z.namelist():
+                    if zname.lower().endswith('datos.js.gz'):
+                        gz_data = z.read(zname)
+                        with open('datos.js.gz', 'wb') as f:
+                            f.write(gz_data)
+                        try:
+                            with open('datos.js', 'wb') as f:
+                                f.write(gzip.decompress(gz_data))
+                        except Exception:
+                            pass
+                        found = True
+                        break
+                    elif zname.lower().endswith('datos.js'):
+                        js_data = z.read(zname)
+                        with open('datos.js', 'wb') as f:
+                            f.write(js_data)
+                        with open('datos.js.gz', 'wb') as f:
+                            f.write(gzip.compress(js_data, compresslevel=9))
+                        found = True
+                        break
+                if not found:
+                    return jsonify({"ok": False, "error": "El .zip no contiene ningún archivo datos.js ni datos.js.gz"}), 400
+        elif fname.endswith('.gz'):
+            with open('datos.js.gz', 'wb') as f:
+                f.write(content)
+            try:
+                decomp = gzip.decompress(content)
+                with open('datos.js', 'wb') as f:
+                    f.write(decomp)
+            except Exception as eg:
+                print(f"Aviso al descomprimir gz: {eg}")
+        else:
+            with open('datos.js', 'wb') as f:
+                f.write(content)
+            comp = gzip.compress(content, compresslevel=9)
+            with open('datos.js.gz', 'wb') as f:
+                f.write(comp)
+                
+        return jsonify({
+            "ok": True, 
+            "message": "Archivo de datos actualizado exitosamente en el servidor",
+            "size": len(content)
+        }), 200
+    except Exception as e:
+        print(f"Error al subir datos: {e}")
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+# ============================================================
 #  NOTAS DE SITIOS
 # ============================================================
 @app.route('/nota_sitio', methods=['POST'])
