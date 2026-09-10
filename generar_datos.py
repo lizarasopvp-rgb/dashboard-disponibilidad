@@ -230,8 +230,22 @@ df['CITY_DS'] = df['Ciudad'].fillna('Sin dato')
 # Departamento
 df['DEPARTMENT_DS'] = df['Departamento'].fillna('Sin dato')
 
-# Regional: siteregion
-df['REGION_OP'] = df['siteregion'].fillna('Sin dato')
+# Regional convencional (siteregion)
+df['REGION_OP'] = df['siteregion'].fillna('Sin dato').astype(str).str.strip().replace({'nan': 'Sin dato', 'None': 'Sin dato', '': 'Sin dato'})
+
+# Nueva columna Region Operativa
+reg_op_col = None
+for col_candidate in ['Region operativa', 'Region Operativa', 'Región operativa', 'Región Operativa', 'region_operativa']:
+    if col_candidate in df.columns:
+        reg_op_col = col_candidate
+        break
+
+if reg_op_col is not None:
+    df['REGION_OPERATIVA'] = df[reg_op_col].fillna(df['REGION_OP']).astype(str).str.strip().replace({'nan': 'Sin dato', 'None': 'Sin dato', '': 'Sin dato'})
+    mask_sin = df['REGION_OPERATIVA'].str.lower().isin(['sin región operativa', 'sin region operativa', 'sin dato', 'nan', 'none', ''])
+    df.loc[mask_sin, 'REGION_OPERATIVA'] = df.loc[mask_sin, 'REGION_OP']
+else:
+    df['REGION_OPERATIVA'] = df['REGION_OP']
 
 # Causa suspensión: slapausereason
 df['CAUSA_SUSPENSION_ESPECIFICA'] = df['slapausereason'].fillna('Sin dato').astype(str).str.strip().replace({'nan': 'Sin dato', 'None': 'Sin dato', '': 'Sin dato'})
@@ -407,7 +421,7 @@ for i, cluster_indices in enumerate(masiva_clusters):
 print(f"  Total fallas simultáneas detectadas: {len(masiva_clusters)}")
 
 for col in ['CAUSA_GLOBAL','CAUSA_RAIZ','TICKET','SOLUCION_TICKET','DETALLE_FALLA',
-            'SITE_CD','SITE_NAME','CITY_DS','DEPARTMENT_DS','TECNOLOGIA','REGION_OP',
+            'SITE_CD','SITE_NAME','CITY_DS','DEPARTMENT_DS','TECNOLOGIA','REGION_OP','REGION_OPERATIVA',
             'Rangos','ESTADO_RAD','CAUSA_SUSPENSION_MACRO', 'CAUSA_SUSPENSION_ESPECIFICA','etiqueta_padre', 'CAUSA_IA', 'origen_archivo', 'task_id']:
     if col in eventos.columns:
         eventos[col] = eventos[col].fillna('Sin dato')
@@ -469,6 +483,7 @@ for _, r in eventos.iterrows():
         intern(r['SEMANA']),                       # 24: semana
         intern(r['origen_archivo']),               # 25: origen_archivo
         intern(r['task_id']),                      # 26: task_id (WO)
+        intern(r['REGION_OPERATIVA']),             # 27: region_operativa
     ])
 
 print(f"Eventos: {len(data)}, Strings pool: {len(str_list)}")

@@ -1955,7 +1955,7 @@
         <div class="card-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
             <h3 id="hm-unified-title">Tendencia Mensual - Top 20 Municipios</h3>
-            <p class="sub" id="hm-unified-sub">Minutos acumulados agrupados por región, departamento y municipio (Mapa de Calor)</p>
+            <p class="sub" id="hm-unified-sub">Minutos acumulados agrupados por región operativa, departamento y municipio (Mapa de Calor)</p>
           </div>
           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <!-- Selector de Mes (visible solo en modo Diario) -->
@@ -2907,7 +2907,8 @@
       is_active: e[23] === 1,
       semana: S[e[24]] || '',
       origen_archivo: S[e[25]] || '',
-      task_id: e[26] !== undefined ? (S[e[26]] || '') : ''
+      task_id: e[26] !== undefined ? (S[e[26]] || '') : '',
+      region_operativa: e[27] !== undefined ? S[e[27]] : fixCase(S[e[4]])
     }));
     const fmtDT = ts => ts ? new Date(ts).toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
     const fmtISO = ts => ts ? new Date(ts).toISOString() : '';
@@ -3226,7 +3227,7 @@
         if (wrapDiario) wrapDiario.style.display = "none";
         if (mesWrap) mesWrap.style.display = "none";
         if (title) title.textContent = "Tendencia Mensual - Top 20 Municipios";
-        if (sub) sub.textContent = "Minutos acumulados agrupados por región, departamento y municipio (Mapa de Calor)";
+        if (sub) sub.textContent = "Minutos acumulados agrupados por región operativa, departamento y municipio (Mapa de Calor)";
       } else {
         if (btnMensual) btnMensual.classList.remove("active");
         if (btnDiario) btnDiario.classList.add("active");
@@ -3234,7 +3235,7 @@
         if (wrapDiario) wrapDiario.style.display = "block";
         if (mesWrap) mesWrap.style.display = "inline-flex";
         if (title) title.textContent = "Tendencia Diaria - Mapa de Calor por Municipio";
-        if (sub) sub.textContent = "Minutos diarios acumulados agrupados por región, departamento y municipio para el mes seleccionado";
+        if (sub) sub.textContent = "Minutos diarios acumulados agrupados por región operativa, departamento y municipio para el mes seleccionado";
         renderTendenciasDailyHeatmap();
       }
     };
@@ -3248,7 +3249,7 @@
       const byReg = {};
 
       VIEW_TEND.forEach(e => {
-        const reg = String(e.region || "").trim().toUpperCase();
+        const reg = String(e.region_operativa || e.region || "").trim().toUpperCase();
         const dep = String(e.departamento || "").trim().toUpperCase();
         const city = String(e.ciudad || "").trim().toUpperCase();
         const site = String(e.sitio_id || e.nombre || "").trim();
@@ -3286,11 +3287,29 @@
       const totalGeneral = Object.values(byReg).reduce((acc, r) => acc + r.total, 0);
 
       const getHeatmapStyle = (val, localMin, localMax) => {
-        if (!val || val === 0 || localMax === localMin) return 'color: var(--gris);';
-        const scale = (val - localMin) / (localMax - localMin || 1);
+        if (!val || val === 0) return 'color: var(--gris);';
+        if (localMax <= localMin) return 'color: hsl(120, 90%, 40%); font-weight: 800;';
+        const scale = Math.max(0, Math.min(1, (val - localMin) / (localMax - localMin)));
         // Hue from 120 (Green, good) to 0 (Red, bad)
         const hue = 120 * (1 - scale);
         return `color: hsl(${hue}, 90%, 40%); font-weight: 800;`;
+      };
+
+      const getRowMinMax = (arr) => {
+        let min = Infinity, max = -Infinity;
+        let hasZero = false;
+        for (let i = 0; i < arr.length; i++) {
+          const v = arr[i];
+          if (v === 0 || !v) {
+            hasZero = true;
+          } else {
+            if (v < min) min = v;
+            if (v > max) max = v;
+          }
+        }
+        if (max === -Infinity) return { min: 0, max: 0 };
+        if (hasZero) min = 0;
+        return { min, max };
       };
 
       let html = `<thead><tr><th style="text-align:left; min-width:320px;">Region Operativa / Departamento / Municipio</th>`;
@@ -3301,20 +3320,11 @@
 
       const regKeys = Object.keys(byReg).sort((a, b) => byReg[b].total - byReg[a].total);
 
-      let globalRegMin = Infinity, globalRegMax = -Infinity;
-      regKeys.forEach(reg => {
-        for (let i = 0; i < activeMonthsCount; i++) {
-          let v = byReg[reg].mo[i];
-          if (v > 0 && v < globalRegMin) globalRegMin = v;
-          if (v > globalRegMax) globalRegMax = v;
-        }
-      });
-      if (globalRegMin === Infinity) globalRegMin = 0;
-
       regKeys.forEach((reg, rIdx) => {
         const rObj = byReg[reg];
         const regId = `reg-${rIdx}`;
         const regPct = totalGeneral > 0 ? ((rObj.total / totalGeneral) * 100).toFixed(1) : "0.0";
+        const regMinMax = getRowMinMax(rObj.mo);
 
         html += `<tr id="${regId}" style="background: rgba(0,0,0,0.04); font-weight:bold; cursor:pointer;" onclick="toggleHeatmapRow('${regId}')">
              <td style="text-align:left; white-space:nowrap;">
@@ -3323,7 +3333,7 @@
                <span style="display:inline-block; font-size:10.5px; font-weight:700; color:#00608A; background:#EBF3FA; border:1px solid #D0E1FD; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte sobre el total nacional">${regPct}%</span>
              </td>`;
         for (let i = 0; i < activeMonthsCount; i++) {
-          html += `<td class="num" style="${getHeatmapStyle(rObj.mo[i], globalRegMin, globalRegMax)}">${fmt(rObj.mo[i])}</td>`;
+          html += `<td class="num" style="${getHeatmapStyle(rObj.mo[i], regMinMax.min, regMinMax.max)}">${fmt(rObj.mo[i])}</td>`;
         }
         html += `<td class="num" style="white-space:nowrap;">${fmt(rObj.total)} <span style="font-size:11px; font-weight:600; color:#00608A;">(${regPct}%)</span></td></tr>`;
 
@@ -3333,20 +3343,11 @@
           return nonzero >= 3;
         }).sort((a, b) => rObj.deps[b].total - rObj.deps[a].total);
 
-        let localDepMin = Infinity, localDepMax = -Infinity;
-        depKeys.forEach(dep => {
-          for (let i = 0; i < activeMonthsCount; i++) {
-            let v = rObj.deps[dep].mo[i];
-            if (v > 0 && v < localDepMin) localDepMin = v;
-            if (v > localDepMax) localDepMax = v;
-          }
-        });
-        if (localDepMin === Infinity) localDepMin = 0;
-
         depKeys.forEach((dep, dIdx) => {
           const dObj = rObj.deps[dep];
           const depId = `${regId}-dep-${dIdx}`;
           const depPct = rObj.total > 0 ? ((dObj.total / rObj.total) * 100).toFixed(1) : "0.0";
+          const depMinMax = getRowMinMax(dObj.mo);
 
           html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; background: rgba(0,0,0,0.015); cursor:pointer;" onclick="toggleHeatmapRow('${depId}')">
                <td style="text-align:left; padding-left: 24px; white-space:nowrap;">
@@ -3355,7 +3356,7 @@
                  <span style="display:inline-block; font-size:10.5px; font-weight:600; color:#475569; background:#F1F5F9; border:1px solid #CBD5E1; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte a la regional ${reg}">${depPct}%</span>
                </td>`;
           for (let i = 0; i < activeMonthsCount; i++) {
-            html += `<td class="num" style="${getHeatmapStyle(dObj.mo[i], localDepMin, localDepMax)}">${fmt(dObj.mo[i])}</td>`;
+            html += `<td class="num" style="${getHeatmapStyle(dObj.mo[i], depMinMax.min, depMinMax.max)}">${fmt(dObj.mo[i])}</td>`;
           }
           html += `<td class="num" style="font-weight:bold; white-space:nowrap;">${fmt(dObj.total)} <span style="font-size:11px; font-weight:600; color:#64748B;">(${depPct}%)</span></td></tr>`;
 
@@ -3365,21 +3366,12 @@
             return nonzero >= 1;
           }).sort((a, b) => dObj.cities[b].total - dObj.cities[a].total).slice(0, 20);
 
-          let localCityMin = Infinity, localCityMax = -Infinity;
-          cityKeys.forEach(city => {
-            for (let i = 0; i < activeMonthsCount; i++) {
-              let v = dObj.cities[city].mo[i];
-              if (v > 0 && v < localCityMin) localCityMin = v;
-              if (v > localCityMax) localCityMax = v;
-            }
-          });
-          if (localCityMin === Infinity) localCityMin = 0;
-
           cityKeys.forEach((city, cIdx) => {
             const cObj = dObj.cities[city];
             const cityId = `${depId}-city-${cIdx}`;
             const cityPct = dObj.total > 0 ? ((cObj.total / dObj.total) * 100).toFixed(1) : "0.0";
             const numSites = cObj.sites ? cObj.sites.size : 0;
+            const cityMinMax = getRowMinMax(cObj.mo);
 
             html += `<tr id="${cityId}" class="child-of-${depId}" style="display:none; background: #ffffff;">
                  <td style="text-align:left; padding-left: 48px; white-space:nowrap;">
@@ -3388,7 +3380,7 @@
                    <span style="display:inline-block; font-size:10.5px; font-weight:700; color:#92400E; background:#FEF3C7; border:1px solid #FCD34D; padding:1px 6px; border-radius:10px; margin-left:6px;" title="Cantidad de sitios únicos con indisponibilidad">📍 ${numSites} ${numSites === 1 ? 'sitio' : 'sitios'}</span>
                  </td>`;
             for (let i = 0; i < activeMonthsCount; i++) {
-              html += `<td class="num" style="${getHeatmapStyle(cObj.mo[i], localCityMin, localCityMax)}">${fmt(cObj.mo[i])}</td>`;
+              html += `<td class="num" style="${getHeatmapStyle(cObj.mo[i], cityMinMax.min, cityMinMax.max)}">${fmt(cObj.mo[i])}</td>`;
             }
             html += `<td class="num" style="white-space:nowrap;">${fmt(cObj.total)} <span style="font-size:11px; font-weight:600; color:#166534;">(${cityPct}%)</span></td></tr>`;
           });
@@ -3500,7 +3492,7 @@
 
       VIEW_TEND.forEach(e => {
         if (e.mes_ano !== +selectedMes) return;
-        const reg = String(e.region || "").trim().toUpperCase();
+        const reg = String(e.region_operativa || e.region || "").trim().toUpperCase();
         const dep = String(e.departamento || "").trim().toUpperCase();
         const city = String(e.ciudad || "").trim().toUpperCase();
         const site = String(e.sitio_id || e.nombre || "").trim();
@@ -3537,10 +3529,28 @@
       const totalGeneral = Object.values(byReg).reduce((acc, r) => acc + r.total, 0);
 
       const getHeatmapStyle = (val, localMin, localMax) => {
-        if (!val || val === 0 || localMax === localMin) return 'color: var(--gris);';
-        const scale = (val - localMin) / (localMax - localMin || 1);
+        if (!val || val === 0) return 'color: var(--gris);';
+        if (localMax <= localMin) return 'color: hsl(120, 90%, 40%); font-weight: 800;';
+        const scale = Math.max(0, Math.min(1, (val - localMin) / (localMax - localMin)));
         const hue = 120 * (1 - scale);
         return `color: hsl(${hue}, 90%, 40%); font-weight: 800;`;
+      };
+
+      const getRowMinMax = (arr) => {
+        let min = Infinity, max = -Infinity;
+        let hasZero = false;
+        for (let i = 0; i < arr.length; i++) {
+          const v = arr[i];
+          if (v === 0 || !v) {
+            hasZero = true;
+          } else {
+            if (v < min) min = v;
+            if (v > max) max = v;
+          }
+        }
+        if (max === -Infinity) return { min: 0, max: 0 };
+        if (hasZero) min = 0;
+        return { min, max };
       };
 
       let html = `<thead><tr><th style="text-align:left; min-width:320px; position:sticky; left:0; background:#FBFCFE; z-index:2;">Region Operativa / Departamento / Municipio</th>`;
@@ -3552,20 +3562,11 @@
 
       const regKeys = Object.keys(byReg).sort((a, b) => byReg[b].total - byReg[a].total);
 
-      let globalRegMin = Infinity, globalRegMax = -Infinity;
-      regKeys.forEach(reg => {
-        for (let i = 0; i < numDays; i++) {
-          let v = byReg[reg].days[i];
-          if (v > 0 && v < globalRegMin) globalRegMin = v;
-          if (v > globalRegMax) globalRegMax = v;
-        }
-      });
-      if (globalRegMin === Infinity) globalRegMin = 0;
-
       regKeys.forEach((reg, rIdx) => {
         const rObj = byReg[reg];
         const regId = `daily-reg-${rIdx}`;
         const regPct = totalGeneral > 0 ? ((rObj.total / totalGeneral) * 100).toFixed(1) : "0.0";
+        const regMinMax = getRowMinMax(rObj.days);
 
         html += `<tr id="${regId}" style="background: rgba(0,0,0,0.04); font-weight:bold; cursor:pointer;" onclick="toggleDailyHeatmapRow('${regId}')">
              <td style="text-align:left; position:sticky; left:0; background:#F4F6F9; z-index:1; white-space:nowrap;">
@@ -3574,7 +3575,7 @@
                <span style="display:inline-block; font-size:10.5px; font-weight:700; color:#00608A; background:#EBF3FA; border:1px solid #D0E1FD; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte sobre el total nacional">${regPct}%</span>
              </td>`;
         for (let i = 0; i < numDays; i++) {
-          html += `<td class="num" style="${getHeatmapStyle(rObj.days[i], globalRegMin, globalRegMax)}">${fmt(Math.round(rObj.days[i]))}</td>`;
+          html += `<td class="num" style="${getHeatmapStyle(rObj.days[i], regMinMax.min, regMinMax.max)}">${fmt(Math.round(rObj.days[i]))}</td>`;
         }
         html += `<td class="num" style="font-weight:700; white-space:nowrap;">${fmt(Math.round(rObj.total))} <span style="font-size:11px; font-weight:600; color:#00608A;">(${regPct}%)</span></td></tr>`;
 
@@ -3584,20 +3585,11 @@
           return nonzero >= 1;
         }).sort((a, b) => rObj.deps[b].total - rObj.deps[a].total);
 
-        let localDepMin = Infinity, localDepMax = -Infinity;
-        depKeys.forEach(dep => {
-          for (let i = 0; i < numDays; i++) {
-            let v = rObj.deps[dep].days[i];
-            if (v > 0 && v < localDepMin) localDepMin = v;
-            if (v > localDepMax) localDepMax = v;
-          }
-        });
-        if (localDepMin === Infinity) localDepMin = 0;
-
         depKeys.forEach((dep, dIdx) => {
           const dObj = rObj.deps[dep];
           const depId = `${regId}-dep-${dIdx}`;
           const depPct = rObj.total > 0 ? ((dObj.total / rObj.total) * 100).toFixed(1) : "0.0";
+          const depMinMax = getRowMinMax(dObj.days);
 
           html += `<tr id="${depId}" class="child-of-${regId}" style="display:none; background: rgba(0,0,0,0.015); cursor:pointer;" onclick="toggleDailyHeatmapRow('${depId}')">
                <td style="text-align:left; padding-left: 24px; position:sticky; left:0; background:#FAFBFD; z-index:1; white-space:nowrap;">
@@ -3606,7 +3598,7 @@
                  <span style="display:inline-block; font-size:10.5px; font-weight:600; color:#475569; background:#F1F5F9; border:1px solid #CBD5E1; padding:1px 6px; border-radius:10px; margin-left:8px;" title="Aporte a la regional ${reg}">${depPct}%</span>
                </td>`;
           for (let i = 0; i < numDays; i++) {
-            html += `<td class="num" style="${getHeatmapStyle(dObj.days[i], localDepMin, localDepMax)}">${fmt(Math.round(dObj.days[i]))}</td>`;
+            html += `<td class="num" style="${getHeatmapStyle(dObj.days[i], depMinMax.min, depMinMax.max)}">${fmt(Math.round(dObj.days[i]))}</td>`;
           }
           html += `<td class="num" style="font-weight:bold; white-space:nowrap;">${fmt(Math.round(dObj.total))} <span style="font-size:11px; font-weight:600; color:#64748B;">(${depPct}%)</span></td></tr>`;
 
@@ -3616,21 +3608,12 @@
             return nonzero >= 1;
           }).sort((a, b) => dObj.cities[b].total - dObj.cities[a].total).slice(0, 25);
 
-          let localCityMin = Infinity, localCityMax = -Infinity;
-          cityKeys.forEach(city => {
-            for (let i = 0; i < numDays; i++) {
-              let v = dObj.cities[city].days[i];
-              if (v > 0 && v < localCityMin) localCityMin = v;
-              if (v > localCityMax) localCityMax = v;
-            }
-          });
-          if (localCityMin === Infinity) localCityMin = 0;
-
           cityKeys.forEach((city, cIdx) => {
             const cObj = dObj.cities[city];
             const cityId = `${depId}-city-${cIdx}`;
             const cityPct = dObj.total > 0 ? ((cObj.total / dObj.total) * 100).toFixed(1) : "0.0";
             const numSites = cObj.sites ? cObj.sites.size : 0;
+            const cityMinMax = getRowMinMax(cObj.days);
 
             html += `<tr id="${cityId}" class="child-of-${depId}" style="display:none; background: #ffffff;">
                  <td style="text-align:left; padding-left: 48px; position:sticky; left:0; background:#ffffff; z-index:1; white-space:nowrap;">
@@ -3639,7 +3622,7 @@
                    <span style="display:inline-block; font-size:10.5px; font-weight:700; color:#92400E; background:#FEF3C7; border:1px solid #FCD34D; padding:1px 6px; border-radius:10px; margin-left:6px;" title="Cantidad de sitios únicos con indisponibilidad">📍 ${numSites} ${numSites === 1 ? 'sitio' : 'sitios'}</span>
                  </td>`;
             for (let i = 0; i < numDays; i++) {
-              html += `<td class="num" style="${getHeatmapStyle(cObj.days[i], localCityMin, localCityMax)}">${fmt(Math.round(cObj.days[i]))}</td>`;
+              html += `<td class="num" style="${getHeatmapStyle(cObj.days[i], cityMinMax.min, cityMinMax.max)}">${fmt(Math.round(cObj.days[i]))}</td>`;
             }
             html += `<td class="num" style="font-weight:600; white-space:nowrap;">${fmt(Math.round(cObj.total))} <span style="font-size:11px; font-weight:600; color:#166534;">(${cityPct}%)</span></td></tr>`;
           });
