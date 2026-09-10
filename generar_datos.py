@@ -234,18 +234,29 @@ df['DEPARTMENT_DS'] = df['Departamento'].fillna('Sin dato')
 df['REGION_OP'] = df['siteregion'].fillna('Sin dato')
 
 # Causa suspensión: slapausereason
-df['CAUSA_SUSPENSION_ESPECIFICA'] = df['slapausereason'].fillna('Sin dato')
+df['CAUSA_SUSPENSION_ESPECIFICA'] = df['slapausereason'].fillna('Sin dato').astype(str).str.strip().replace({'nan': 'Sin dato', 'None': 'Sin dato', '': 'Sin dato'})
 
 # Nueva columna Causa suspension global
-if 'Causa suspensión global' in df.columns:
-    df['CAUSA_SUSPENSION_MACRO'] = df['Causa suspensión global'].fillna('Sin dato')
-elif 'Causa suspension global' in df.columns:
-    df['CAUSA_SUSPENSION_MACRO'] = df['Causa suspension global'].fillna('Sin dato')
+cs_macro_col = None
+for col_candidate in ['Causa de suspensión global', 'Causa de suspension global', 
+                      'Causa suspensión global', 'Causa suspension global', 
+                      'causa_suspension_global', 'causa_de_suspension_global']:
+    if col_candidate in df.columns:
+        cs_macro_col = col_candidate
+        break
+
+if cs_macro_col is not None:
+    df['CAUSA_SUSPENSION_MACRO'] = df[cs_macro_col].fillna('Sin dato').astype(str).str.strip().replace({'nan': 'Sin dato', 'None': 'Sin dato', '': 'Sin dato'})
 else:
     df['CAUSA_SUSPENSION_MACRO'] = df['CAUSA_SUSPENSION_ESPECIFICA']
 
 # Ticket: Mostrar unicamente orderid (CM) segun requerimiento
-df['TICKET'] = df['orderid'].fillna('Sin dato')
+if 'orderid' in df.columns:
+    df['TICKET'] = df['orderid'].fillna('Sin dato').astype(str).str.strip().replace({'nan': 'Sin dato', 'None': 'Sin dato', '': 'Sin dato'})
+elif 'servicenow_id' in df.columns:
+    df['TICKET'] = df['servicenow_id'].fillna('Sin dato').astype(str).str.strip().replace({'nan': 'Sin dato', 'None': 'Sin dato', '': 'Sin dato'})
+else:
+    df['TICKET'] = 'Sin dato'
 
 # Task ID / WO (Orden de trabajo)
 if 'task_id' not in df.columns:
